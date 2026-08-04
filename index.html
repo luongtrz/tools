@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d1220" />
+    <meta name="description" content="md2pdf — công cụ chuyển Markdown sang PDF, tương thích wkhtmltopdf." />
+    <title>md2pdf — Markdown to PDF</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="md2pdf home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.5 5.75A2.25 2.25 0 0 1 6.75 3.5h7.628c.597 0 1.17.237 1.592.659l3.871 3.871c.422.422.659.995.659 1.592v8.628a2.25 2.25 0 0 1-2.25 2.25H6.75a2.25 2.25 0 0 1-2.25-2.25V5.75Z" fill="currentColor" opacity=".22"/>
+              <path d="M14.25 3.75V8a1 1 0 0 0 1 1h4.25M8 12.25l2.15 2.15L16 8.55M8 17h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span>md<span class="brand-accent">2</span>pdf</span>
+        </a>
+
+        <div class="topbar-actions">
+          <div class="engine-pill"><span class="pulse-dot"></span> wkhtmltopdf core</div>
+          <button class="icon-button" id="resetButton" type="button" title="Khôi phục nội dung mẫu" aria-label="Khôi phục nội dung mẫu">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.75 8.25A8 8 0 1 1 4.5 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4.75 4.75v3.5h3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="avatar" type="button" title="Workspace">A</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero-row">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> DOCUMENT WORKSPACE</p>
+            <h1>Markdown, <em>ready to print.</em></h1>
+            <p class="hero-copy">Biến ghi chú và tài liệu của bạn thành PDF sạch đẹp trong vài giây.</p>
+          </div>
+          <div class="hero-meta">
+            <span class="meta-label">LOCAL WORKSPACE</span>
+            <span class="meta-value"><span class="status-dot"></span> Đã đồng bộ</span>
+          </div>
+        </section>
+
+        <section class="workspace-card" aria-label="Markdown editor and preview">
+          <div class="workspace-toolbar">
+            <div class="file-info">
+              <span class="file-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3.75h8.172L18.5 8.078V20.25H6V3.75Z" stroke="currentColor" stroke-width="1.5"/><path d="M14 3.75v4.5h4.5M8.75 12h7M8.75 15h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </span>
+              <div>
+                <strong id="fileName">project-brief.md</strong>
+                <span id="fileMeta">Markdown document · Local</span>
+              </div>
+              <button class="rename-button" id="renameButton" type="button" aria-label="Đổi tên file">⌁</button>
+            </div>
+            <div class="toolbar-actions">
+              <span class="autosave"><span class="status-dot"></span> Tự động lưu</span>
+              <button class="secondary-button" id="downloadMdButton" type="button">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19.25h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Tải .md
+              </button>
+              <button class="primary-button" id="exportButton" type="button">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 8.5V4.75h11V8.5M6 17.25H4.75a1 1 0 0 1-1-1v-5.5a1 1 0 0 1 1-1h14.5a1 1 0 0 1 1 1v5.5a1 1 0 0 1-1 1H18M6.5 14.5h11v5h-11v-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M17 11.5h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+                Xuất PDF
+              </button>
+            </div>
+          </div>
+
+          <div class="editor-grid">
+            <section class="editor-pane">
+              <div class="pane-heading">
+                <div class="pane-title"><span class="pane-number">01</span><span>MARKDOWN</span></div>
+                <span class="keyboard-hint"><kbd>⌘</kbd><kbd>↵</kbd> Preview</span>
+              </div>
+              <div class="editor-wrap">
+                <div class="line-numbers" id="lineNumbers" aria-hidden="true">1</div>
+                <textarea id="markdownInput" spellcheck="false" aria-label="Markdown input"></textarea>
+              </div>
+              <div class="pane-footer"><span id="wordCount">0 words</span><span id="charCount">0 characters</span></div>
+            </section>
+
+            <div class="splitter" aria-hidden="true"><span></span></div>
+
+            <section class="preview-pane">
+              <div class="pane-heading">
+                <div class="pane-title"><span class="pane-number">02</span><span>LIVE PREVIEW</span></div>
+                <div class="preview-tools">
+                  <span class="zoom-value" id="zoomValue">100%</span>
+                  <button class="zoom-button" id="zoomOut" type="button" aria-label="Thu nhỏ preview">−</button>
+                  <button class="zoom-button" id="zoomIn" type="button" aria-label="Phóng to preview">+</button>
+                </div>
+              </div>
+              <div class="preview-stage">
+                <article class="paper" id="preview" aria-live="polite"></article>
+              </div>
+              <div class="pane-footer"><span><span class="live-dot"></span> Cập nhật theo thời gian thực</span><span id="pageEstimate">1 page</span></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="bottom-grid">
+          <div class="settings-card">
+            <div class="card-heading">
+              <div><p class="eyebrow small">OUTPUT SETTINGS</p><h2>PDF output</h2></div>
+              <span class="settings-icon" aria-hidden="true">⚙</span>
+            </div>
+            <div class="settings-fields">
+              <label>Page size<select id="pageSize"><option value="A4">A4 · 210 × 297 mm</option><option value="Letter">Letter · 8.5 × 11 in</option><option value="A5">A5 · 148 × 210 mm</option></select></label>
+              <label>Orientation<select id="orientation"><option value="Portrait">Portrait</option><option value="Landscape">Landscape</option></select></label>
+              <label>Margins<select id="margins"><option value="18">Standard · 18 mm</option><option value="10">Narrow · 10 mm</option><option value="25">Wide · 25 mm</option></select></label>
+              <label>File name<div class="input-with-suffix"><input id="outputName" value="project-brief" /><span>.pdf</span></div></label>
+            </div>
+            <div class="command-preview"><div><span class="terminal-dot"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><code id="commandText">wkhtmltopdf --page-size A4 project-brief.html project-brief.pdf</code></div><button id="copyCommand" type="button">Copy</button></div>
+          </div>
+
+          <aside class="tip-card">
+            <span class="tip-spark">✦</span>
+            <p class="eyebrow small">QUICK TIP</p>
+            <h2>Designed for<br /><em>clean exports.</em></h2>
+            <p>Hỗ trợ headings, lists, links, code blocks và blockquotes. PDF được render bằng engine tương thích wkhtmltopdf.</p>
+            <a href="https://wkhtmltopdf.org/usage/wkhtmltopdf.txt" target="_blank" rel="noreferrer">Xem wkhtmltopdf docs <span>↗</span></a>
+          </aside>
+        </section>
+      </main>
+
+      <footer class="footer"><span>md2pdf <span class="muted">/</span> static workspace</span><span>Made for focused writing <span class="heart">♥</span></span></footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="print-sheet" id="printSheet"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
