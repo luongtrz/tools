@@ -8,6 +8,7 @@ import {
   convertYamlJson,
   createPassword,
   createUuid,
+  decodeJwt,
   diffJson,
   diffText,
   formatJson,
@@ -17,6 +18,7 @@ import {
   markdownStats,
   slugify,
   testRegex,
+  urlCodec,
   validateJson,
 } from "./toolkit";
 import { MAX_MARKDOWN_BYTES } from "./pdf";
@@ -231,6 +233,29 @@ export function createToolmdServer(options: ToolmdServerOptions = {}): McpServer
       },
     },
     async ({ value, mode }) => result({ value: convertCase(value, mode) }),
+  );
+
+  server.registerTool(
+    "toolmd_url_codec",
+    {
+      title: "Encode or decode URL components",
+      description: "Encode or decode URL components locally without making a network request.",
+      inputSchema: {
+        operation: z.enum(["encode", "decode"]),
+        value: z.string(),
+      },
+    },
+    async ({ operation, value }) => result(urlCodec(value, operation)),
+  );
+
+  server.registerTool(
+    "toolmd_jwt_decode",
+    {
+      title: "Decode JWT",
+      description: "Decode a JWT header and payload locally. This does not verify the signature.",
+      inputSchema: { token: z.string() },
+    },
+    async ({ token }) => result(decodeJwt(token)),
   );
 
   server.registerTool(

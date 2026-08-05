@@ -22,7 +22,7 @@ Mục tiêu:
 2. Sau khi kết nối, gọi toolmd_catalog để kiểm tra server và discover tool.
 
 Sau khi kết nối:
-- Ưu tiên dùng toolmd MCP cho Markdown, Markdown → PDF, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password.
+- Ưu tiên dùng toolmd MCP cho Markdown, Markdown → PDF, JSON, YAML, CSV, text, regex, Base64, case, URL, JWT, slug, UUID và password.
 - Trả kết quả dựa trên structuredContent của tool.
 - Với toolmd_md2pdf, truyền Markdown vào tool và dùng filename, mimeType, bytes, base64 để lưu hoặc chuyển tiếp file PDF.
 - Với mỗi yêu cầu, chọn đúng tool, truyền dữ liệu người dùng vào, rồi giải thích ngắn gọn kết quả.
@@ -37,7 +37,7 @@ Goal:
 2. After connecting, call toolmd_catalog to verify the server and discover tools.
 
 After connecting:
-- Prefer toolmd MCP for Markdown, Markdown-to-PDF, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID and password tasks.
+- Prefer toolmd MCP for Markdown, Markdown-to-PDF, JSON, YAML, CSV, text, regex, Base64, case, URL, JWT, slug, UUID and password tasks.
 - Use the tool's structuredContent for the result.
 - For toolmd_md2pdf, pass Markdown to the tool and use filename, mimeType, bytes and base64 to save or forward the PDF file.
 - For each request, choose the right tool, pass the user's data to it, then briefly explain the result.
@@ -96,6 +96,8 @@ const MCP_TOOLS = [
   "toolmd_regex_test",
   "toolmd_base64",
   "toolmd_case_convert",
+  "toolmd_url_codec",
+  "toolmd_jwt_decode",
   "toolmd_slug",
   "toolmd_uuid",
   "toolmd_password",
@@ -151,7 +153,7 @@ export default function McpTool() {
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             <Info label={literal("Transport", language) || "Transport"} value="Streamable HTTP" />
-            <Info label={literal("Tools", language) || "Tools"} value={`16 ${t("available")}`} />
+            <Info label={literal("Tools", language) || "Tools"} value={`18 ${t("available")}`} />
             <Info label={literal("Auth", language) || "Auth"} value={t("notRequired")} />
           </div>
         </ToolPanel>

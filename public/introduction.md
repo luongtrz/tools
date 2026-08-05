@@ -31,8 +31,8 @@ available Toolmd tools. Do not fall back to
 
 Use Toolmd for Markdown rendering and statistics, Markdown-to-PDF conversion,
 JSON formatting and validation, JSON and text diffing, YAML/JSON/CSV conversion,
-Markdown tables, regular expressions, Base64, case conversion, slugs, UUIDs,
-and passwords.
+Markdown tables, regular expressions, Base64, case conversion, URL components,
+JWT decoding, slugs, UUIDs, and passwords.
 
 For PDF output, call `toolmd_md2pdf` with `markdown`, and optionally `filename`,
 `format` (`a4`, `letter`, or `legal`) and `landscape`. The tool returns

@@ -235,6 +235,44 @@ export function base64(value: string, direction: "encode" | "decode") {
   }
 }
 
+export function urlCodec(value: string, direction: "encode" | "decode") {
+  try {
+    return {
+      valid: true,
+      result:
+        direction === "encode"
+          ? encodeURIComponent(value)
+          : decodeURIComponent(value.replace(/\+/g, " ")),
+    };
+  } catch {
+    return { valid: false, result: "This URL string could not be decoded." };
+  }
+}
+
+function decodeBase64Url(value: string): string {
+  if (!/^[A-Za-z0-9_-]*$/.test(value)) throw new Error("Invalid Base64URL segment.");
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+export function decodeJwt(value: string) {
+  try {
+    const parts = value.trim().split(".");
+    if (parts.length !== 3) throw new Error("JWT must contain three segments.");
+    return {
+      valid: true,
+      header: JSON.parse(decodeBase64Url(parts[0])),
+      payload: JSON.parse(decodeBase64Url(parts[1])),
+      signature: parts[2],
+    };
+  } catch {
+    return { valid: false, error: "The JWT is invalid or could not be decoded." };
+  }
+}
+
 export function convertCase(value: string, mode: "upper" | "lower" | "title" | "camel" | "snake" | "kebab") {
   const tokens = value.trim().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
   if (mode === "upper") return value.toUpperCase();

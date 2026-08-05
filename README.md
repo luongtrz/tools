@@ -34,7 +34,7 @@ Cấu hình cho MCP client:
 }
 ```
 
-Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_md2pdf`, `toolmd_json_format`, `toolmd_json_diff`, `toolmd_data_convert`, `toolmd_text_diff`, `toolmd_regex_test`, `toolmd_base64`, `toolmd_case_convert`, `toolmd_slug`, `toolmd_uuid` và `toolmd_password`. `toolmd_md2pdf` render Markdown thành PDF thật qua Cloudflare Browser Run và trả về `filename`, `mimeType`, `bytes` cùng `base64` trong structured content. Mỗi response có cả text content và structured content để AI đọc tự nhiên hoặc xử lý tiếp bằng code.
+Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_md2pdf`, `toolmd_json_format`, `toolmd_json_diff`, `toolmd_data_convert`, `toolmd_text_diff`, `toolmd_regex_test`, `toolmd_base64`, `toolmd_case_convert`, `toolmd_url_codec`, `toolmd_jwt_decode`, `toolmd_slug`, `toolmd_uuid` và `toolmd_password`. `toolmd_md2pdf` render Markdown thành PDF thật qua Cloudflare Browser Run và trả về `filename`, `mimeType`, `bytes` cùng `base64` trong structured content. Mỗi response có cả text content và structured content để AI đọc tự nhiên hoặc xử lý tiếp bằng code.
 
 ### Prompt setup cho agent
 
@@ -47,7 +47,7 @@ Bạn là agent đang tích hợp toolmd MCP remote.
    https://toolmd-mcp.22120199.workers.dev/mcp
 2. Sau khi kết nối, gọi toolmd_catalog để kiểm tra server và discover tool.
 
-Ưu tiên dùng toolmd MCP cho Markdown, Markdown → PDF, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Với PDF, dùng `toolmd_md2pdf`, sau đó decode trường `base64` thành file theo `filename`. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu kết nối thất bại.
+Ưu tiên dùng toolmd MCP cho Markdown, Markdown → PDF, JSON, YAML, CSV, text, regex, Base64, case, URL, JWT, slug, UUID và password. Với PDF, dùng `toolmd_md2pdf`, sau đó decode trường `base64` thành file theo `filename`. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu kết nối thất bại.
 
 Không chạy npm install, npm link hoặc toolmd mcp. Đây là MCP remote, không cần môi trường local của workspace.
 ```
