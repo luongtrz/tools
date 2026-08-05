@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
 import { literal, useI18n } from "../i18n";
-import pptxgen from "pptxgenjs";
-import { PDFDocument } from "pdf-lib";
 import { SAMPLE_MARKDOWN } from "../constants/sampleMarkdown";
 import { renderMarkdown } from "../lib/markdown";
 import { markdownToDocxBlob } from "../lib/docx";
@@ -163,7 +161,8 @@ export function Md2PptxTool() {
     setBusy(true);
     setError("");
     try {
-      const pptx = new pptxgen();
+      const { default: PptxGenJS } = await import("pptxgenjs");
+      const pptx = new PptxGenJS();
       pptx.layout = "LAYOUT_WIDE";
       pptx.author = "toolmd";
       pptx.subject = "Markdown presentation";
@@ -269,6 +268,7 @@ export function MergePdfTool() {
     setBusy(true);
     setError("");
     try {
+      const { PDFDocument } = await import("pdf-lib");
       const output = await PDFDocument.create();
       for (const file of files) {
         const source = await PDFDocument.load(await file.arrayBuffer());
@@ -361,6 +361,7 @@ export function SplitPdfTool() {
     setBusy(true);
     setError("");
     try {
+      const { PDFDocument } = await import("pdf-lib");
       const source = await PDFDocument.load(await file.arrayBuffer());
       const pages = parseRanges(ranges, source.getPageCount());
       if (!pages.length) {
@@ -420,6 +421,7 @@ export function CompressPdfTool() {
     setBusy(true);
     setError("");
     try {
+      const { PDFDocument } = await import("pdf-lib");
       const source = await PDFDocument.load(await file.arrayBuffer());
       const bytes = await source.save({
         useObjectStreams: true,
