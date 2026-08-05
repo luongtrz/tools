@@ -3,6 +3,7 @@ import { categoryLabel, localizedTool, useI18n } from "../i18n";
 import { TOOL_CATEGORIES, TOOL_REGISTRY, getTool } from "../toolRegistry";
 import LanguageToggle from "./LanguageToggle";
 import ThemeToggle from "./ThemeToggle";
+import ToolSearch from "./ToolSearch";
 
 interface ToolNavbarProps {
   activeSlug?: string;
@@ -89,6 +90,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
             );
           })}
         </nav>
+        <ToolSearch />
         {rightSlot || (
           <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-5">
             <LanguageToggle />

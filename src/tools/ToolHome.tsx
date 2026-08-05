@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { categoryLabel, localizedTool, useI18n } from "../i18n";
 import {
   TOOL_CATEGORIES,
@@ -20,7 +20,6 @@ function initialCategory(): ToolCategory | "All" {
 
 export default function ToolHome() {
   const { language, t } = useI18n();
-  const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<ToolCategory | "All">(
     initialCategory,
@@ -40,15 +39,17 @@ export default function ToolHome() {
   const featured = visibleTools.filter((tool) => tool.featured);
 
   useEffect(() => {
-    const focusSearch = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        searchRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", focusSearch);
-    return () => window.removeEventListener("keydown", focusSearch);
-  }, []);
+    const params = new URLSearchParams(window.location.search);
+    const nextQuery = query.trim();
+    if (nextQuery) params.set("q", nextQuery);
+    else params.delete("q");
+    if (category === "All") params.delete("category");
+    else params.set("category", category);
+    const nextSearch = params.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl !== currentUrl) window.history.replaceState({}, "", nextUrl);
+  }, [category, query]);
 
   return (
     <ToolShell>
@@ -77,7 +78,6 @@ export default function ToolHome() {
         <label className="flex h-14 w-full max-w-[520px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-slate-400 shadow-sm focus-within:border-orange-300 focus-within:ring-4 focus-within:ring-orange-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-orange-400 dark:focus-within:ring-orange-950/50">
           <span className="text-xl">⌕</span>
           <input
-            ref={searchRef}
             className="h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-slate-800 outline-none dark:text-slate-100"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
