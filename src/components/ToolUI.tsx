@@ -12,8 +12,8 @@ export function ToolShell({ activeSlug, children }: ToolShellProps) {
   return (
     <div className="min-h-screen bg-[#f7f8fa] font-sans text-slate-800">
       <ToolNavbar activeSlug={activeSlug} />
-      <main className="mx-auto min-w-0 w-full max-w-[1320px] px-5 pb-24 pt-12 sm:px-8 sm:pt-16">{children}</main>
-      <footer className="mx-auto flex max-w-[1320px] justify-between px-5 pb-8 pt-6 font-mono text-xs text-slate-400 sm:px-8">
+      <main className="mx-auto min-w-0 w-full max-w-[1600px] px-4 pb-24 pt-10 sm:px-8 sm:pt-14 lg:px-12">{children}</main>
+      <footer className="mx-auto flex max-w-[1600px] justify-between px-4 pb-8 pt-6 font-mono text-xs text-slate-400 sm:px-8 lg:px-12">
         <span>
           toolmd <i>/</i> a small collection of useful tools
         </span>
@@ -34,7 +34,7 @@ export function ToolPage({ slug, eyebrow, children }: ToolPageProps) {
   if (!tool) return null;
   return (
     <ToolShell activeSlug={slug}>
-      <div className="mb-12 flex flex-col items-start justify-between gap-6 sm:mb-14 sm:flex-row">
+      <div className="mb-12 flex flex-col items-start justify-between gap-6 sm:mb-16 sm:flex-row">
         <div>
           <a className="mb-8 inline-block font-mono text-sm font-medium text-slate-500 no-underline hover:text-[#f2633d]" href="/">
             ← All tools

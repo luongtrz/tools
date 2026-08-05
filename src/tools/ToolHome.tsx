@@ -92,7 +92,7 @@ export default function ToolHome() {
             </div>
             <span>For everyday work</span>
           </div>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {featured.map((tool) => (
               <ToolCard key={tool.slug} {...tool} featured />
             ))}
@@ -121,7 +121,7 @@ export default function ToolHome() {
               </div>
               <span>{tools.length} tools</span>
             </div>
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {tools.map((tool) => (
                 <ToolCard key={tool.slug} {...tool} />
               ))}
