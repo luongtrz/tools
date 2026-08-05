@@ -12,7 +12,7 @@ UI dùng Tailwind CSS qua Vite plugin; `src/index.css` chỉ là entrypoint tố
 
 ## MCP remote cho AI
 
-Toolmd cung cấp MCP server dạng Streamable HTTP trên Cloudflare Worker. Agent chỉ cần kết nối tới endpoint public bằng Bearer token; không cần clone project, cài Node.js, chạy `npm install` hay `npm link` trên máy của người dùng.
+Toolmd cung cấp MCP server public dạng Streamable HTTP trên Cloudflare Worker. Agent chỉ cần kết nối tới endpoint; không cần clone project, cài Node.js, chạy `npm install`, `npm link` hay nhập API key trên máy của người dùng.
 
 Endpoint mặc định:
 
@@ -20,7 +20,7 @@ Endpoint mặc định:
 https://toolmd-mcp.22120199.workers.dev/mcp
 ```
 
-Agent có thể đọc [introduction.md](https://toolmd.pages.dev/introduction.md) để tự nhận biết endpoint, transport, authentication và quy trình test. File này không chứa token thật.
+Agent có thể đọc [introduction.md](https://toolmd.pages.dev/introduction.md) để tự nhận biết endpoint, transport và quy trình test.
 
 Cấu hình cho MCP client:
 
@@ -28,10 +28,7 @@ Cấu hình cho MCP client:
 {
   "mcpServers": {
     "toolmd": {
-      "url": "https://toolmd-mcp.22120199.workers.dev/mcp",
-      "headers": {
-        "Authorization": "Bearer <YOUR_MCP_AUTH_TOKEN>"
-      }
+      "url": "https://toolmd-mcp.22120199.workers.dev/mcp"
     }
   }
 }
@@ -48,21 +45,11 @@ Bạn là agent đang tích hợp toolmd MCP remote.
 
 1. Đăng ký MCP server bằng Streamable HTTP với URL:
    https://toolmd-mcp.22120199.workers.dev/mcp
-2. Gửi header xác thực:
-   Authorization: Bearer <YOUR_MCP_AUTH_TOKEN>
-3. Nếu token còn là placeholder hoặc chưa được cung cấp, yêu cầu người dùng cung cấp token; không tự đoán token.
-4. Sau khi kết nối, gọi toolmd_catalog để kiểm tra server và discover tool.
+2. Sau khi kết nối, gọi toolmd_catalog để kiểm tra server và discover tool.
 
-Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu kết nối hoặc authentication thất bại.
+Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu kết nối thất bại.
 
 Không chạy npm install, npm link hoặc toolmd mcp. Đây là MCP remote, không cần môi trường local của workspace.
-```
-
-Token không được commit vào repository. Người quản trị đặt token cho Worker bằng Cloudflare Secret:
-
-```bash
-npx wrangler secret put MCP_AUTH_TOKEN --config cloudflare/mcp-worker/wrangler.toml
-npm run mcp:deploy
 ```
 
 Nếu Worker dùng account subdomain khác, đặt `VITE_MCP_URL` khi build frontend để thay endpoint hiển thị trong trang MCP.
@@ -105,10 +92,10 @@ npm run mcp:deploy:dry-run
 npm run collab:deploy -- --dry-run
 ```
 
-Smoke test remote MCP sau khi Worker đã được deploy (chỉ dành cho maintainer có token):
+Smoke test remote MCP sau khi Worker đã được deploy:
 
 ```bash
-MCP_AUTH_TOKEN=<YOUR_MCP_AUTH_TOKEN> npm run mcp:smoke:http
+npm run mcp:smoke:http
 ```
 
 Sau đó truy cập URL Vite hiển thị trong terminal.

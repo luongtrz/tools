@@ -2,19 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const endpoint = process.env.TOOLMD_MCP_URL || "https://toolmd-mcp.22120199.workers.dev/mcp";
-const token = process.env.MCP_AUTH_TOKEN;
-
-if (!token) {
-  throw new Error("MCP_AUTH_TOKEN is required for the remote MCP smoke test.");
-}
-
-const transport = new StreamableHTTPClientTransport(new URL(endpoint), {
-  requestInit: {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  },
-});
+const transport = new StreamableHTTPClientTransport(new URL(endpoint));
 const client = new Client({ name: "toolmd-http-smoke", version: "1.0.0" });
 
 await client.connect(transport);
