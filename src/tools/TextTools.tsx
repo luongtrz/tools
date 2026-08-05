@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { useI18n } from "../i18n";
 import {
   CopyButton,
   ToolButton,
   ToolLabel,
+  ToolNotice,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -10,9 +12,13 @@ import {
 import { toolStyles } from "../components/toolStyles";
 
 export function TextDiffTool() {
+  const { t } = useI18n();
   const [left, setLeft] = useState("toolmd\nmd2pdf\nmd2word");
   const [right, setRight] = useState("toolmd\nmd2pdf\nmd2pptx");
   const rows = useMemo(() => diffLines(left, right), [left, right]);
+  const diffText = rows
+    .map((row) => `${row.type === "added" ? "+" : row.type === "removed" ? "-" : " "} ${row.text}`)
+    .join("\n");
   return (
     <ToolPage slug="text-diff">
       <div className={toolStyles.splitLayout}>
@@ -33,9 +39,9 @@ export function TextDiffTool() {
           />
         </ToolPanel>
       </div>
-      <ToolPanel title="Diff result">
+      <ToolPanel title="Diff result" actions={<CopyButton value={diffText} />}>
         <div className={toolStyles.diffOutput}>
-          {rows.map((row, index) => (
+          {rows.length ? rows.map((row, index) => (
             <div className={`whitespace-pre-wrap px-2 ${row.type === "added" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : row.type === "removed" ? "bg-orange-50 text-[#b34835] dark:bg-orange-950/40 dark:text-orange-300" : "text-slate-600 dark:text-slate-300"}`} key={`${index}-${row.text}`}>
               <span className="mr-3 inline-block w-4 text-slate-400">
                 {row.type === "added"
@@ -46,7 +52,7 @@ export function TextDiffTool() {
               </span>
               {row.text || " "}
             </div>
-          ))}
+          )) : <ToolNotice>{t("emptyInput")}</ToolNotice>}
         </div>
       </ToolPanel>
     </ToolPage>
@@ -74,6 +80,7 @@ function diffLines(
 }
 
 export function RegexTesterTool() {
+  const { t } = useI18n();
   const [pattern, setPattern] = useState("\\b(toolmd|md2pdf)\\b");
   const [flags, setFlags] = useState("gi");
   const [value, setValue] = useState("Build md2pdf and md2word inside toolmd.");
@@ -87,10 +94,10 @@ export function RegexTesterTool() {
     } catch (error) {
       return {
         matches: [],
-        error: error instanceof Error ? error.message : "Invalid regex",
+        error: t("invalidRegex", { message: error instanceof Error ? error.message : "parse error" }),
       };
     }
-  }, [flags, pattern, value]);
+  }, [flags, pattern, t, value]);
   return (
     <ToolPage slug="regex-tester">
       <ToolPanel title="Regular expression">
@@ -121,13 +128,21 @@ export function RegexTesterTool() {
       </ToolPanel>
       <ToolPanel title="Matches">
         <div className={`${toolStyles.matchSummary} ${result.error ? "bg-red-50 text-[#b34835]" : ""}`}>
-          {result.error ||
-            `${result.matches.length} match${result.matches.length === 1 ? "" : "es"}`}
+          {result.error || t("matchCount", { count: result.matches.length })}
         </div>
-        <div className={toolStyles.chipList}>
-          {result.matches.map((match, index) => (
+        {result.error ? (
+          <div className="mt-4"><ToolNotice variant="error">{result.error}</ToolNotice></div>
+        ) : result.matches.length ? (
+          <div className={toolStyles.chipList}>
+            {result.matches.map((match, index) => (
             <code className="rounded bg-orange-50 px-2.5 py-1.5 font-mono text-sm text-[#bd4d32]" key={`${match}-${index}`}>{match}</code>
-          ))}
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4"><ToolNotice>{t("noMatches")}</ToolNotice></div>
+        )}
+        <div className={toolStyles.panelActions}>
+          <CopyButton value={result.matches.join("\n")} />
         </div>
       </ToolPanel>
     </ToolPage>
@@ -149,15 +164,20 @@ function decodeBase64(value: string): string {
 }
 
 export function Base64Tool() {
+  const { t } = useI18n();
   const [value, setValue] = useState("Xin chào toolmd");
   const [direction, setDirection] = useState<"encode" | "decode">("encode");
-  const result = useMemo(() => {
+  const result = useMemo((): { output: string; error: string } => {
+    if (!value.trim()) return { output: "", error: t("emptyInput") };
     try {
-      return direction === "encode" ? encodeBase64(value) : decodeBase64(value);
+      return {
+        output: direction === "encode" ? encodeBase64(value) : decodeBase64(value),
+        error: "",
+      };
     } catch {
-      return "Invalid Base64 input";
+      return { output: "", error: t("invalidBase64") };
     }
-  }, [direction, value]);
+  }, [direction, t, value]);
   return (
     <ToolPage slug="base64">
       <ToolPanel title="Base64 converter">
@@ -182,8 +202,8 @@ export function Base64Tool() {
           rows={12}
         />
         <div className="mt-5 flex items-start gap-3">
-          <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{result}</pre>
-          <CopyButton value={result} />
+          {result.error ? <ToolNotice variant="error">{result.error}</ToolNotice> : <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{result.output}</pre>}
+          <CopyButton value={result.output} />
         </div>
       </ToolPanel>
     </ToolPage>
