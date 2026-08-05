@@ -29,11 +29,12 @@ export function markdownStats(markdown: string) {
     words,
     characters: markdown.length,
     lines: markdown ? markdown.split(/\r?\n/).length : 0,
-    readingMinutes: Math.max(1, Math.ceil(words / 220)),
+    readingMinutes: words ? Math.ceil(words / 220) : 0,
   };
 }
 
 export function formatJson(value: string): { valid: boolean; result: string } {
+  if (!value.trim()) return { valid: false, result: "Input is empty." };
   try {
     return { valid: true, result: JSON.stringify(JSON.parse(value), null, 2) };
   } catch (error) {
@@ -45,6 +46,7 @@ export function formatJson(value: string): { valid: boolean; result: string } {
 }
 
 export function validateJson(value: string) {
+  if (!value.trim()) return { valid: false, message: "Input is empty." };
   try {
     JSON.parse(value);
     return { valid: true, message: "Valid JSON ✓" };
@@ -60,26 +62,24 @@ export function diffJson(first: string, second: string) {
   try {
     const left = JSON.stringify(JSON.parse(first), null, 2).split("\n");
     const right = JSON.stringify(JSON.parse(second), null, 2).split("\n");
-    const lines = new Set([...left, ...right]);
-    return {
-      valid: true,
-      result: Array.from(lines)
-        .map((line) => {
-          const marker = !left.includes(line)
-            ? "+ "
-            : !right.includes(line)
-              ? "- "
-              : "  ";
-          return `${marker}${line}`;
-        })
-        .join("\n"),
-    };
+    const lines: string[] = [];
+    const total = Math.max(left.length, right.length);
+    for (let index = 0; index < total; index += 1) {
+      if (left[index] === right[index]) {
+        if (left[index] !== undefined) lines.push(`  ${left[index]}`);
+        continue;
+      }
+      if (left[index] !== undefined) lines.push(`- ${left[index]}`);
+      if (right[index] !== undefined) lines.push(`+ ${right[index]}`);
+    }
+    return { valid: true, result: lines.join("\n") || "  (no changes)" };
   } catch {
     return { valid: false, result: "Both inputs must be valid JSON before comparing." };
   }
 }
 
 export function convertYamlJson(value: string, direction: "yaml-to-json" | "json-to-yaml") {
+  if (!value.trim()) return { valid: false, result: "Input is empty." };
   try {
     const parsed = direction === "yaml-to-json" ? YAML.parse(value) : JSON.parse(value);
     return {
@@ -121,6 +121,7 @@ function parseCsv(value: string): string[][] {
     row.push(field);
     rows.push(row);
   }
+  if (quoted) throw new Error("Unclosed quoted field.");
   return rows.filter((item) => item.some((cell) => cell.length));
 }
 
@@ -132,9 +133,11 @@ function stringifyCsv(rows: string[][]): string {
 
 export function convertCsvJson(value: string, direction: "csv-to-json" | "json-to-csv") {
   try {
+    if (!value.trim()) return { valid: false, result: "Input is empty." };
     if (direction === "csv-to-json") {
       const rows = parseCsv(value);
       const headers = rows[0] || [];
+      if (!headers.length) return { valid: false, result: "CSV headers are required." };
       return {
         valid: true,
         result: JSON.stringify(rows.slice(1).map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] || ""]))), null, 2),
@@ -202,7 +205,14 @@ export function testRegex(pattern: string, flags: string, value: string) {
 export function base64(value: string, direction: "encode" | "decode") {
   try {
     if (direction === "encode") return { valid: true, result: Buffer.from(value, "utf8").toString("base64") };
-    return { valid: true, result: Buffer.from(value, "base64").toString("utf8") };
+    const normalized = value.trim();
+    if (!normalized || !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized) || normalized.length % 4 === 1) {
+      return { valid: false, result: "Invalid Base64 input" };
+    }
+    const decoded = Buffer.from(normalized, "base64");
+    const canonical = decoded.toString("base64").replace(/=+$/, "");
+    if (canonical !== normalized.replace(/=+$/, "")) return { valid: false, result: "Invalid Base64 input" };
+    return { valid: true, result: decoded.toString("utf8") };
   } catch {
     return { valid: false, result: "Invalid Base64 input" };
   }
