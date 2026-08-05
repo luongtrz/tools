@@ -1,3 +1,5 @@
+import { literal, useI18n } from "../i18n";
+
 interface OutputSettingsProps {
   pageSize: string;
   orientation: string;
@@ -23,12 +25,13 @@ export default function OutputSettings({
   command,
   onCopyCommand,
 }: OutputSettingsProps) {
+  const { language, t } = useI18n();
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
       <div className="flex items-start justify-between">
         <div>
-          <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">OUTPUT SETTINGS</p>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-[#111b2c]">PDF output</h2>
+          <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{t("outputSettings")}</p>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-[#111b2c]">{t("pdfOutput")}</h2>
         </div>
         <span className="text-xl text-slate-400" aria-hidden="true">
           ⚙
@@ -36,7 +39,7 @@ export default function OutputSettings({
       </div>
       <div className="my-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="flex flex-col gap-2 font-mono text-xs text-slate-500">
-          Page size
+          {t("pageSize")}
           <select className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 font-mono text-sm text-slate-600 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
             value={pageSize}
             onChange={(event) => onPageSizeChange(event.target.value)}
@@ -47,28 +50,28 @@ export default function OutputSettings({
           </select>
         </label>
         <label className="flex flex-col gap-2 font-mono text-xs text-slate-500">
-          Orientation
+          {t("orientation")}
           <select className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 font-mono text-sm text-slate-600 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
             value={orientation}
             onChange={(event) => onOrientationChange(event.target.value)}
           >
-            <option value="Portrait">Portrait</option>
-            <option value="Landscape">Landscape</option>
+            <option value="Portrait">{literal("Portrait", language)}</option>
+            <option value="Landscape">{literal("Landscape", language)}</option>
           </select>
         </label>
         <label className="flex flex-col gap-2 font-mono text-xs text-slate-500">
-          Margins
+          {t("margins")}
           <select className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 font-mono text-sm text-slate-600 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
             value={margins}
             onChange={(event) => onMarginsChange(event.target.value)}
           >
-            <option value="18">Standard · 18 mm</option>
-            <option value="10">Narrow · 10 mm</option>
-            <option value="25">Wide · 25 mm</option>
+            <option value="18">{t("standard")} · 18 mm</option>
+            <option value="10">{t("narrow")} · 10 mm</option>
+            <option value="25">{t("wide")} · 25 mm</option>
           </select>
         </label>
         <label className="flex flex-col gap-2 font-mono text-xs text-slate-500">
-          File name
+          {t("fileName")}
           <div className="relative">
             <input
               className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pr-12 font-mono text-sm text-slate-600 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
@@ -87,7 +90,7 @@ export default function OutputSettings({
           <code className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-slate-500">{command}</code>
         </div>
         <button className="shrink-0 rounded px-2 py-1 font-mono text-xs font-medium text-[#d95132] hover:bg-orange-50" type="button" onClick={onCopyCommand}>
-          Copy
+          {t("copy")}
         </button>
       </div>
     </div>

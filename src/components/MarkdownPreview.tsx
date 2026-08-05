@@ -1,3 +1,5 @@
+import { useI18n } from "../i18n";
+
 interface MarkdownPreviewProps {
   html: string;
   zoom: number;
@@ -13,12 +15,13 @@ export default function MarkdownPreview({
   onZoomIn,
   onZoomOut,
 }: MarkdownPreviewProps) {
+  const { t } = useI18n();
   return (
     <section className="flex min-w-0 flex-col border-t border-slate-200 lg:border-l lg:border-t-0">
       <div className="flex h-14 items-center justify-between border-b border-slate-100 px-4 sm:px-6">
         <div className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[1px] text-slate-500">
           <span className="text-[#f2633d]">02</span>
-          <span>LIVE PREVIEW</span>
+          <span>{t("livePreview")}</span>
         </div>
         <div className="flex items-center gap-1">
           <span className="min-w-10 text-center font-mono text-xs text-slate-400">{Math.round(zoom * 100)}%</span>
@@ -26,7 +29,7 @@ export default function MarkdownPreview({
             className="grid size-8 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-lg text-slate-500 hover:border-orange-200 hover:text-[#f2633d]"
             type="button"
             onClick={onZoomOut}
-            aria-label="Thu nhỏ preview"
+            aria-label={t("zoomOut")}
           >
             −
           </button>
@@ -34,7 +37,7 @@ export default function MarkdownPreview({
             className="grid size-8 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-lg text-slate-500 hover:border-orange-200 hover:text-[#f2633d]"
             type="button"
             onClick={onZoomIn}
-            aria-label="Phóng to preview"
+            aria-label={t("zoomIn")}
           >
             +
           </button>
@@ -48,11 +51,11 @@ export default function MarkdownPreview({
         />
       </div>
       <div className="flex min-h-11 items-center justify-between border-t border-slate-100 px-4 font-mono text-xs text-slate-400 sm:px-6">
-        <span>
-          <span className="mr-1.5 inline-block size-2 rounded-full bg-emerald-400 align-[1px]" /> Cập nhật theo thời gian thực
+          <span>
+          <span className="mr-1.5 inline-block size-2 rounded-full bg-emerald-400 align-[1px]" /> {t("realtimeUpdate")}
         </span>
         <span>
-          {pageCount} {pageCount === 1 ? "page" : "pages"}
+          {pageCount} {pageCount === 1 ? t("page") : t("pages")}
         </span>
       </div>
     </section>

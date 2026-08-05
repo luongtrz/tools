@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useI18n } from "../i18n";
 import { SAMPLE_MARKDOWN } from "../constants/sampleMarkdown";
 import { useCollaboration } from "../hooks/useCollaboration";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -18,6 +19,7 @@ function randomGuestName(): string {
 }
 
 export default function Md2PdfTool() {
+  const { t } = useI18n();
   const [markdown, setMarkdown] = useLocalStorage(
     "md2pdf-content",
     SAMPLE_MARKDOWN,
@@ -75,20 +77,20 @@ export default function Md2PdfTool() {
   function resetDocument(): void {
     handleMarkdownChange(SAMPLE_MARKDOWN);
     setOutputName("project-brief");
-    notify("Đã khôi phục tài liệu mẫu");
+    notify(t("restoreSample"));
   }
   function handleDownloadMarkdown(): void {
     const safeName = fileBaseName.replace(/[^a-zA-Z0-9_-]/g, "-");
     downloadFile(`${safeName}.md`, markdown, "text/markdown;charset=utf-8");
-    notify("Đang tải Markdown…");
+    notify(t("downloadMarkdown"));
   }
   function handleExport(): void {
-    notify("Mở hộp thoại in để lưu PDF");
+    notify(t("exportPdf"));
     window.setTimeout(() => window.print(), 250);
   }
   function handleRename(): void {
     const nextName = window.prompt(
-      "Tên tài liệu",
+      t("fileName"),
       outputName || "project-brief",
     );
     if (nextName !== null) setOutputName(nextName.replace(/\.md$/i, ""));
@@ -96,14 +98,14 @@ export default function Md2PdfTool() {
   async function handleShare(): Promise<void> {
     const room = await collaboration.createRoom();
     if (room) setShareOpen(true);
-    else notify("Không thể tạo live room — hãy thử lại");
+    else notify(t("connectionFailed"));
   }
   async function copyShareLink(): Promise<void> {
     try {
       await navigator.clipboard.writeText(collaboration.shareUrl);
-      notify("Đã copy share link");
+      notify(t("copyLink"));
     } catch {
-      notify("Không thể copy tự động — hãy chọn link");
+      notify(t("connectionFailed"));
     }
   }
 
@@ -115,33 +117,32 @@ export default function Md2PdfTool() {
           <section className="mb-10 flex flex-col items-start justify-between gap-7 sm:mb-12 sm:flex-row sm:items-end">
             <div>
               <p className="mb-4 flex items-center gap-2 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">
-                <span className="h-px w-6 bg-[#f2633d]" /> DOCUMENT WORKSPACE
+                <span className="h-px w-6 bg-[#f2633d]" /> {t("markdownWorkspace")}
               </p>
               <h1 className="mb-4 font-display text-[clamp(40px,5vw,68px)] font-bold leading-[.98] tracking-[-3px] text-[#111b2c]">
-                Markdown, <em className="not-italic text-[#f2633d]">ready to print.</em>
+                {t("markdownReady")} <em className="not-italic text-[#f2633d]">{t("readyToPrint")}</em>
               </h1>
               <p className="m-0 max-w-[620px] text-base leading-7 text-slate-500 sm:text-lg">
-                Biến ghi chú và tài liệu của bạn thành PDF sạch đẹp trong vài
-                giây.
+                {t("markdownDescription")}
               </p>
             </div>
             <div className="flex flex-col items-start gap-2 pb-1 sm:items-end">
               <span className="font-mono text-xs font-medium tracking-[1.3px] text-slate-400">
                 {collaboration.status === "connected"
-                  ? "LIVE WORKSPACE"
-                  : "LOCAL WORKSPACE"}
+                  ? t("liveWorkspace")
+                  : t("localWorkspace")}
               </span>
               <span className="flex items-center gap-2 font-mono text-sm text-slate-500">
                 <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(96,188,135,.14)]" />{" "}
                 {collaboration.status === "connected"
-                  ? "Đang cộng tác"
-                  : "Đã đồng bộ"}
+                  ? t("collaborating")
+                  : t("synced")}
               </span>
             </div>
           </section>
           <section
             className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(24,38,61,.09),0_3px_12px_rgba(24,38,61,.04)]"
-            aria-label="Markdown editor and preview"
+            aria-label={t("markdownEditorPreview")}
           >
             <WorkspaceToolbar
               fileName={fileBaseName}
@@ -184,9 +185,9 @@ export default function Md2PdfTool() {
               onCopyCommand={async () => {
                 try {
                   await navigator.clipboard.writeText(command);
-                  notify("Đã copy lệnh wkhtmltopdf");
-                } catch {
-                  notify("Không thể copy tự động — hãy chọn lệnh");
+            notify(t("copy"));
+          } catch {
+            notify(t("connectionFailed"));
                 }
               }}
             />
@@ -195,10 +196,10 @@ export default function Md2PdfTool() {
         </main>
         <footer className="flex flex-col justify-between gap-2 px-1 py-7 font-mono text-xs text-slate-400 sm:flex-row">
           <span>
-            toolmd <span className="mx-2 text-slate-300">/</span> md2pdf workspace
+            toolmd <span className="mx-2 text-slate-300">/</span> {t("md2pdfWorkspace")}
           </span>
           <span>
-            Made for focused writing <span className="text-[#f2633d]">♥</span>
+            {t("focusedWriting")} <span className="text-[#f2633d]">♥</span>
           </span>
         </footer>
       </div>
