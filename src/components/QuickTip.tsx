@@ -15,7 +15,7 @@ export default function QuickTip() {
         {t("quickTipDescription")}
       </p>
       <a
-        href="https://wkhtmltopdf.org/usage/wkhtmltopdf.txt"
+        href="/mcp/"
         target="_blank"
         rel="noreferrer"
         className="font-mono text-xs font-medium text-[#f79a7d] no-underline"

@@ -14,8 +14,8 @@ Write in **Markdown**, preview your document instantly, and export a polished PD
 
 ---
 
-The output is compatible with the \`wkhtmltopdf\` rendering workflow. Add a link to [your project](https://example.com) or a small code snippet:
+The output is rendered remotely with Cloudflare Browser Run. Add a link to [your project](https://example.com) or a small code snippet:
 
 \`\`\`bash
-wkhtmltopdf --page-size A4 input.html output.pdf
+curl -X POST https://toolmd-mcp.22120199.workers.dev/pdf --data @document.json --output document.pdf
 \`\`\``;

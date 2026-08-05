@@ -36,6 +36,8 @@ Cấu hình cho MCP client:
 
 Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_md2pdf`, `toolmd_json_format`, `toolmd_json_diff`, `toolmd_data_convert`, `toolmd_text_diff`, `toolmd_regex_test`, `toolmd_base64`, `toolmd_case_convert`, `toolmd_url_codec`, `toolmd_jwt_decode`, `toolmd_slug`, `toolmd_uuid` và `toolmd_password`. `toolmd_md2pdf` render Markdown thành PDF thật qua Cloudflare Browser Run và trả về `filename`, `mimeType`, `bytes` cùng `base64` trong structured content. Mỗi response có cả text content và structured content để AI đọc tự nhiên hoặc xử lý tiếp bằng code.
 
+Frontend tải PDF trực tiếp qua endpoint HTTP `POST https://toolmd-mcp.22120199.workers.dev/pdf`; endpoint trả về `application/pdf` dạng attachment, không mở print dialog và không yêu cầu `wkhtmltopdf` trên máy người dùng. Body nhận `markdown`, `filename`, `format` (`a4`, `a5`, `letter`, `legal`), `landscape` và `margins` (`10`, `18`, `25`).
+
 ### Prompt setup cho agent
 
 Có thể copy nguyên prompt dưới đây và dán vào agent để agent tự kết nối, test và sử dụng MCP khi cần:
@@ -100,20 +102,19 @@ npm run mcp:smoke:http
 
 Sau đó truy cập URL Vite hiển thị trong terminal.
 
-## Lưu ý về static hosting và wkhtmltopdf
+## Render PDF remote
 
-Cloudflare Pages chỉ phục vụ static files nên không thể chạy binary `wkhtmltopdf` trực tiếp trên server. Bản UI này cung cấp:
+Cloudflare Pages chỉ phục vụ static files, vì vậy cả UI và MCP đều gửi Markdown đến Cloudflare Browser Run để tạo PDF server-side:
 
-- Markdown editor và live preview chạy hoàn toàn trên browser.
-- Nút `Xuất PDF` dùng print dialog của browser để lưu PDF từ static page.
-- MCP remote có thêm `toolmd_md2pdf`, dùng Cloudflare Browser Run để tạo PDF server-side:
+- Nút `Xuất PDF` gọi `POST /pdf` và tải file PDF trực tiếp.
+- MCP remote cung cấp `toolmd_md2pdf` cho agent:
 
 ```bash
 # Agent gọi toolmd_md2pdf với markdown, format và landscape;
 # response trả về base64 để agent ghi thành filename.
 ```
 
-Giới hạn input Markdown thực tế của tool PDF là 45 MB; phần HTML sau render được giữ dưới 49 MB để nằm trong trần request 50 MB của Browser Run. Response text chỉ chứa metadata; dữ liệu Base64 chỉ nằm trong `structuredContent` để tránh nhân đôi kích thước response.
+Giới hạn input Markdown thực tế của tool PDF là 45 MB; phần HTML sau render được giữ dưới 49 MB để nằm trong trần request 50 MB của Browser Run. Response text chỉ chứa metadata; dữ liệu Base64 chỉ nằm trong `structuredContent` để tránh nhân đôi kích thước response. `wkhtmltopdf` không nằm trong backend Cloudflare vì Worker không chạy native binary.
 
 ## Deploy Cloudflare Pages
 

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../i18n";
 import { SAMPLE_MARKDOWN } from "../constants/sampleMarkdown";
 import { useCollaboration } from "../hooks/useCollaboration";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { downloadFile } from "../lib/download";
+import { downloadBlob, downloadFile } from "../lib/download";
 import { copyText } from "../lib/clipboard";
 import { renderMarkdown } from "../lib/markdown";
 import MarkdownEditor from "../components/MarkdownEditor";
@@ -22,6 +22,8 @@ function randomGuestName(): string {
 function safePdfName(value: string): string {
   return value.replace(/[^a-zA-Z0-9_-]/g, "-") || "document";
 }
+
+const PDF_ENDPOINT = import.meta.env.VITE_PDF_URL || "https://toolmd-mcp.22120199.workers.dev/pdf";
 
 export default function Md2PdfTool() {
   const { t } = useI18n();
@@ -54,8 +56,8 @@ export default function Md2PdfTool() {
   );
   const command = useMemo(() => {
     const safeName = safePdfName(outputName.trim() || "document");
-    return `wkhtmltopdf --page-size ${pageSize} --orientation ${orientation} ${safeName}.html ${safeName}.pdf`;
-  }, [orientation, outputName, pageSize]);
+    return `curl -X POST https://toolmd-mcp.22120199.workers.dev/pdf -H 'content-type: application/json' --data '{"markdown":"YOUR_MARKDOWN","filename":"${safeName}","format":"${pageSize.toLowerCase()}","landscape":${orientation === "Landscape"},"margins":"${margins}"}' --output ${safeName}.pdf`;
+  }, [margins, orientation, outputName, pageSize]);
   const pageCount = markdown.trim() ? Math.ceil(markdown.length / 1450) : 0;
   const fileBaseName = outputName.trim() || "untitled";
 
@@ -89,17 +91,40 @@ export default function Md2PdfTool() {
     downloadFile(`${safeName}.md`, markdown, "text/markdown;charset=utf-8");
     notify(t("downloadMarkdown"));
   }
-  function handleExport(): void {
-    const previousTitle = document.title;
-    const restoreTitle = () => {
-      document.title = previousTitle;
-      window.removeEventListener("afterprint", restoreTitle);
-    };
-    document.title = `${safePdfName(outputName.trim())}.pdf`;
-    window.addEventListener("afterprint", restoreTitle, { once: true });
-    window.setTimeout(restoreTitle, 60_000);
-    notify(t("exportPdf"));
-    window.setTimeout(() => window.print(), 250);
+  async function handleExport(): Promise<void> {
+    const safeName = safePdfName(fileBaseName);
+    notify(t("processing"));
+
+    try {
+      const response = await fetch(PDF_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          markdown,
+          filename: safeName,
+          format: pageSize.toLowerCase(),
+          landscape: orientation === "Landscape",
+          margins,
+        }),
+      });
+
+      if (!response.ok) {
+        let message = t("exportFailed");
+        try {
+          const body = await response.json() as { error?: string };
+          if (body.error) message = body.error;
+        } catch {
+          // Keep the translated fallback when the service does not return JSON.
+        }
+        throw new Error(message);
+      }
+
+      downloadBlob(`${safeName}.pdf`, await response.blob());
+      notify(t("exportPdf"));
+    } catch (error) {
+      console.error("Direct PDF export failed:", error);
+      notify(error instanceof Error ? error.message : t("exportFailed"));
+    }
   }
   function handleRename(): void {
     const nextName = window.prompt(
@@ -123,7 +148,7 @@ export default function Md2PdfTool() {
 
   return (
     <>
-      <div className="mx-auto min-h-screen max-w-[1600px] bg-[#f7f8fa] px-4 font-sans text-[#152031] dark:bg-[#0f1724] dark:text-slate-100 sm:px-8 lg:px-12 print:hidden">
+      <div className="mx-auto min-h-screen max-w-[1600px] bg-[#f7f8fa] px-4 font-sans text-[#152031] dark:bg-[#0f1724] dark:text-slate-100 sm:px-8 lg:px-12">
         <TopBar onReset={resetDocument} />
         <main className="py-10 sm:py-14">
           <section className="mb-10 flex flex-col items-start justify-between gap-7 sm:mb-12 sm:flex-row sm:items-end">
@@ -229,18 +254,6 @@ export default function Md2PdfTool() {
         onClose={() => setShareOpen(false)}
         onCopy={copyShareLink}
       />
-      <div
-        className="hidden print:block"
-        style={{ padding: `${margins}mm` } as CSSProperties}
-      >
-        <style media="print">
-          {`@page { size: ${pageSize} ${orientation.toLowerCase()}; margin: 0; }`}
-        </style>
-        <article
-          className="w-full text-slate-700 [&_h1]:mb-5 [&_h1]:font-display [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-lg [&_h3]:font-bold [&_p]:mb-4 [&_p]:text-sm [&_p]:leading-7 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-slate-800 [&_pre]:p-4 [&_pre]:text-slate-100"
-          dangerouslySetInnerHTML={{ __html: previewHtml }}
-        />
-      </div>
       <Toast message={toast} />
     </>
   );
