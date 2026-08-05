@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import YAML from "yaml";
+import { useI18n } from "../i18n";
 import {
   CopyButton,
   ToolButton,
+  ToolNotice,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -15,23 +17,33 @@ const SAMPLE_JSON =
 type JsonMode = "format" | "validate" | "diff";
 
 export function JsonTool({ mode }: { mode: JsonMode }) {
+  const { t } = useI18n();
   const [value, setValue] = useState(SAMPLE_JSON);
   const [compare, setCompare] = useState(
     '{"name":"toolmd","tools":["md2pdf","md2word","md2pptx"],"private":true}',
   );
-  const result = useMemo(() => {
-    if (mode === "diff") return diffJson(value, compare);
+  const computed = useMemo((): { output: string; error: string } => {
+    if (mode === "diff") {
+      try {
+        return { output: diffJson(value, compare), error: "" };
+      } catch {
+        return { output: "", error: t("invalidJsonPair") };
+      }
+    }
+    if (!value.trim()) return { output: "", error: t("emptyInput") };
     try {
       const parsed: unknown = JSON.parse(value);
-      return mode === "format"
-        ? JSON.stringify(parsed, null, 2)
-        : "Valid JSON ✓";
+      return {
+        output: mode === "format" ? JSON.stringify(parsed, null, 2) : t("validJson"),
+        error: "",
+      };
     } catch (error) {
-      return mode === "format"
-        ? `JSON error: ${error instanceof Error ? error.message : "Invalid JSON"}`
-        : `Invalid JSON: ${error instanceof Error ? error.message : "parse error"}`;
+      const message = error instanceof Error ? error.message : "parse error";
+      return { output: "", error: t("invalidJson", { message }) };
     }
-  }, [compare, mode, value]);
+  }, [compare, mode, t, value]);
+  const output = computed.output || computed.error;
+  const error = computed.error;
   const slug =
     mode === "format"
       ? "json-formatter"
@@ -73,64 +85,71 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
               rows={18}
             />
             <div className={toolStyles.panelActions}>
-              <ToolButton
-                onClick={() => setValue(mode === "format" ? result : value)}
-              >
-                {mode === "format" ? "Format JSON" : "Check JSON"}
-              </ToolButton>
-              <CopyButton value={result} />
+              {mode === "format" && (
+                <ToolButton onClick={() => setValue(computed.output)}>
+                  Format JSON
+                </ToolButton>
+              )}
+              <CopyButton value={output} />
             </div>
           </ToolPanel>
         )}
       </div>
       <ToolPanel title={mode === "diff" ? "JSON changes" : "Result"}>
-        <pre
-          className={`${toolStyles.codeOutput} ${result.startsWith("Invalid") || result.startsWith("JSON error") ? "border-red-200 bg-red-50 text-[#b34835]" : ""}`}
-        >
-          {result}
-        </pre>
+        {error ? (
+          <ToolNotice variant="error">{error}</ToolNotice>
+        ) : (
+          <pre className={toolStyles.codeOutput}>{output}</pre>
+        )}
       </ToolPanel>
     </ToolPage>
   );
 }
 
 function diffJson(first: string, second: string): string {
-  try {
-    const left = JSON.stringify(JSON.parse(first), null, 2).split("\n");
-    const right = JSON.stringify(JSON.parse(second), null, 2).split("\n");
-    const lines = new Set([...left, ...right]);
-    return Array.from(lines)
-      .map((line) => {
-        const marker = !left.includes(line)
-          ? "+ "
-          : !right.includes(line)
-            ? "- "
-            : "  ";
-        return `${marker}${line}`;
-      })
-      .join("\n");
-  } catch {
-    return "Both inputs must be valid JSON before comparing.";
+  const left = JSON.stringify(JSON.parse(first), null, 2).split("\n");
+  const right = JSON.stringify(JSON.parse(second), null, 2).split("\n");
+  const lines: string[] = [];
+  const total = Math.max(left.length, right.length);
+  for (let index = 0; index < total; index += 1) {
+    if (left[index] === right[index]) {
+      if (left[index] !== undefined) lines.push(`  ${left[index]}`);
+      continue;
+    }
+    if (left[index] !== undefined) lines.push(`- ${left[index]}`);
+    if (right[index] !== undefined) lines.push(`+ ${right[index]}`);
   }
+  return lines.join("\n") || "  (no changes)";
 }
 
 export function YamlJsonTool() {
+  const { t } = useI18n();
   const [direction, setDirection] = useState<"yaml-to-json" | "json-to-yaml">(
     "yaml-to-json",
   );
   const [value, setValue] = useState(
     "name: toolmd\ntools:\n  - md2pdf\n  - md2word\nprivate: true",
   );
-  const result = useMemo(() => {
+  const result = useMemo((): { output: string; error: string } => {
+    if (!value.trim()) return { output: "", error: t("emptyInput") };
     try {
       const parsed = YAML.parse(value);
-      return direction === "yaml-to-json"
-        ? JSON.stringify(parsed, null, 2)
-        : YAML.stringify(parsed);
+      return {
+        output:
+          direction === "yaml-to-json"
+            ? JSON.stringify(parsed, null, 2)
+            : YAML.stringify(parsed),
+        error: "",
+      };
     } catch (error) {
-      return `Conversion error: ${error instanceof Error ? error.message : "invalid input"}`;
+      return {
+        output: "",
+        error: t("conversionFailed", {
+          message: error instanceof Error ? error.message : "invalid input",
+        }),
+      };
     }
-  }, [direction, value]);
+  }, [direction, t, value]);
   return (
     <ToolPage slug="yaml-json">
       <ToolPanel title="Convert YAML and JSON">
@@ -155,9 +174,9 @@ export function YamlJsonTool() {
             ariaLabel="YAML or JSON input"
             rows={18}
           />
-          <pre className={toolStyles.codeOutput}>{result}</pre>
+          {result.error ? <ToolNotice variant="error">{result.error}</ToolNotice> : <pre className={toolStyles.codeOutput}>{result.output}</pre>}
         </div>
-        <CopyButton value={result} />
+        <CopyButton value={result.output} />
       </ToolPanel>
     </ToolPage>
   );
@@ -206,49 +225,63 @@ function stringifyCsv(rows: string[][]): string {
 }
 
 export function CsvJsonTool() {
+  const { t } = useI18n();
   const [direction, setDirection] = useState<"csv-to-json" | "json-to-csv">(
     "csv-to-json",
   );
   const [value, setValue] = useState(
     "name,category,status\nmd2pdf,Document,ready\nmd2word,Document,next",
   );
-  const result = useMemo(() => {
+  const result = useMemo((): { output: string; error: string } => {
+    if (!value.trim()) return { output: "", error: t("emptyInput") };
     try {
       if (direction === "csv-to-json") {
         const rows = parseCsv(value);
         const headers = rows[0] || [];
-        return JSON.stringify(
-          rows
-            .slice(1)
-            .map((row) =>
-              Object.fromEntries(
-                headers.map((header, index) => [header, row[index] || ""]),
+        if (!headers.length) return { output: "", error: t("emptyInput") };
+        return {
+          output: JSON.stringify(
+            rows
+              .slice(1)
+              .map((row) =>
+                Object.fromEntries(
+                  headers.map((header, index) => [header, row[index] || ""]),
+                ),
               ),
-            ),
-          null,
-          2,
-        );
+            null,
+            2,
+          ),
+          error: "",
+        };
       }
       const parsed: unknown = JSON.parse(value);
       if (
         !Array.isArray(parsed) ||
         !parsed.every((item) => typeof item === "object" && item !== null)
       )
-        return "JSON must be an array of objects.";
+        return { output: "", error: "JSON must be an array of objects." };
       const objects = parsed as Record<string, unknown>[];
       const headers = Array.from(
         new Set(objects.flatMap((item) => Object.keys(item))),
       );
-      return stringifyCsv([
-        headers,
-        ...objects.map((item) =>
-          headers.map((header) => String(item[header] ?? "")),
-        ),
-      ]);
+      return {
+        output: stringifyCsv([
+          headers,
+          ...objects.map((item) =>
+            headers.map((header) => String(item[header] ?? "")),
+          ),
+        ]),
+        error: "",
+      };
     } catch (error) {
-      return `Conversion error: ${error instanceof Error ? error.message : "invalid input"}`;
+      return {
+        output: "",
+        error: t("conversionFailed", {
+          message: error instanceof Error ? error.message : "invalid input",
+        }),
+      };
     }
-  }, [direction, value]);
+  }, [direction, t, value]);
   return (
     <ToolPage slug="csv-json">
       <ToolPanel title="Convert CSV and JSON">
@@ -273,8 +306,8 @@ export function CsvJsonTool() {
           rows={16}
         />
         <div className="mt-5 flex items-start gap-3">
-          <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{result}</pre>
-          <CopyButton value={result} />
+          {result.error ? <ToolNotice variant="error">{result.error}</ToolNotice> : <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{result.output}</pre>}
+          <CopyButton value={result.output} />
         </div>
       </ToolPanel>
     </ToolPage>
