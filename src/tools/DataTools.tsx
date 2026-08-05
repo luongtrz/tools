@@ -13,15 +13,19 @@ import { toolStyles } from "../components/toolStyles";
 
 const SAMPLE_JSON =
   '{"name":"toolmd","tools":["md2pdf","md2word"],"private":true}';
+const SAMPLE_JSON_COMPARE =
+  '{"name":"toolmd","tools":["md2pdf","md2word","md2pptx"],"private":true}';
 
 type JsonMode = "format" | "validate" | "diff";
 
 export function JsonTool({ mode }: { mode: JsonMode }) {
   const { t } = useI18n();
   const [value, setValue] = useState(SAMPLE_JSON);
-  const [compare, setCompare] = useState(
-    '{"name":"toolmd","tools":["md2pdf","md2word","md2pptx"],"private":true}',
-  );
+  const [compare, setCompare] = useState(SAMPLE_JSON_COMPARE);
+  function reset(): void {
+    setValue(SAMPLE_JSON);
+    setCompare(SAMPLE_JSON_COMPARE);
+  }
   const computed = useMemo((): { output: string; error: string } => {
     if (mode === "diff") {
       try {
@@ -54,7 +58,7 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
     <ToolPage slug={slug}>
       <div className={mode === "diff" ? toolStyles.splitLayout : ""}>
         {mode === "diff" && (
-          <ToolPanel title="JSON A">
+          <ToolPanel title="JSON A" actions={<ToolButton variant="quiet" onClick={reset}>{t("reset")}</ToolButton>}>
             <ToolTextArea
               value={value}
               onChange={setValue}
@@ -77,6 +81,7 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
           <ToolPanel
             title={mode === "format" ? "JSON input" : "Validate JSON"}
             description="Paste JSON and run it locally in your browser."
+            actions={<ToolButton variant="quiet" onClick={reset}>{t("reset")}</ToolButton>}
           >
             <ToolTextArea
               value={value}
@@ -124,12 +129,11 @@ function diffJson(first: string, second: string): string {
 
 export function YamlJsonTool() {
   const { t } = useI18n();
+  const initialValue = "name: toolmd\ntools:\n  - md2pdf\n  - md2word\nprivate: true";
   const [direction, setDirection] = useState<"yaml-to-json" | "json-to-yaml">(
     "yaml-to-json",
   );
-  const [value, setValue] = useState(
-    "name: toolmd\ntools:\n  - md2pdf\n  - md2word\nprivate: true",
-  );
+  const [value, setValue] = useState(initialValue);
   const result = useMemo((): { output: string; error: string } => {
     if (!value.trim()) return { output: "", error: t("emptyInput") };
     try {
@@ -152,7 +156,7 @@ export function YamlJsonTool() {
   }, [direction, t, value]);
   return (
     <ToolPage slug="yaml-json">
-      <ToolPanel title="Convert YAML and JSON">
+      <ToolPanel title="Convert YAML and JSON" actions={<ToolButton variant="quiet" onClick={() => { setValue(initialValue); setDirection("yaml-to-json"); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.segmented}>
           <button
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "yaml-to-json" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
@@ -226,12 +230,11 @@ function stringifyCsv(rows: string[][]): string {
 
 export function CsvJsonTool() {
   const { t } = useI18n();
+  const initialValue = "name,category,status\nmd2pdf,Document,ready\nmd2word,Document,next";
   const [direction, setDirection] = useState<"csv-to-json" | "json-to-csv">(
     "csv-to-json",
   );
-  const [value, setValue] = useState(
-    "name,category,status\nmd2pdf,Document,ready\nmd2word,Document,next",
-  );
+  const [value, setValue] = useState(initialValue);
   const result = useMemo((): { output: string; error: string } => {
     if (!value.trim()) return { output: "", error: t("emptyInput") };
     try {
@@ -284,7 +287,7 @@ export function CsvJsonTool() {
   }, [direction, t, value]);
   return (
     <ToolPage slug="csv-json">
-      <ToolPanel title="Convert CSV and JSON">
+      <ToolPanel title="Convert CSV and JSON" actions={<ToolButton variant="quiet" onClick={() => { setValue(initialValue); setDirection("csv-to-json"); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.segmented}>
           <button
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "csv-to-json" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}

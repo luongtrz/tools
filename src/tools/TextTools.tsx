@@ -39,7 +39,7 @@ export function TextDiffTool() {
           />
         </ToolPanel>
       </div>
-      <ToolPanel title="Diff result" actions={<CopyButton value={diffText} />}>
+      <ToolPanel title="Diff result" actions={<><ToolButton variant="quiet" onClick={() => { setLeft("toolmd\nmd2pdf\nmd2word"); setRight("toolmd\nmd2pdf\nmd2pptx"); }}>{t("reset")}</ToolButton><CopyButton value={diffText} /></>}>
         <div className={toolStyles.diffOutput}>
           {rows.length ? rows.map((row, index) => (
             <div className={`whitespace-pre-wrap px-2 ${row.type === "added" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : row.type === "removed" ? "bg-orange-50 text-[#b34835] dark:bg-orange-950/40 dark:text-orange-300" : "text-slate-600 dark:text-slate-300"}`} key={`${index}-${row.text}`}>
@@ -126,7 +126,7 @@ export function RegexTesterTool() {
           rows={10}
         />
       </ToolPanel>
-      <ToolPanel title="Matches">
+      <ToolPanel title="Matches" actions={<ToolButton variant="quiet" onClick={() => { setPattern("\\b(toolmd|md2pdf)\\b"); setFlags("gi"); setValue("Build md2pdf and md2word inside toolmd."); }}>{t("reset")}</ToolButton>}>
         <div className={`${toolStyles.matchSummary} ${result.error ? "bg-red-50 text-[#b34835]" : ""}`}>
           {result.error || t("matchCount", { count: result.matches.length })}
         </div>
@@ -180,7 +180,7 @@ export function Base64Tool() {
   }, [direction, t, value]);
   return (
     <ToolPage slug="base64">
-      <ToolPanel title="Base64 converter">
+      <ToolPanel title="Base64 converter" actions={<ToolButton variant="quiet" onClick={() => { setValue("Xin chào toolmd"); setDirection("encode"); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.segmented}>
           <button
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
@@ -240,12 +240,13 @@ function convertCase(value: string, mode: string): string {
 }
 
 export function CaseConverterTool() {
+  const { t } = useI18n();
   const [value, setValue] = useState("A Focused Markdown Workspace");
   const [mode, setMode] = useState("title");
   const output = useMemo(() => convertCase(value, mode), [mode, value]);
   return (
     <ToolPage slug="case-converter">
-      <ToolPanel title="Convert text">
+      <ToolPanel title="Convert text" actions={<ToolButton variant="quiet" onClick={() => { setValue("A Focused Markdown Workspace"); setMode("title"); }}>{t("reset")}</ToolButton>}>
         <select
           className={toolStyles.select}
           value={mode}
@@ -283,11 +284,12 @@ function toSlug(value: string): string {
 }
 
 export function SlugGeneratorTool() {
+  const { t } = useI18n();
   const [value, setValue] = useState("Markdown, ready to print!");
   const output = useMemo(() => toSlug(value), [value]);
   return (
     <ToolPage slug="slug-generator">
-      <ToolPanel title="URL slug">
+      <ToolPanel title="URL slug" actions={<ToolButton variant="quiet" onClick={() => setValue("Markdown, ready to print!")}>{t("reset")}</ToolButton>}>
         <ToolTextArea
           value={value}
           onChange={setValue}

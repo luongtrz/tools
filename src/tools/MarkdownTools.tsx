@@ -79,6 +79,8 @@ function makeMarkdownTable(headers: string[], rowCount: number): string {
 }
 
 export function MarkdownTableGeneratorTool() {
+  const { t } = useI18n();
+  const initialHeaders = "Name,Description,Status";
   const [headers, setHeaders] = useState("Name,Description,Status");
   const [rowCount, setRowCount] = useState(3);
   const output = useMemo(
@@ -94,6 +96,7 @@ export function MarkdownTableGeneratorTool() {
       <ToolPanel
         title="Table setup"
         description="Separate column names with commas."
+        actions={<ToolButton variant="quiet" onClick={() => { setHeaders(initialHeaders); setRowCount(3); }}>{t("reset")}</ToolButton>}
       >
         <label className={toolStyles.label}>
           <ToolLabel>Headers</ToolLabel>
@@ -165,7 +168,7 @@ export function MarkdownTableFormatterTool() {
   const isValidTable = output.trim().includes("|") && output.split("\n").length >= 2;
   return (
     <ToolPage slug="markdown-table-formatter">
-      <ToolPanel title="Unformatted table">
+      <ToolPanel title="Unformatted table" actions={<ToolButton variant="quiet" onClick={() => setValue("| Name | Status |\n| --- | --- |\n| md2pdf | ready |\n| md2word | next |")}>{t("reset")}</ToolButton>}>
         <ToolTextArea
           value={value}
           onChange={setValue}
@@ -189,13 +192,14 @@ export function MarkdownTableFormatterTool() {
 }
 
 export function MarkdownWordCounterTool() {
+  const { t } = useI18n();
   const [value, setValue] = useState(SAMPLE_MARKDOWN);
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
   const lines = value ? value.split(/\r?\n/).length : 0;
   const readingMinutes = words ? Math.ceil(words / 220) : 0;
   return (
     <ToolPage slug="markdown-word-counter">
-      <ToolPanel title="Markdown text">
+      <ToolPanel title="Markdown text" actions={<ToolButton variant="quiet" onClick={() => setValue(SAMPLE_MARKDOWN)}>{t("reset")}</ToolButton>}>
         <ToolTextArea
           value={value}
           onChange={setValue}
@@ -291,7 +295,7 @@ export function HtmlToMarkdownTool() {
   return (
     <ToolPage slug="html-to-markdown">
       <div className={toolStyles.splitLayout}>
-        <ToolPanel title="HTML input">
+        <ToolPanel title="HTML input" actions={<ToolButton variant="quiet" onClick={() => setValue("<h1>Project brief</h1><p>Write <strong>focused</strong> documents.</p><ul><li>Draft</li><li>Review</li></ul>")}>{t("reset")}</ToolButton>}>
           <ToolTextArea
             value={value}
             onChange={setValue}

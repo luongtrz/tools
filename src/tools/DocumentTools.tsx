@@ -63,6 +63,7 @@ export function Md2WordTool() {
         <ToolPanel
           title="Markdown input"
           description="Paste or write the content you want to export."
+          actions={<ToolButton variant="quiet" onClick={() => setMarkdown(SAMPLE_MARKDOWN)}>{t("reset")}</ToolButton>}
         >
           <ToolTextArea
             value={markdown}
@@ -81,7 +82,7 @@ export function Md2WordTool() {
           />
         </ToolPanel>
       </div>
-      <ToolPanel title="File name">
+      <ToolPanel title="File name" actions={<ToolButton variant="quiet" onClick={() => setName("document")}>{t("reset")}</ToolButton>}>
         <input
           className={toolStyles.input}
           value={name}
@@ -187,6 +188,7 @@ export function Md2PptxTool() {
           rows={18}
         />
         <div className={toolStyles.panelActions}>
+          <ToolButton variant="quiet" onClick={() => { setMarkdown("# Project brief\n\nA focused presentation from Markdown.\n\n---\n\n## Next steps\n\n- Choose a clear story\n- Keep each slide focused"); setName("presentation"); }}>{t("reset")}</ToolButton>
           <input
             className={toolStyles.input}
             value={name}
@@ -327,6 +329,7 @@ export function SplitPdfTool() {
       <ToolPanel
         title="Choose a PDF"
         description="Use page numbers like 1, 3-5, 8."
+        actions={<ToolButton variant="quiet" onClick={() => { setFile(null); setRanges("1"); }}>{t("reset")}</ToolButton>}
       >
         <FilePicker onFiles={(files) => setFile(files[0] || null)} />
         <p className={toolStyles.selectedFile}>
@@ -377,6 +380,7 @@ export function CompressPdfTool() {
       <ToolPanel
         title="Compress a PDF"
         description="This browser-side pass removes some redundant PDF structure. Image-heavy PDFs may need a dedicated image optimizer for bigger savings."
+        actions={<ToolButton variant="quiet" onClick={() => setFile(null)}>{t("clear")}</ToolButton>}
       >
         <FilePicker onFiles={(files) => setFile(files[0] || null)} />
         <p className={toolStyles.selectedFile}>

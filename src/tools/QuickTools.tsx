@@ -14,7 +14,8 @@ import { toolStyles } from "../components/toolStyles";
 
 export function QrGeneratorTool() {
   const { t } = useI18n();
-  const [value, setValue] = useState("https://toolmd.pages.dev/md2pdf/");
+  const initialValue = "https://toolmd.pages.dev/md2pdf/";
+  const [value, setValue] = useState(initialValue);
   const [dataUrl, setDataUrl] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
@@ -68,6 +69,7 @@ export function QrGeneratorTool() {
           title="QR preview"
           actions={
             <div className="flex flex-wrap gap-2">
+              <ToolButton variant="quiet" onClick={() => setValue(initialValue)}>{t("reset")}</ToolButton>
               <CopyButton value={value} />
               <ToolButton onClick={download} disabled={!dataUrl}>Download PNG</ToolButton>
             </div>
@@ -95,6 +97,7 @@ function createUuid(): string {
 }
 
 export function UuidGeneratorTool() {
+  const { t } = useI18n();
   const [count, setCount] = useState(5);
   const [values, setValues] = useState<string[]>(() =>
     Array.from({ length: 5 }, createUuid),
@@ -107,7 +110,7 @@ export function UuidGeneratorTool() {
   }
   return (
     <ToolPage slug="uuid-generator">
-      <ToolPanel title="UUID v4 generator">
+      <ToolPanel title="UUID v4 generator" actions={<ToolButton variant="quiet" onClick={() => { setCount(5); setValues(Array.from({ length: 5 }, createUuid)); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.panelActions}>
           <label className={toolStyles.label}>
             <ToolLabel>Count</ToolLabel>
@@ -153,7 +156,7 @@ export function PasswordGeneratorTool() {
   }
   return (
     <ToolPage slug="password-generator">
-      <ToolPanel title="Secure password">
+      <ToolPanel title="Secure password" actions={<ToolButton variant="quiet" onClick={() => { setLength(20); setSymbols(true); setPassword(generatePassword(20, true)); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.inlineFields}>
           <label className={toolStyles.label}>
             <ToolLabel>Length</ToolLabel>
@@ -217,6 +220,7 @@ function rgbToHsl([red, green, blue]: [number, number, number]): string {
 }
 
 export function ColorPickerTool() {
+  const { t } = useI18n();
   const [color, setColor] = useState("#F2633D");
   const rgb = useMemo(() => hexToRgb(color), [color]);
   const values = {
@@ -226,7 +230,7 @@ export function ColorPickerTool() {
   };
   return (
     <ToolPage slug="color-picker">
-      <ToolPanel title="Pick a color">
+      <ToolPanel title="Pick a color" actions={<ToolButton variant="quiet" onClick={() => setColor("#F2633D")}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.colorPicker}>
           <input
             type="color"
