@@ -1,6 +1,10 @@
 # toolmd
 
-Monorepo frontend React + TypeScript cho các công cụ document, Markdown và developer. Các route dùng chung một React shell tại `https://toolmd.pages.dev/`, bắt đầu với `/md2pdf/`, `/md2word/` và `/md2pptx/`.
+> Bộ công cụ chạy trực tiếp trên trình duyệt cho Markdown, document, dữ liệu developer và các tiện ích hằng ngày.
+
+**Live site:** [https://toolmd.pages.dev/](https://toolmd.pages.dev/)
+
+Monorepo frontend React + TypeScript với các route dùng chung một React shell. Các route chính gồm `/md2pdf/`, `/md2word/` và `/md2pptx/`; các tool mới có thể thêm dưới cùng domain mà không cần tạo project hosting riêng.
 
 UI dùng Tailwind CSS qua Vite plugin. CSS thuần chỉ còn giữ cho workspace `md2pdf` legacy vì phần editor/print có nhiều chi tiết đặc thù.
 
