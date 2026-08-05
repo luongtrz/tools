@@ -1,4 +1,4 @@
-import { useI18n } from "../i18n";
+import { literal, useI18n } from "../i18n";
 import { CopyButton, ToolPage, ToolPanel } from "../components/ToolUI";
 import { toolStyles } from "../components/toolStyles";
 
@@ -10,6 +10,8 @@ const MCP_CONFIG = `{
     }
   }
 }`;
+const MCP_COMMAND = "toolmd mcp";
+const MCP_SMOKE_COMMAND = "TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke";
 
 const AGENT_SETUP_PROMPT = `Bạn là agent đang tích hợp toolmd MCP vào workspace hiện tại.
 
@@ -131,20 +133,27 @@ export default function McpTool() {
           <p className="mt-4 text-sm leading-6 text-slate-500 dark:text-slate-400">
             {t("installCommand")} <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">npm link</code>. {t("mcpHostCanCall")} <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">toolmd mcp</code>.
           </p>
+          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{MCP_COMMAND}</span>
+              <CopyButton value={MCP_COMMAND} label={t("copyMcpCommand")} />
+            </div>
+            <code className="block overflow-x-auto font-mono text-sm text-slate-700 dark:text-slate-200">{MCP_COMMAND}</code>
+          </div>
         </ToolPanel>
 
         <ToolPanel
           title={t("testFromTerminal")}
           description={t("smokeTestDescription")}
-          actions={<CopyButton value="npm run mcp:smoke" />}
+          actions={<CopyButton value={MCP_SMOKE_COMMAND} />}
         >
           <pre className={`${toolStyles.codeOutput} min-h-0 text-sm leading-7`}>
-            npm run mcp:smoke
+            {MCP_SMOKE_COMMAND}
           </pre>
           <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <Info label="Transport" value="stdio" />
-            <Info label="Tools" value={`15 ${t("available")}`} />
-            <Info label="Auth" value={t("notRequired")} />
+            <Info label={literal("Transport", language) || "Transport"} value="stdio" />
+            <Info label={literal("Tools", language) || "Tools"} value={`15 ${t("available")}`} />
+            <Info label={literal("Auth", language) || "Auth"} value={t("notRequired")} />
           </div>
         </ToolPanel>
       </div>
