@@ -1,6 +1,6 @@
-import { lazy, Suspense, type ReactElement } from "react";
+import { lazy, Suspense, useEffect, type ReactElement } from "react";
 import { getTool } from "./toolRegistry";
-import { useI18n } from "./i18n";
+import { localizedTool, useI18n } from "./i18n";
 import ToolHome from "./tools/ToolHome";
 
 const Md2PdfTool = lazy(() => import("./tools/Md2PdfTool"));
@@ -111,9 +111,16 @@ const routeComponents: Record<string, () => ReactElement> = {
 };
 
 export default function App() {
+  const { language } = useI18n();
   const slug = window.location.pathname.split("/").filter(Boolean)[0] || "";
+  const tool = getTool(slug);
   const render = routeComponents[slug];
-  if (!render || !getTool(slug)) return <ToolHome />;
+  useEffect(() => {
+    document.title = tool
+      ? `${localizedTool(tool, language).title} — toolmd`
+      : "toolmd — focused browser tools";
+  }, [language, slug, tool]);
+  if (!render || !tool) return <ToolHome />;
   return (
     <Suspense fallback={<LoadingFallback />}>
       {render()}

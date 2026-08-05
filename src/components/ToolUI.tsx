@@ -112,7 +112,7 @@ export function ToolButton({
   };
   return (
     <button
-      className={`min-h-11 rounded-lg px-4 text-sm font-semibold transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-40 ${variantClasses[variant]}`}
+      className={`min-h-11 rounded-lg px-4 text-sm font-semibold transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 dark:focus-visible:ring-orange-950/50 disabled:cursor-not-allowed disabled:opacity-40 ${variantClasses[variant]}`}
       type={type}
       onClick={onClick}
       disabled={disabled || busy}

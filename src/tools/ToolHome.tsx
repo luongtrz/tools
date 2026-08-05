@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { categoryLabel, localizedTool, useI18n } from "../i18n";
 import {
   TOOL_CATEGORIES,
@@ -20,6 +20,7 @@ function initialCategory(): ToolCategory | "All" {
 
 export default function ToolHome() {
   const { language, t } = useI18n();
+  const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<ToolCategory | "All">(
     initialCategory,
@@ -38,12 +39,23 @@ export default function ToolHome() {
   );
   const featured = visibleTools.filter((tool) => tool.featured);
 
+  useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", focusSearch);
+    return () => window.removeEventListener("keydown", focusSearch);
+  }, []);
+
   return (
     <ToolShell>
       <section className="mb-14 flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
         <div>
           <p className="mb-4 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{t("heroEyebrow")}</p>
-          <h1 className="mb-4 font-display text-[clamp(42px,5vw,70px)] font-bold leading-[.98] tracking-[-3px] text-slate-800">
+          <h1 className="mb-4 font-display text-[clamp(42px,5vw,70px)] font-bold leading-[.98] tracking-[-3px] text-slate-800 dark:text-slate-100">
             {t("heroTitleLead")}
             <br />
             <em className="not-italic text-[#f2633d]">{t("heroTitleAccent")}</em>
@@ -65,13 +77,14 @@ export default function ToolHome() {
         <label className="flex h-14 w-full max-w-[520px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-slate-400 shadow-sm focus-within:border-orange-300 focus-within:ring-4 focus-within:ring-orange-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-orange-400 dark:focus-within:ring-orange-950/50">
           <span className="text-xl">⌕</span>
           <input
+            ref={searchRef}
             className="h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-slate-800 outline-none dark:text-slate-100"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t("searchTools")}
             aria-label={t("searchToolsLabel")}
           />
-          <kbd className="rounded-md border border-slate-200 bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">⌘ K</kbd>
+          <kbd className="rounded-md border border-slate-200 bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">Ctrl K</kbd>
         </label>
         <div className="flex items-center gap-4 text-sm text-slate-400 dark:text-slate-500">
           <span>

@@ -30,13 +30,13 @@ export default function TopBar({ onReset }: TopBarProps) {
           >
             <Icon name="reset" />
           </button>
-          <button
-            className="grid size-10 place-items-center rounded-xl bg-[#111b2c] text-sm font-semibold text-white dark:bg-orange-500 dark:text-slate-950"
-            type="button"
+          <span
+            className="hidden size-10 place-items-center rounded-xl bg-[#111b2c] text-sm font-semibold text-white dark:bg-orange-500 dark:text-slate-950 sm:grid"
             title={t("workspace")}
+            aria-label={t("workspace")}
           >
             A
-          </button>
+          </span>
         </div>
       }
     />
