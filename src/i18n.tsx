@@ -138,7 +138,7 @@ const messages = {
     designedFor: "Được thiết kế cho",
     cleanExports: "bản xuất sạch đẹp.",
     quickTipDescription:
-      "Hỗ trợ headings, lists, links, code blocks và blockquotes. PDF được render bằng engine tương thích wkhtmltopdf.",
+      "Hỗ trợ headings, lists, links, code blocks và blockquotes. PDF dùng print CSS của browser; command preview có thể chạy qua wkhtmltopdf.",
     viewWkhtmltopdfDocs: "Xem tài liệu wkhtmltopdf",
     liveCollaboration: "CỘNG TÁC TRỰC TUYẾN",
     shareWorkspace: "Chia sẻ",
@@ -296,7 +296,7 @@ const messages = {
     quickTip: "QUICK TIP",
     designedFor: "Designed for",
     cleanExports: "clean exports.",
-    quickTipDescription: "Supports headings, lists, links, code blocks and blockquotes. PDFs are rendered by a wkhtmltopdf-compatible engine.",
+    quickTipDescription: "Supports headings, lists, links, code blocks and blockquotes. PDFs use browser print CSS; the command preview can run through wkhtmltopdf.",
     viewWkhtmltopdfDocs: "View wkhtmltopdf docs",
     liveCollaboration: "LIVE COLLABORATION",
     shareWorkspace: "Share this",
