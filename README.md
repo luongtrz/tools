@@ -1,6 +1,6 @@
-# md2pdf
+# mdtool
 
-Ứng dụng React + TypeScript chuyển Markdown thành bản preview PDF sạch đẹp, với command preview tương thích `wkhtmltopdf`.
+Monorepo frontend React + TypeScript cho các công cụ chuyển đổi tài liệu. Tool hiện tại là `md2pdf`, được phục vụ tại `https://mdtool.pages.dev/md2pdf/`; các tool sau có thể dùng cùng pattern như `/md2word/` và `/md2pptx/`.
 
 ## Live collaboration
 
@@ -24,9 +24,9 @@ npm run build
 
 Sau đó truy cập URL Vite hiển thị trong terminal.
 
-## Lưu ý về GitHub Pages và wkhtmltopdf
+## Lưu ý về static hosting và wkhtmltopdf
 
-GitHub Pages chỉ phục vụ static files nên không thể chạy binary `wkhtmltopdf` trực tiếp trên server. Bản UI này cung cấp:
+Cloudflare Pages chỉ phục vụ static files nên không thể chạy binary `wkhtmltopdf` trực tiếp trên server. Bản UI này cung cấp:
 
 - Markdown editor và live preview chạy hoàn toàn trên browser.
 - Nút `Xuất PDF` dùng print dialog của browser để lưu PDF từ static page.
@@ -38,6 +38,18 @@ wkhtmltopdf --page-size A4 --orientation Portrait input.html output.pdf
 
 Đây là lựa chọn phù hợp với phạm vi static UI; backend wkhtmltopdf có thể gắn thêm sau mà không cần đổi giao diện React.
 
-## Deploy
+## Deploy Cloudflare Pages
 
-Vercel tự nhận diện Vite và build bằng `npm run build` với output `dist`.
+Build mặc định dùng path `md2pdf`, với asset URL bắt đầu bằng `/md2pdf/`:
+
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name mdtool
+```
+
+Khi thêm tool mới, build với path riêng để tái sử dụng cấu trúc URL:
+
+```bash
+VITE_TOOL_PATH=md2word npm run build
+VITE_TOOL_PATH=md2pptx npm run build
+```

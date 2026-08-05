@@ -1,0 +1,5 @@
+/ /md2pdf/ 302
+/md2pdf /md2pdf/ 301
+/md2pdf/assets/* /assets/:splat 200
+/md2pdf/ /index.html 200
+/md2pdf/* /index.html 200
