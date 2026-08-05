@@ -52,8 +52,8 @@ export default function ToolHome() {
             {t("heroDescription")}
           </p>
         </div>
-        <div className="flex items-baseline gap-3 pb-2 font-mono text-sm leading-snug text-slate-400 sm:text-right">
-          <strong className="font-display text-[54px] font-bold leading-none tracking-[-2px] text-slate-800">{TOOL_REGISTRY.length}</strong>
+        <div className="flex items-baseline gap-3 pb-2 font-mono text-sm leading-snug text-slate-400 dark:text-slate-500 sm:text-right">
+          <strong className="font-display text-[54px] font-bold leading-none tracking-[-2px] text-slate-800 dark:text-slate-100">{TOOL_REGISTRY.length}</strong>
           <span>
             {t("curatedTools")}
             <br />
@@ -62,24 +62,24 @@ export default function ToolHome() {
         </div>
       </section>
       <div className="mb-14 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-6">
-        <label className="flex h-14 w-full max-w-[520px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-slate-400 shadow-sm focus-within:border-orange-300 focus-within:ring-4 focus-within:ring-orange-100">
+        <label className="flex h-14 w-full max-w-[520px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-slate-400 shadow-sm focus-within:border-orange-300 focus-within:ring-4 focus-within:ring-orange-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-orange-400 dark:focus-within:ring-orange-950/50">
           <span className="text-xl">⌕</span>
           <input
-            className="h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-slate-800 outline-none"
+            className="h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-slate-800 outline-none dark:text-slate-100"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t("searchTools")}
             aria-label={t("searchToolsLabel")}
           />
-          <kbd className="rounded-md border border-slate-200 bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-400">⌘ K</kbd>
+          <kbd className="rounded-md border border-slate-200 bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">⌘ K</kbd>
         </label>
-        <div className="flex items-center gap-4 text-sm text-slate-400">
+        <div className="flex items-center gap-4 text-sm text-slate-400 dark:text-slate-500">
           <span>
             {category === "All" ? t("allTools") : categoryLabel(category, language)}
             {query ? ` · ${t("resultsCount", { count: visibleTools.length })}` : ""}
           </span>
           {category !== "All" && (
-            <button className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-orange-50 hover:text-[#f2633d]" type="button" onClick={() => setCategory("All")}>
+            <button className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-orange-50 hover:text-[#f2633d] dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-orange-950/50 dark:hover:text-orange-300" type="button" onClick={() => setCategory("All")}>
               {t("clearFilter")}
             </button>
           )}
@@ -90,7 +90,7 @@ export default function ToolHome() {
           <div className="mb-5 flex items-end justify-between gap-3">
             <div>
               <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{t("startHere")}</p>
-              <h2 className="m-0 font-display text-[28px] font-bold tracking-tight text-slate-800">{t("mostUsefulFirst")}</h2>
+              <h2 className="m-0 font-display text-[28px] font-bold tracking-tight text-slate-800 dark:text-slate-100">{t("mostUsefulFirst")}</h2>
             </div>
             <span>{t("everydayWork")}</span>
           </div>
@@ -113,7 +113,7 @@ export default function ToolHome() {
             <div className="mb-5 flex items-end justify-between gap-3">
               <div>
                 <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{categoryLabel(item, language).toUpperCase()}</p>
-                <h2 className="m-0 font-display text-[28px] font-bold tracking-tight text-slate-800">
+                <h2 className="m-0 font-display text-[28px] font-bold tracking-tight text-slate-800 dark:text-slate-100">
                   {item === "Developer data"
                     ? t("makeDataReadable")
                     : item === "Text utility"
@@ -132,7 +132,7 @@ export default function ToolHome() {
         );
       })}
       {!visibleTools.length && (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-base text-slate-500">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-base text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
           {t("noToolsMatched", { query })}
         </div>
       )}
@@ -157,7 +157,7 @@ function ToolCard({
   const localized = localizedTool({ slug, title, description, category }, language);
   return (
     <a
-      className={`relative flex min-h-[176px] items-start gap-4 rounded-2xl border bg-white p-6 text-slate-800 no-underline shadow-sm transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-xl ${featured ? "min-h-[194px] border-orange-100 bg-orange-50/30" : "border-slate-200"}`}
+      className={`relative flex min-h-[176px] items-start gap-4 rounded-2xl border bg-white p-6 text-slate-800 no-underline shadow-sm transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-orange-500 dark:hover:shadow-black/30 ${featured ? "min-h-[194px] border-orange-100 bg-orange-50/30 dark:border-orange-900/70 dark:bg-orange-950/20" : "border-slate-200"}`}
       href={`/${slug}/`}
     >
       <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#fff0eb] font-mono text-sm font-semibold text-[#f2633d]">
@@ -175,8 +175,8 @@ function ToolCard({
       </span>
       <div>
         <span className="font-mono text-[11px] font-medium tracking-wide text-slate-400">{categoryLabel(category, language)}</span>
-        <h3 className="mb-2 mr-5 mt-2 font-display text-lg font-semibold leading-tight text-slate-800">{localized.title}</h3>
-        <p className="m-0 text-sm leading-6 text-slate-500">{localized.description}</p>
+        <h3 className="mb-2 mr-5 mt-2 font-display text-lg font-semibold leading-tight text-slate-800 dark:text-slate-100">{localized.title}</h3>
+        <p className="m-0 text-sm leading-6 text-slate-500 dark:text-slate-400">{localized.description}</p>
       </div>
       <span className="absolute right-5 top-5 text-lg text-slate-400">↗</span>
     </a>

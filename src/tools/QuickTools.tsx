@@ -99,8 +99,8 @@ export function UuidGeneratorTool() {
         </div>
         <div className={toolStyles.listOutput}>
           {values.map((value) => (
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5" key={value}>
-              <code className="min-w-0 overflow-auto font-mono text-sm text-slate-700">{value}</code>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-950" key={value}>
+              <code className="min-w-0 overflow-auto font-mono text-sm text-slate-700 dark:text-slate-200">{value}</code>
               <CopyButton value={value} />
             </div>
           ))}
@@ -149,7 +149,7 @@ export function PasswordGeneratorTool() {
           </label>
         </div>
         <div className={toolStyles.passwordOutput}>
-          <code className="min-w-0 overflow-auto text-slate-800">{password}</code>
+          <code className="min-w-0 overflow-auto text-slate-800 dark:text-slate-200">{password}</code>
           <CopyButton value={password} />
         </div>
         <ToolButton onClick={generate}>Generate password</ToolButton>
@@ -204,13 +204,13 @@ export function ColorPickerTool() {
             onChange={(event) => setColor(event.target.value)}
           />
           <div className="size-16 rounded-xl border border-slate-200" style={{ background: color }} />
-          <strong className="font-mono text-xl font-semibold text-slate-800">{values.hex}</strong>
+          <strong className="font-mono text-xl font-semibold text-slate-800 dark:text-slate-100">{values.hex}</strong>
         </div>
         <div className={toolStyles.listOutput}>
           {Object.entries(values).map(([label, value]) => (
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5" key={label}>
-              <span className="font-mono text-xs text-slate-500">{label.toUpperCase()}</span>
-              <code className="ml-auto font-mono text-sm text-slate-800">{value}</code>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-950" key={label}>
+              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{label.toUpperCase()}</span>
+              <code className="ml-auto font-mono text-sm text-slate-800 dark:text-slate-200">{value}</code>
               <CopyButton value={value} />
             </div>
           ))}

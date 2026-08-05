@@ -111,7 +111,7 @@ export default function Md2PdfTool() {
 
   return (
     <>
-      <div className="mx-auto min-h-screen max-w-[1600px] px-4 font-sans text-[#152031] sm:px-8 lg:px-12 print:hidden">
+      <div className="mx-auto min-h-screen max-w-[1600px] bg-[#f7f8fa] px-4 font-sans text-[#152031] dark:bg-[#0f1724] dark:text-slate-100 sm:px-8 lg:px-12 print:hidden">
         <TopBar onReset={resetDocument} />
         <main className="py-10 sm:py-14">
           <section className="mb-10 flex flex-col items-start justify-between gap-7 sm:mb-12 sm:flex-row sm:items-end">
@@ -119,10 +119,10 @@ export default function Md2PdfTool() {
               <p className="mb-4 flex items-center gap-2 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">
                 <span className="h-px w-6 bg-[#f2633d]" /> {t("markdownWorkspace")}
               </p>
-              <h1 className="mb-4 font-display text-[clamp(40px,5vw,68px)] font-bold leading-[.98] tracking-[-3px] text-[#111b2c]">
+              <h1 className="mb-4 font-display text-[clamp(40px,5vw,68px)] font-bold leading-[.98] tracking-[-3px] text-[#111b2c] dark:text-slate-100">
                 {t("markdownReady")} <em className="not-italic text-[#f2633d]">{t("readyToPrint")}</em>
               </h1>
-              <p className="m-0 max-w-[620px] text-base leading-7 text-slate-500 sm:text-lg">
+              <p className="m-0 max-w-[620px] text-base leading-7 text-slate-500 dark:text-slate-400 sm:text-lg">
                 {t("markdownDescription")}
               </p>
             </div>
@@ -132,7 +132,7 @@ export default function Md2PdfTool() {
                   ? t("liveWorkspace")
                   : t("localWorkspace")}
               </span>
-              <span className="flex items-center gap-2 font-mono text-sm text-slate-500">
+              <span className="flex items-center gap-2 font-mono text-sm text-slate-500 dark:text-slate-400">
                 <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(96,188,135,.14)]" />{" "}
                 {collaboration.status === "connected"
                   ? t("collaborating")
@@ -141,7 +141,7 @@ export default function Md2PdfTool() {
             </div>
           </section>
           <section
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(24,38,61,.09),0_3px_12px_rgba(24,38,61,.04)]"
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(24,38,61,.09),0_3px_12px_rgba(24,38,61,.04)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30"
             aria-label={t("markdownEditorPreview")}
           >
             <WorkspaceToolbar
@@ -194,7 +194,7 @@ export default function Md2PdfTool() {
             <QuickTip />
           </section>
         </main>
-        <footer className="flex flex-col justify-between gap-2 px-1 py-7 font-mono text-xs text-slate-400 sm:flex-row">
+        <footer className="flex flex-col justify-between gap-2 px-1 py-7 font-mono text-xs text-slate-400 dark:text-slate-500 sm:flex-row">
           <span>
             toolmd <span className="mx-2 text-slate-300">/</span> {t("md2pdfWorkspace")}
           </span>

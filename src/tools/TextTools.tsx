@@ -36,7 +36,7 @@ export function TextDiffTool() {
       <ToolPanel title="Diff result">
         <div className={toolStyles.diffOutput}>
           {rows.map((row, index) => (
-            <div className={`whitespace-pre-wrap px-2 ${row.type === "added" ? "bg-emerald-50 text-emerald-700" : row.type === "removed" ? "bg-orange-50 text-[#b34835]" : "text-slate-600"}`} key={`${index}-${row.text}`}>
+            <div className={`whitespace-pre-wrap px-2 ${row.type === "added" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : row.type === "removed" ? "bg-orange-50 text-[#b34835] dark:bg-orange-950/40 dark:text-orange-300" : "text-slate-600 dark:text-slate-300"}`} key={`${index}-${row.text}`}>
               <span className="mr-3 inline-block w-4 text-slate-400">
                 {row.type === "added"
                   ? "+"
@@ -163,13 +163,13 @@ export function Base64Tool() {
       <ToolPanel title="Base64 converter">
         <div className={toolStyles.segmented}>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
             onClick={() => setDirection("encode")}
           >
             <ToolLabel>Encode</ToolLabel>
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
             onClick={() => setDirection("decode")}
           >
             <ToolLabel>Decode</ToolLabel>

@@ -136,13 +136,13 @@ export function YamlJsonTool() {
       <ToolPanel title="Convert YAML and JSON">
         <div className={toolStyles.segmented}>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "yaml-to-json" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "yaml-to-json" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
             onClick={() => setDirection("yaml-to-json")}
           >
             YAML → JSON
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-yaml" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-yaml" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
             onClick={() => setDirection("json-to-yaml")}
           >
             JSON → YAML
@@ -254,13 +254,13 @@ export function CsvJsonTool() {
       <ToolPanel title="Convert CSV and JSON">
         <div className={toolStyles.segmented}>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "csv-to-json" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "csv-to-json" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
             onClick={() => setDirection("csv-to-json")}
           >
             CSV → JSON
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-csv" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-csv" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
             onClick={() => setDirection("json-to-csv")}
           >
             JSON → CSV

@@ -211,10 +211,10 @@ export function MergePdfTool() {
         <FilePicker multiple onFiles={setFiles} />
         <div className={toolStyles.fileList}>
           {files.map((file, index) => (
-            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600" key={`${file.name}-${index}`}>
+            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300" key={`${file.name}-${index}`}>
               <span className="font-mono text-[#f2633d]">{index + 1}</span>
               {file.name}
-              <small className="ml-auto text-xs text-slate-400">{Math.round(file.size / 1024)} KB</small>
+              <small className="ml-auto text-xs text-slate-400 dark:text-slate-500">{Math.round(file.size / 1024)} KB</small>
             </div>
           ))}
         </div>
