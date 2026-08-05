@@ -105,7 +105,11 @@ export default function ToolHome() {
         </section>
       )}
       {TOOL_CATEGORIES.map((item) => {
-        const tools = visibleTools.filter((tool) => tool.category === item);
+        const tools = visibleTools.filter(
+          (tool) =>
+            tool.category === item &&
+            (category !== "All" || query.trim() || !tool.featured),
+        );
         if (!tools.length) return null;
         return (
           <section className="toolmd-section" key={item}>
