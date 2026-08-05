@@ -24,9 +24,17 @@ function FilePicker({
 }) {
   const { language } = useI18n();
   return (
-    <label className={toolStyles.filePicker}>
+    <label
+      className={toolStyles.filePicker}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => {
+        event.preventDefault();
+        onFiles(Array.from(event.dataTransfer.files));
+      }}
+    >
       <span>{literal(multiple ? "Choose PDF files" : "Choose PDF file", language)}</span>
       <input
+        className="sr-only"
         type="file"
         accept="application/pdf,.pdf"
         multiple={multiple}
@@ -40,6 +48,10 @@ function pdfBlob(bytes: Uint8Array): Blob {
   const copy = new Uint8Array(bytes.byteLength);
   copy.set(bytes);
   return new Blob([copy.buffer], { type: "application/pdf" });
+}
+
+function outputStem(fileName: string, fallback: string): string {
+  return fileName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-") || fallback;
 }
 
 export function Md2WordTool() {
@@ -317,7 +329,7 @@ export function SplitPdfTool() {
         pages.map((page) => page - 1),
       );
       copied.forEach((page) => output.addPage(page));
-      downloadBlob("split.pdf", pdfBlob(await output.save()));
+      downloadBlob(`${outputStem(file.name, "document")}-split.pdf`, pdfBlob(await output.save()));
     } catch {
       setError(t("pdfLoadFailed"));
     } finally {
@@ -368,7 +380,7 @@ export function CompressPdfTool() {
         useObjectStreams: true,
         addDefaultPage: false,
       });
-      downloadBlob("compressed.pdf", pdfBlob(bytes));
+      downloadBlob(`${outputStem(file.name, "document")}-optimized.pdf`, pdfBlob(bytes));
     } catch {
       setError(t("pdfLoadFailed"));
     } finally {
