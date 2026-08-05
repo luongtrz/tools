@@ -1,6 +1,7 @@
 import YAML from "yaml";
 import { diffLines } from "../src/lib/diff";
 import { renderMarkdown } from "../src/lib/markdown";
+import { randomString } from "../src/lib/random";
 import { TOOL_REGISTRY } from "../src/toolRegistry";
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | {
@@ -238,6 +239,5 @@ export function createUuid(): string {
 
 export function createPassword(length: number, symbols: boolean): string {
   const alphabet = `ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789${symbols ? "!@#$%^&*_-+=" : ""}`;
-  const bytes = crypto.getRandomValues(new Uint32Array(Math.max(8, Math.min(128, length))));
-  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+  return randomString(Math.max(8, Math.min(128, length)), alphabet);
 }

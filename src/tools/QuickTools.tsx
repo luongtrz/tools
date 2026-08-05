@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { useI18n } from "../i18n";
+import { randomString } from "../lib/random";
 import {
   CopyButton,
   ToolButton,
@@ -154,9 +155,7 @@ function generatePassword(length: number, symbols: boolean): string {
   const safeLength = Number.isFinite(length)
     ? Math.max(8, Math.min(128, length))
     : 20;
-  const bytes = new Uint32Array(safeLength);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+  return randomString(safeLength, alphabet);
 }
 
 export function PasswordGeneratorTool() {
