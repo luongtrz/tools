@@ -262,7 +262,7 @@ export function CsvJsonTool() {
         !Array.isArray(parsed) ||
         !parsed.every((item) => typeof item === "object" && item !== null)
       )
-        return { output: "", error: "JSON must be an array of objects." };
+        return { output: "", error: t("jsonArrayRequired") };
       const objects = parsed as Record<string, unknown>[];
       const headers = Array.from(
         new Set(objects.flatMap((item) => Object.keys(item))),

@@ -127,19 +127,26 @@ export function RegexTesterTool() {
         />
       </ToolPanel>
       <ToolPanel title="Matches" actions={<ToolButton variant="quiet" onClick={() => { setPattern("\\b(toolmd|md2pdf)\\b"); setFlags("gi"); setValue("Build md2pdf and md2word inside toolmd."); }}>{t("reset")}</ToolButton>}>
-        <div className={`${toolStyles.matchSummary} ${result.error ? "bg-red-50 text-[#b34835]" : ""}`}>
-          {result.error || t("matchCount", { count: result.matches.length })}
-        </div>
         {result.error ? (
-          <div className="mt-4"><ToolNotice variant="error">{result.error}</ToolNotice></div>
+          <ToolNotice variant="error">{result.error}</ToolNotice>
         ) : result.matches.length ? (
-          <div className={toolStyles.chipList}>
-            {result.matches.map((match, index) => (
-            <code className="rounded bg-orange-50 px-2.5 py-1.5 font-mono text-sm text-[#bd4d32]" key={`${match}-${index}`}>{match}</code>
-            ))}
-          </div>
+          <>
+            <div className={toolStyles.matchSummary}>
+              {t("matchCount", { count: result.matches.length })}
+            </div>
+            <div className={toolStyles.chipList}>
+              {result.matches.map((match, index) => (
+                <code className="rounded bg-orange-50 px-2.5 py-1.5 font-mono text-sm text-[#bd4d32] dark:bg-orange-950/50 dark:text-orange-300" key={`${match}-${index}`}>
+                  {match}
+                </code>
+              ))}
+            </div>
+          </>
         ) : (
-          <div className="mt-4"><ToolNotice>{t("noMatches")}</ToolNotice></div>
+          <>
+            <div className={toolStyles.matchSummary}>{t("matchCount", { count: 0 })}</div>
+            <div className="mt-4"><ToolNotice>{t("noMatches")}</ToolNotice></div>
+          </>
         )}
         <div className={toolStyles.panelActions}>
           <CopyButton value={result.matches.join("\n")} />

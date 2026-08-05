@@ -196,6 +196,7 @@ export function CopyButton({
     <ToolButton
       variant="quiet"
       onClick={() => void handleCopy()}
+      disabled={!value}
     >
       {copyState === "copied" ? t("copied") : copyState === "failed" ? t("copyFailed") : literal(label, language)}
     </ToolButton>

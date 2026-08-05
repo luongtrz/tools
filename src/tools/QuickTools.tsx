@@ -18,15 +18,19 @@ export function QrGeneratorTool() {
   const [value, setValue] = useState(initialValue);
   const [dataUrl, setDataUrl] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     let active = true;
     if (!value.trim()) {
       setDataUrl("");
       setError(t("qrEmpty"));
+      setBusy(false);
       return () => {
         active = false;
       };
     }
+    setDataUrl("");
+    setBusy(true);
     setError("");
     QRCode.toDataURL(value || " ", {
       width: 320,
@@ -35,12 +39,16 @@ export function QrGeneratorTool() {
       color: { dark: "#172235", light: "#FFFFFF" },
     })
       .then((url) => {
-        if (active) setDataUrl(url);
+        if (active) {
+          setDataUrl(url);
+          setBusy(false);
+        }
       })
       .catch(() => {
         if (active) {
           setDataUrl("");
           setError(t("qrFailed"));
+          setBusy(false);
         }
       });
     return () => {
@@ -71,7 +79,9 @@ export function QrGeneratorTool() {
             <div className="flex flex-wrap gap-2">
               <ToolButton variant="quiet" onClick={() => setValue(initialValue)}>{t("reset")}</ToolButton>
               <CopyButton value={value} />
-              <ToolButton onClick={download} disabled={!dataUrl}>Download PNG</ToolButton>
+              <ToolButton onClick={download} disabled={!dataUrl} busy={busy}>
+                {busy ? t("processing") : "Download PNG"}
+              </ToolButton>
             </div>
           }
         >
