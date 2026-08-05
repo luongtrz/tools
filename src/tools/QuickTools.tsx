@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
+import { useI18n } from "../i18n";
 import {
   CopyButton,
   ToolButton,
   ToolLabel,
+  ToolNotice,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -11,22 +13,39 @@ import {
 import { toolStyles } from "../components/toolStyles";
 
 export function QrGeneratorTool() {
+  const { t } = useI18n();
   const [value, setValue] = useState("https://toolmd.pages.dev/md2pdf/");
   const [dataUrl, setDataUrl] = useState("");
+  const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
+    if (!value.trim()) {
+      setDataUrl("");
+      setError(t("qrEmpty"));
+      return () => {
+        active = false;
+      };
+    }
+    setError("");
     QRCode.toDataURL(value || " ", {
       width: 320,
       margin: 2,
       errorCorrectionLevel: "M",
       color: { dark: "#172235", light: "#FFFFFF" },
-    }).then((url) => {
-      if (active) setDataUrl(url);
-    });
+    })
+      .then((url) => {
+        if (active) setDataUrl(url);
+      })
+      .catch(() => {
+        if (active) {
+          setDataUrl("");
+          setError(t("qrFailed"));
+        }
+      });
     return () => {
       active = false;
     };
-  }, [value]);
+  }, [t, value]);
   function download(): void {
     if (!dataUrl) return;
     const link = document.createElement("a");
@@ -47,10 +66,15 @@ export function QrGeneratorTool() {
         </ToolPanel>
         <ToolPanel
           title="QR preview"
-          actions={<ToolButton onClick={download}>Download PNG</ToolButton>}
+          actions={
+            <div className="flex flex-wrap gap-2">
+              <CopyButton value={value} />
+              <ToolButton onClick={download} disabled={!dataUrl}>Download PNG</ToolButton>
+            </div>
+          }
         >
           <div className={toolStyles.qrPreview}>
-            {dataUrl && <img src={dataUrl} alt="Generated QR code" />}
+            {dataUrl ? <img src={dataUrl} alt="Generated QR code" /> : <ToolNotice>{error || t("processing")}</ToolNotice>}
           </div>
         </ToolPanel>
       </div>
@@ -76,8 +100,9 @@ export function UuidGeneratorTool() {
     Array.from({ length: 5 }, createUuid),
   );
   function generate(): void {
+    const safeCount = Number.isFinite(count) ? Math.max(1, Math.min(50, count)) : 1;
     setValues(
-      Array.from({ length: Math.max(1, Math.min(50, count)) }, createUuid),
+      Array.from({ length: safeCount }, createUuid),
     );
   }
   return (
@@ -92,7 +117,7 @@ export function UuidGeneratorTool() {
               min="1"
               max="50"
               value={count}
-              onChange={(event) => setCount(Number(event.target.value))}
+              onChange={(event) => setCount(Number(event.target.value) || 1)}
             />
           </label>
           <ToolButton onClick={generate}>Generate UUIDs</ToolButton>
@@ -118,9 +143,11 @@ function generatePassword(length: number, symbols: boolean): string {
 }
 
 export function PasswordGeneratorTool() {
+  const { t } = useI18n();
   const [length, setLength] = useState(20);
   const [symbols, setSymbols] = useState(true);
   const [password, setPassword] = useState(() => generatePassword(20, true));
+  const passwordStrength = password.length >= 24 && symbols ? t("strong") : password.length >= 16 ? t("medium") : t("weak");
   function generate(): void {
     setPassword(generatePassword(Math.max(8, Math.min(128, length)), symbols));
   }
@@ -152,7 +179,10 @@ export function PasswordGeneratorTool() {
           <code className="min-w-0 overflow-auto text-slate-800 dark:text-slate-200">{password}</code>
           <CopyButton value={password} />
         </div>
-        <ToolButton onClick={generate}>Generate password</ToolButton>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{t("strength")}: <strong className="text-emerald-600 dark:text-emerald-400">{passwordStrength}</strong></span>
+          <ToolButton onClick={generate}>Generate password</ToolButton>
+        </div>
       </ToolPanel>
     </ToolPage>
   );
