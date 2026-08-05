@@ -1,6 +1,6 @@
 # md2pdf
 
-Một static GitHub Page chuyển Markdown thành bản preview PDF sạch đẹp, với command preview tương thích `wkhtmltopdf`.
+Ứng dụng React + TypeScript chuyển Markdown thành bản preview PDF sạch đẹp, với command preview tương thích `wkhtmltopdf`.
 
 ## Live collaboration
 
@@ -10,13 +10,19 @@ Room là dạng unlisted: ai có share link đều có thể tham gia. Bản sta
 
 ## Chạy local
 
-Mở `index.html` trực tiếp trong browser, hoặc chạy một static server:
-
 ```bash
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Sau đó truy cập <http://localhost:8000>.
+Các lệnh kiểm tra/build:
+
+```bash
+npm run typecheck
+npm run build
+```
+
+Sau đó truy cập URL Vite hiển thị trong terminal.
 
 ## Lưu ý về GitHub Pages và wkhtmltopdf
 
@@ -30,8 +36,8 @@ GitHub Pages chỉ phục vụ static files nên không thể chạy binary `wkh
 wkhtmltopdf --page-size A4 --orientation Portrait input.html output.pdf
 ```
 
-Đây là lựa chọn phù hợp với phạm vi “chỉ UI” trên GitHub Pages; backend wkhtmltopdf có thể gắn thêm sau mà không cần đổi giao diện.
+Đây là lựa chọn phù hợp với phạm vi static UI; backend wkhtmltopdf có thể gắn thêm sau mà không cần đổi giao diện React.
 
 ## Deploy
 
-Repo dùng static root, không cần build step. GitHub Pages có thể deploy từ branch `main`, folder `/ (root)`.
+Vercel tự nhận diện Vite và build bằng `npm run build` với output `dist`.
