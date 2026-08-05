@@ -39,7 +39,7 @@ For PDF output, call `toolmd_md2pdf` with `markdown`, and optionally `filename`,
 `filename`, `mimeType`, `bytes`, and a Base64-encoded `base64` field in
 `structuredContent`. Decode that field to save or forward the PDF file.
 
-The PDF tool accepts Markdown up to 1 MB. It renders the document remotely, so
+The PDF tool accepts Markdown up to 30 MB. It renders the document remotely, so
 the user does not need a local browser, Node.js, npm package, or PDF binary.
 
 Prefer the tool's `structuredContent` when passing results to later agent steps.

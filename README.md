@@ -113,7 +113,7 @@ Cloudflare Pages chỉ phục vụ static files nên không thể chạy binary 
 # response trả về base64 để agent ghi thành filename.
 ```
 
-Giới hạn input Markdown của tool PDF là 1 MB để giữ thời gian và kích thước phản hồi trong phạm vi an toàn.
+Giới hạn input Markdown của tool PDF là 30 MB. Response text chỉ chứa metadata; dữ liệu Base64 chỉ nằm trong `structuredContent` để tránh nhân đôi kích thước response.
 
 ## Deploy Cloudflare Pages
 
