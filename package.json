@@ -8,8 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc -p cloudflare/collab-worker/tsconfig.json --noEmit && tsc -p cloudflare/mcp-worker/tsconfig.json --noEmit",
-    "mcp:deploy": "wrangler deploy --config cloudflare/mcp-worker/wrangler.toml",
-    "mcp:deploy:dry-run": "wrangler deploy --config cloudflare/mcp-worker/wrangler.toml --dry-run",
+    "mcp:deploy": "wrangler deploy cloudflare/mcp-worker/index.ts --name toolmd-mcp --config cloudflare/mcp-worker/wrangler.toml --keep-vars",
+    "mcp:deploy:dry-run": "wrangler deploy cloudflare/mcp-worker/index.ts --name toolmd-mcp --config cloudflare/mcp-worker/wrangler.toml --keep-vars --dry-run",
     "mcp:smoke:http": "tsx mcp/http-smoke.ts",
     "collab:dev": "wrangler dev --config cloudflare/collab-worker/wrangler.toml",
     "collab:deploy": "wrangler deploy --config cloudflare/collab-worker/wrangler.toml"

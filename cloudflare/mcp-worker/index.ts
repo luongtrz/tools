@@ -85,7 +85,11 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return jsonResponse({ status: "ok", service: "toolmd-mcp" });
+      return jsonResponse({
+        status: "ok",
+        service: "toolmd-mcp",
+        authConfigured: Boolean(env.MCP_AUTH_TOKEN?.trim()),
+      });
     }
 
     if (!MCP_PATHS.has(url.pathname)) {
