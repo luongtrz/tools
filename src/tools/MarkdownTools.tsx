@@ -133,8 +133,8 @@ export function MarkdownTableGeneratorTool() {
   );
 }
 
-function formatMarkdownTable(value: string): string {
-  const rows = value
+function markdownTableRows(value: string): string[][] {
+  return value
     .split("\n")
     .filter((line) => line.includes("|"))
     .map((line) =>
@@ -145,11 +145,25 @@ function formatMarkdownTable(value: string): string {
         .split("|")
         .map((cell) => cell.trim()),
     );
+}
+
+function isMarkdownTable(value: string): boolean {
+  const rows = markdownTableRows(value);
+  return (
+    rows.length >= 2 &&
+    rows[1].length > 0 &&
+    rows[1].every((cell) => /^:?-{3,}:?$/.test(cell))
+  );
+}
+
+function formatMarkdownTable(value: string): string {
+  const rows = markdownTableRows(value);
   if (rows.length < 2) return value;
+  if (!isMarkdownTable(value)) return value;
   const columnCount = Math.max(...rows.map((row) => row.length));
   const normalized = rows.map((row, index) =>
     Array.from({ length: columnCount }, (_, column) =>
-      index === 1 ? "---" : row[column] || "",
+      index === 1 ? row[column] || "---" : row[column] || "",
     ),
   );
   const widths = Array.from({ length: columnCount }, (_, column) =>
@@ -169,7 +183,7 @@ export function MarkdownTableFormatterTool() {
     "| Name | Status |\n| --- | --- |\n| md2pdf | ready |\n| md2word | next |",
   );
   const output = useMemo(() => formatMarkdownTable(value), [value]);
-  const isValidTable = output.trim().includes("|") && output.split("\n").length >= 2;
+  const isValidTable = isMarkdownTable(value);
   return (
     <ToolPage slug="markdown-table-formatter">
       <ToolPanel title="Unformatted table" actions={<ToolButton variant="quiet" onClick={() => setValue("| Name | Status |\n| --- | --- |\n| md2pdf | ready |\n| md2word | next |")}>{t("reset")}</ToolButton>}>
@@ -180,8 +194,8 @@ export function MarkdownTableFormatterTool() {
           rows={10}
         />
         <div className={toolStyles.panelActions}>
-          <ToolButton onClick={() => setValue(output)}>Format table</ToolButton>
-          <CopyButton value={output} />
+          <ToolButton onClick={() => setValue(output)} disabled={!isValidTable}>Format table</ToolButton>
+          <CopyButton value={isValidTable ? output : ""} />
         </div>
       </ToolPanel>
       <ToolPanel title="Result">

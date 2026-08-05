@@ -36,8 +36,7 @@ export default function MarkdownEditor({
           <span>{t("markdownPane")}</span>
         </div>
         <span className="hidden font-mono text-xs text-slate-400 dark:text-slate-500 sm:inline">
-          <kbd className="mr-1 inline-grid min-w-5 place-items-center rounded border border-slate-200 bg-slate-100 px-1 py-0.5 text-[10px] dark:border-slate-700 dark:bg-slate-800">⌘</kbd>
-          <kbd className="mr-1 inline-grid min-w-5 place-items-center rounded border border-slate-200 bg-slate-100 px-1 py-0.5 text-[10px] dark:border-slate-700 dark:bg-slate-800">↵</kbd> {t("previewPane")}
+          {t("realtimeUpdate")}
         </span>
       </div>
       <div className="flex min-h-[420px] flex-1 bg-[#fbfcfd] dark:bg-slate-950">

@@ -167,11 +167,24 @@ export function generateMarkdownTable(headers: string, rowCount: number) {
   return [cleanHeaders, separator, ...rows].map((row) => `| ${row.join(" | ")} |`).join("\n");
 }
 
+function markdownTableRows(value: string): string[][] {
+  return value
+    .split("\n")
+    .filter((line) => line.includes("|"))
+    .map((line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim()));
+}
+
+function isMarkdownTable(value: string): boolean {
+  const rows = markdownTableRows(value);
+  return rows.length >= 2 && rows[1].length > 0 && rows[1].every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
 export function formatMarkdownTable(value: string): string {
-  const rows = value.split("\n").filter((line) => line.includes("|")).map((line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim()));
+  const rows = markdownTableRows(value);
   if (rows.length < 2) return value;
+  if (!isMarkdownTable(value)) return value;
   const columnCount = Math.max(...rows.map((row) => row.length));
-  const normalized = rows.map((row, index) => Array.from({ length: columnCount }, (_, column) => index === 1 ? "---" : row[column] || ""));
+  const normalized = rows.map((row, index) => Array.from({ length: columnCount }, (_, column) => index === 1 ? row[column] || "---" : row[column] || ""));
   const widths = Array.from({ length: columnCount }, (_, column) => Math.max(3, ...normalized.map((row) => row[column].length)));
   return normalized.map((row) => `| ${row.map((cell, column) => cell.padEnd(widths[column])).join(" | ")} |`).join("\n");
 }
