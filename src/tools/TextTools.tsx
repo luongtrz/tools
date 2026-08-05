@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useI18n } from "../i18n";
+import { literal, useI18n } from "../i18n";
 import { diffLines } from "../lib/diff";
 import {
   CopyButton,
@@ -238,7 +238,7 @@ function convertCase(value: string, mode: string): string {
 }
 
 export function CaseConverterTool() {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const [value, setValue] = useState("A Focused Markdown Workspace");
   const [mode, setMode] = useState("title");
   const output = useMemo(() => convertCase(value, mode), [mode, value]);
@@ -250,12 +250,12 @@ export function CaseConverterTool() {
           value={mode}
           onChange={(event) => setMode(event.target.value)}
         >
-          <option value="upper">UPPERCASE</option>
-          <option value="lower">lowercase</option>
-          <option value="title">Title Case</option>
-          <option value="camel">camelCase</option>
-          <option value="snake">snake_case</option>
-          <option value="kebab">kebab-case</option>
+          <option value="upper">{literal("UPPERCASE", language)}</option>
+          <option value="lower">{literal("lowercase", language)}</option>
+          <option value="title">{literal("Title Case", language)}</option>
+          <option value="camel">{literal("camelCase", language)}</option>
+          <option value="snake">{literal("snake_case", language)}</option>
+          <option value="kebab">{literal("kebab-case", language)}</option>
         </select>
         <ToolTextArea
           value={value}

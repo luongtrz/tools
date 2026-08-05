@@ -464,6 +464,8 @@ const toolTranslations: Record<
 type LiteralTranslation = { vi: string; en: string };
 
 const literalTranslations: Record<string, LiteralTranslation> = {
+  "JSON A": { vi: "JSON A", en: "JSON A" },
+  "JSON B": { vi: "JSON B", en: "JSON B" },
   "JSON input": { vi: "Dữ liệu JSON", en: "JSON input" },
   "Validate JSON": { vi: "Xác thực JSON", en: "Validate JSON" },
   "Paste JSON and run it locally in your browser.": { vi: "Dán JSON và chạy ngay trong trình duyệt của bạn.", en: "Paste JSON and run it locally in your browser." },
@@ -525,6 +527,12 @@ const literalTranslations: Record<string, LiteralTranslation> = {
   "Secure password": { vi: "Mật khẩu an toàn", en: "Secure password" },
   "Generate password": { vi: "Tạo mật khẩu", en: "Generate password" },
   "Pick a color": { vi: "Chọn một màu", en: "Pick a color" },
+  UPPERCASE: { vi: "CHỮ HOA", en: "UPPERCASE" },
+  lowercase: { vi: "chữ thường", en: "lowercase" },
+  "Title Case": { vi: "Viết Hoa Từng Từ", en: "Title Case" },
+  camelCase: { vi: "camelCase", en: "camelCase" },
+  snake_case: { vi: "snake_case", en: "snake_case" },
+  "kebab-case": { vi: "kebab-case", en: "kebab-case" },
   Headers: { vi: "Tiêu đề cột", en: "Headers" },
   Rows: { vi: "Số hàng", en: "Rows" },
   Words: { vi: "Từ", en: "Words" },

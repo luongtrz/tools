@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-import { useI18n } from "../i18n";
+import { literal, useI18n } from "../i18n";
 import { randomString } from "../lib/random";
 import {
   CopyButton,
@@ -14,7 +14,7 @@ import {
 import { toolStyles } from "../components/toolStyles";
 
 export function QrGeneratorTool() {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const initialValue = "https://toolmd.pages.dev/md2pdf/";
   const [value, setValue] = useState(initialValue);
   const [dataUrl, setDataUrl] = useState("");
@@ -87,7 +87,7 @@ export function QrGeneratorTool() {
           }
         >
           <div className={toolStyles.qrPreview}>
-            {dataUrl ? <img src={dataUrl} alt="Generated QR code" /> : <ToolNotice>{error || t("processing")}</ToolNotice>}
+            {dataUrl ? <img src={dataUrl} alt={literal("Generated QR code", language)} /> : <ToolNotice>{error || t("processing")}</ToolNotice>}
           </div>
         </ToolPanel>
       </div>
