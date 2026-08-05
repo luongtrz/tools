@@ -63,6 +63,7 @@ function diffLines(
   left: string,
   right: string,
 ): Array<{ type: "added" | "removed" | "same"; text: string }> {
+  if (!left && !right) return [];
   const a = left.split(/\r?\n/);
   const b = right.split(/\r?\n/);
   const rows: Array<{ type: "added" | "removed" | "same"; text: string }> = [];

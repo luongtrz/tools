@@ -91,16 +91,34 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
             />
             <div className={toolStyles.panelActions}>
               {mode === "format" && (
-                <ToolButton onClick={() => setValue(computed.output)}>
-                  Format JSON
-                </ToolButton>
+                <>
+                  <ToolButton disabled={Boolean(error)} onClick={() => setValue(computed.output)}>
+                    Format JSON
+                  </ToolButton>
+                  <ToolButton
+                    variant="quiet"
+                    disabled={Boolean(error)}
+                    onClick={() => {
+                      try {
+                        setValue(JSON.stringify(JSON.parse(value)));
+                      } catch {
+                        // The computed error state already explains why the action is disabled.
+                      }
+                    }}
+                  >
+                    Minify JSON
+                  </ToolButton>
+                </>
               )}
               <CopyButton value={output} />
             </div>
           </ToolPanel>
         )}
       </div>
-      <ToolPanel title={mode === "diff" ? "JSON changes" : "Result"}>
+      <ToolPanel
+        title={mode === "diff" ? "JSON changes" : "Result"}
+        actions={<CopyButton value={output} />}
+      >
         {error ? (
           <ToolNotice variant="error">{error}</ToolNotice>
         ) : (
@@ -209,6 +227,7 @@ function parseCsv(value: string): string[][] {
       field = "";
     } else field += character;
   }
+  if (quoted) throw new Error("Unclosed quoted field.");
   if (field || row.length) {
     row.push(field);
     rows.push(row);
