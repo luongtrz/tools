@@ -1,6 +1,8 @@
 # toolmd
 
-Monorepo frontend React + TypeScript cho các công cụ chuyển đổi tài liệu. Tool hiện tại là `md2pdf`, được phục vụ tại `https://toolmd.pages.dev/md2pdf/`; các tool sau có thể dùng cùng pattern như `/md2word/` và `/md2pptx/`.
+Monorepo frontend React + TypeScript cho các công cụ document, Markdown và developer. Các route dùng chung một React shell tại `https://toolmd.pages.dev/`, bắt đầu với `/md2pdf/`, `/md2word/` và `/md2pptx/`.
+
+UI dùng Tailwind CSS qua Vite plugin. CSS thuần chỉ còn giữ cho workspace `md2pdf` legacy vì phần editor/print có nhiều chi tiết đặc thù.
 
 ## Live collaboration
 
@@ -40,16 +42,9 @@ wkhtmltopdf --page-size A4 --orientation Portrait input.html output.pdf
 
 ## Deploy Cloudflare Pages
 
-Build mặc định dùng path `md2pdf`, với asset URL bắt đầu bằng `/md2pdf/`:
+Build tạo một bundle route-based; asset dùng path root và Cloudflare `_redirects` đưa mọi tool route về React shell:
 
 ```bash
 npm run build
 npx wrangler pages deploy dist --project-name toolmd
-```
-
-Khi thêm tool mới, build với path riêng để tái sử dụng cấu trúc URL:
-
-```bash
-VITE_TOOL_PATH=md2word npm run build
-VITE_TOOL_PATH=md2pptx npm run build
 ```
