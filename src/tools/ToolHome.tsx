@@ -165,6 +165,8 @@ function ToolCard({
               ? "{}"
               : category === "Text utility"
                 ? "Aa"
+                : category === "Integration"
+                  ? "AI"
                 : "✦"}
       </span>
       <div>

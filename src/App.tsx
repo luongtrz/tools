@@ -78,6 +78,7 @@ const PasswordGeneratorTool = lazy(async () => ({
 const ColorPickerTool = lazy(async () => ({
   default: (await import("./tools/QuickTools")).ColorPickerTool,
 }));
+const McpTool = lazy(() => import("./tools/McpTool"));
 
 const routeComponents: Record<string, () => ReactElement> = {
   md2pdf: () => <Md2PdfTool />,
@@ -105,6 +106,7 @@ const routeComponents: Record<string, () => ReactElement> = {
   "uuid-generator": () => <UuidGeneratorTool />,
   "password-generator": () => <PasswordGeneratorTool />,
   "color-picker": () => <ColorPickerTool />,
+  mcp: () => <McpTool />,
 };
 
 export default function App() {

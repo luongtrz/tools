@@ -34,6 +34,12 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
           >
             Home
           </a>
+          <a
+            className={`inline-flex min-h-10 shrink-0 items-center rounded-lg px-3.5 text-sm font-medium no-underline transition hover:bg-orange-50 hover:text-[#f2633d] ${activeSlug === "mcp" ? "bg-orange-50 text-[#f2633d]" : "text-slate-500"}`}
+            href="/mcp/"
+          >
+            MCP
+          </a>
           {TOOL_CATEGORIES.map((category) => {
             const categoryTools = TOOL_REGISTRY.filter(
               (tool) => tool.category === category,

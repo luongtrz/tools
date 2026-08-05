@@ -3,7 +3,8 @@ export type ToolCategory =
   | "Markdown"
   | "Developer data"
   | "Text utility"
-  | "Quick tools";
+  | "Quick tools"
+  | "Integration";
 
 export interface ToolDefinition {
   slug: string;
@@ -170,6 +171,12 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     title: "Color Picker",
     description: "Chọn màu và xem HEX, RGB, HSL tương ứng.",
     category: "Quick tools",
+  },
+  {
+    slug: "mcp",
+    title: "MCP for AI",
+    description: "Kết nối AI host với toolmd qua MCP và test bằng prompt mẫu.",
+    category: "Integration",
   },
 ];
 
