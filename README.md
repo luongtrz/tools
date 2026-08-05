@@ -1,6 +1,6 @@
-# mdtool
+# toolmd
 
-Monorepo frontend React + TypeScript cho các công cụ chuyển đổi tài liệu. Tool hiện tại là `md2pdf`, được phục vụ tại `https://mdtool.pages.dev/md2pdf/`; các tool sau có thể dùng cùng pattern như `/md2word/` và `/md2pptx/`.
+Monorepo frontend React + TypeScript cho các công cụ chuyển đổi tài liệu. Tool hiện tại là `md2pdf`, được phục vụ tại `https://toolmd.pages.dev/md2pdf/`; các tool sau có thể dùng cùng pattern như `/md2word/` và `/md2pptx/`.
 
 ## Live collaboration
 
@@ -44,7 +44,7 @@ Build mặc định dùng path `md2pdf`, với asset URL bắt đầu bằng `/m
 
 ```bash
 npm run build
-npx wrangler pages deploy dist --project-name mdtool
+npx wrangler pages deploy dist --project-name toolmd
 ```
 
 Khi thêm tool mới, build với path riêng để tái sử dụng cấu trúc URL:
