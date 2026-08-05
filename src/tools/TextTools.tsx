@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useI18n } from "../i18n";
+import { diffLines } from "../lib/diff";
 import {
   CopyButton,
   ToolButton,
@@ -57,27 +58,6 @@ export function TextDiffTool() {
       </ToolPanel>
     </ToolPage>
   );
-}
-
-function diffLines(
-  left: string,
-  right: string,
-): Array<{ type: "added" | "removed" | "same"; text: string }> {
-  if (!left && !right) return [];
-  const a = left.split(/\r?\n/);
-  const b = right.split(/\r?\n/);
-  const rows: Array<{ type: "added" | "removed" | "same"; text: string }> = [];
-  const max = Math.max(a.length, b.length);
-  for (let index = 0; index < max; index += 1) {
-    if (a[index] === b[index])
-      rows.push({ type: "same", text: a[index] || "" });
-    else {
-      if (a[index] !== undefined)
-        rows.push({ type: "removed", text: a[index] });
-      if (b[index] !== undefined) rows.push({ type: "added", text: b[index] });
-    }
-  }
-  return rows;
 }
 
 export function RegexTesterTool() {
@@ -166,7 +146,17 @@ function encodeBase64(value: string): string {
   return btoa(binary);
 }
 function decodeBase64(value: string): string {
-  const binary = atob(value);
+  const normalized = value.trim();
+  if (
+    !normalized ||
+    !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized) ||
+    normalized.length % 4 === 1
+  )
+    throw new Error("Invalid Base64 input");
+  const binary = atob(normalized);
+  const canonical = btoa(binary).replace(/=+$/, "");
+  if (canonical !== normalized.replace(/=+$/, ""))
+    throw new Error("Invalid Base64 input");
   const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }

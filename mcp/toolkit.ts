@@ -1,4 +1,5 @@
 import YAML from "yaml";
+import { diffLines } from "../src/lib/diff";
 import { renderMarkdown } from "../src/lib/markdown";
 import { TOOL_REGISTRY } from "../src/toolRegistry";
 
@@ -178,18 +179,7 @@ export function formatMarkdownTable(value: string): string {
 }
 
 export function diffText(left: string, right: string) {
-  const a = left.split(/\r?\n/);
-  const b = right.split(/\r?\n/);
-  const rows: Array<{ type: "added" | "removed" | "same"; text: string }> = [];
-  const max = Math.max(a.length, b.length);
-  for (let index = 0; index < max; index += 1) {
-    if (a[index] === b[index]) rows.push({ type: "same", text: a[index] || "" });
-    else {
-      if (a[index] !== undefined) rows.push({ type: "removed", text: a[index] });
-      if (b[index] !== undefined) rows.push({ type: "added", text: b[index] });
-    }
-  }
-  return rows;
+  return diffLines(left, right);
 }
 
 export function testRegex(pattern: string, flags: string, value: string) {

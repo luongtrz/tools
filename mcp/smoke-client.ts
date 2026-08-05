@@ -51,7 +51,7 @@ const responses = {
   yaml: await call("toolmd_data_convert", { format: "yaml-to-json", value: "ready: true" }),
   csv: await call("toolmd_data_convert", { format: "csv-to-json", value: "name,status\ntoolmd,ready" }),
   table: await call("toolmd_markdown_table", { operation: "generate", headers: "Name,Status", rows: 2 }),
-  textDiff: await call("toolmd_text_diff", { original: "one\ntwo", changed: "one\nthree" }),
+  textDiff: await call("toolmd_text_diff", { original: "one\ntwo", changed: "one\ninserted\ntwo" }),
   regex: await call("toolmd_regex_test", { pattern: "toolmd", flags: "g", text: "toolmd ready" }),
   base64: await call("toolmd_base64", { operation: "encode", value: "Xin chào" }),
   case: await call("toolmd_case_convert", { value: "A focused tool", mode: "kebab" }),
@@ -59,6 +59,14 @@ const responses = {
   uuid: await call("toolmd_uuid", { count: 2 }),
   password: await call("toolmd_password", { length: 20, symbols: true }),
 };
+
+const textDiffRows = (responses.textDiff.structuredContent as { rows?: unknown }).rows;
+if (
+  !Array.isArray(textDiffRows) ||
+  !textDiffRows.some((row) => typeof row === "object" && row !== null && "type" in row && row.type === "added" && "text" in row && row.text === "inserted")
+) {
+  throw new Error("MCP text diff did not preserve an inserted line");
+}
 
 process.stdout.write(`${JSON.stringify({ toolCount: discovered.tools.length, calledTools: Object.keys(responses), sampleResponses: { json: responses.json, markdown: responses.markdown, slug: responses.slug } }, null, 2)}\n`);
 await client.close();
