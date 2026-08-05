@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactElement } from "react";
 import { getTool } from "./toolRegistry";
+import { useI18n } from "./i18n";
 import ToolHome from "./tools/ToolHome";
 
 const Md2PdfTool = lazy(() => import("./tools/Md2PdfTool"));
@@ -114,8 +115,13 @@ export default function App() {
   const render = routeComponents[slug];
   if (!render || !getTool(slug)) return <ToolHome />;
   return (
-    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-slate-50 font-mono text-sm text-slate-500">Loading tool…</div>}>
+    <Suspense fallback={<LoadingFallback />}>
       {render()}
     </Suspense>
   );
+}
+
+function LoadingFallback() {
+  const { t } = useI18n();
+  return <div className="grid min-h-screen place-items-center bg-slate-50 font-mono text-sm text-slate-500 dark:bg-[#0f1724] dark:text-slate-400">{t("loading")}</div>;
 }
