@@ -33,7 +33,7 @@ const pdf = await client.callTool({
   },
 });
 const pdfResult = pdf.structuredContent as { base64?: unknown; mimeType?: unknown; bytes?: unknown } | undefined;
-if (pdf.isError || pdfResult?.mimeType !== "application/pdf" || typeof pdfResult.base64 !== "string" || typeof pdfResult.bytes !== "number") {
+if (pdf.isError || pdfResult?.mimeType !== "application/pdf" || typeof pdfResult.base64 !== "string" || !pdfResult.base64.startsWith("JVBERi0") || typeof pdfResult.bytes !== "number") {
   throw new Error("toolmd_md2pdf did not return a PDF payload.");
 }
 
