@@ -4,13 +4,8 @@ import { toolStyles } from "../components/toolStyles";
 const MCP_CONFIG = `{
   "mcpServers": {
     "toolmd": {
-      "command": "npm",
-      "args": [
-        "--prefix",
-        "/absolute/path/to/tools",
-        "run",
-        "mcp"
-      ]
+      "command": "toolmd",
+      "args": ["mcp"]
     }
   }
 }`;
@@ -70,6 +65,9 @@ export default function McpTool() {
             AI host chạy MCP server, còn trang này là nơi hướng dẫn và tạo
             prompt test.
           </div>
+          <p className="mt-4 text-sm leading-6 text-slate-500">
+            Cài command một lần trong repository: <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700">npm link</code>. Sau đó MCP host có thể gọi trực tiếp <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700">toolmd mcp</code> mà không cần lặp lại đường dẫn project.
+          </p>
         </ToolPanel>
 
         <ToolPanel

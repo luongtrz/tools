@@ -16,7 +16,7 @@ Khởi động MCP server:
 
 ```bash
 npm install
-npm run mcp
+npm link
 ```
 
 Ví dụ cấu hình cho MCP client:
@@ -25,8 +25,8 @@ Ví dụ cấu hình cho MCP client:
 {
   "mcpServers": {
     "toolmd": {
-      "command": "npm",
-      "args": ["--prefix", "/absolute/path/to/tools", "run", "mcp"]
+      "command": "toolmd",
+      "args": ["mcp"]
     }
   }
 }

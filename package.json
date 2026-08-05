@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "bin": {
+    "toolmd": "bin/toolmd.mjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

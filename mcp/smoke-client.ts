@@ -1,10 +1,11 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { join } from "node:path";
 
 const client = new Client({ name: "toolmd-smoke-client", version: "1.0.0" });
 const transport = new StdioClientTransport({
-  command: process.execPath,
-  args: ["node_modules/tsx/dist/cli.mjs", "mcp/server.ts"],
+  command: process.env.TOOLMD_MCP_COMMAND || join(process.cwd(), "bin/toolmd.mjs"),
+  args: ["mcp"],
   cwd: process.cwd(),
   stderr: "inherit",
 });
