@@ -9,8 +9,10 @@ import {
 import type { ToolDefinition, ToolCategory } from "./toolRegistry";
 
 export type Language = "vi" | "en";
+export type Theme = "light" | "dark";
 
 const LANGUAGE_STORAGE_KEY = "toolmd-language";
+const THEME_STORAGE_KEY = "toolmd-theme";
 
 const messages = {
   vi: {
@@ -22,6 +24,9 @@ const messages = {
     runsInBrowser: "Chạy trong trình duyệt",
     allTools: "Tất cả công cụ",
     changeLanguage: "Chuyển sang tiếng Anh",
+    toggleTheme: "Chuyển chế độ sáng/tối",
+    lightMode: "Chế độ sáng",
+    darkMode: "Chế độ tối",
     closeWindow: "Đóng cửa sổ",
     footerDescription: "một bộ sưu tập nhỏ các công cụ hữu ích",
     footerBuilt: "Được xây dựng cho công việc tập trung",
@@ -139,6 +144,9 @@ const messages = {
     runsInBrowser: "Runs in your browser",
     allTools: "All tools",
     changeLanguage: "Chuyển sang tiếng Việt",
+    toggleTheme: "Toggle light/dark mode",
+    lightMode: "Light mode",
+    darkMode: "Dark mode",
     closeWindow: "Close window",
     footerDescription: "a small collection of useful tools",
     footerBuilt: "Built for focused work",
@@ -474,6 +482,11 @@ function getInitialLanguage(): Language {
   return window.localStorage.getItem(LANGUAGE_STORAGE_KEY) === "en" ? "en" : "vi";
 }
 
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "light";
+  return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+}
+
 function interpolate(value: string, variables?: Record<string, string | number>): string {
   if (!variables) return value;
   return Object.entries(variables).reduce(
@@ -484,8 +497,11 @@ function interpolate(value: string, variables?: Record<string, string | number>)
 
 interface I18nContextValue {
   language: Language;
+  theme: Theme;
   setLanguage: (language: Language) => void;
+  setTheme: (theme: Theme) => void;
   toggleLanguage: () => void;
+  toggleTheme: () => void;
   t: (key: MessageKey, variables?: Record<string, string | number>) => string;
 }
 
@@ -493,17 +509,27 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(getInitialLanguage);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     document.documentElement.lang = language;
   }, [language]);
 
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
+
   const value = useMemo<I18nContextValue>(
     () => ({
       language,
+      theme,
       setLanguage,
+      setTheme,
       toggleLanguage: () => setLanguage((current) => (current === "vi" ? "en" : "vi")),
+      toggleTheme: () => setTheme((current) => (current === "light" ? "dark" : "light")),
       t: (key, variables) => interpolate(messages[language][key], variables),
     }),
     [language],
