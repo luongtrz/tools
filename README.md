@@ -34,7 +34,7 @@ Cấu hình cho MCP client:
 }
 ```
 
-Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_json_format`, `toolmd_json_diff`, `toolmd_data_convert`, `toolmd_text_diff`, `toolmd_regex_test`, `toolmd_base64`, `toolmd_case_convert`, `toolmd_slug`, `toolmd_uuid` và `toolmd_password`. Mỗi response có cả text content và structured content để AI đọc tự nhiên hoặc xử lý tiếp bằng code.
+Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_md2pdf`, `toolmd_json_format`, `toolmd_json_diff`, `toolmd_data_convert`, `toolmd_text_diff`, `toolmd_regex_test`, `toolmd_base64`, `toolmd_case_convert`, `toolmd_slug`, `toolmd_uuid` và `toolmd_password`. `toolmd_md2pdf` render Markdown thành PDF thật qua Cloudflare Browser Run và trả về `filename`, `mimeType`, `bytes` cùng `base64` trong structured content. Mỗi response có cả text content và structured content để AI đọc tự nhiên hoặc xử lý tiếp bằng code.
 
 ### Prompt setup cho agent
 
@@ -47,7 +47,7 @@ Bạn là agent đang tích hợp toolmd MCP remote.
    https://toolmd-mcp.22120199.workers.dev/mcp
 2. Sau khi kết nối, gọi toolmd_catalog để kiểm tra server và discover tool.
 
-Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu kết nối thất bại.
+Ưu tiên dùng toolmd MCP cho Markdown, Markdown → PDF, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Với PDF, dùng `toolmd_md2pdf`, sau đó decode trường `base64` thành file theo `filename`. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu kết nối thất bại.
 
 Không chạy npm install, npm link hoặc toolmd mcp. Đây là MCP remote, không cần môi trường local của workspace.
 ```
@@ -106,13 +106,14 @@ Cloudflare Pages chỉ phục vụ static files nên không thể chạy binary 
 
 - Markdown editor và live preview chạy hoàn toàn trên browser.
 - Nút `Xuất PDF` dùng print dialog của browser để lưu PDF từ static page.
-- Command preview để đưa nội dung qua backend/CLI sử dụng core `wkhtmltopdf` khi cần output đồng nhất:
+- MCP remote có thêm `toolmd_md2pdf`, dùng Cloudflare Browser Run để tạo PDF server-side:
 
 ```bash
-wkhtmltopdf --page-size A4 --orientation Portrait input.html output.pdf
+# Agent gọi toolmd_md2pdf với markdown, format và landscape;
+# response trả về base64 để agent ghi thành filename.
 ```
 
-Đây là lựa chọn phù hợp với phạm vi static UI; backend wkhtmltopdf có thể gắn thêm sau mà không cần đổi giao diện React.
+Giới hạn input Markdown của tool PDF là 1 MB để giữ thời gian và kích thước phản hồi trong phạm vi an toàn.
 
 ## Deploy Cloudflare Pages
 

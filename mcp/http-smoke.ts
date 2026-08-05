@@ -7,8 +7,8 @@ const client = new Client({ name: "toolmd-http-smoke", version: "1.0.0" });
 
 await client.connect(transport);
 const tools = await client.listTools();
-if (tools.tools.length !== 15) {
-  throw new Error(`Expected 15 MCP tools, received ${tools.tools.length}.`);
+if (tools.tools.length !== 16) {
+  throw new Error(`Expected 16 MCP tools, received ${tools.tools.length}.`);
 }
 
 const catalog = await client.callTool({ name: "toolmd_catalog", arguments: {} });
@@ -24,5 +24,18 @@ if (formatted.isError) {
   throw new Error("toolmd_json_format returned an MCP error.");
 }
 
-console.log(JSON.stringify({ endpoint, toolCount: tools.tools.length, catalog: "ok", jsonFormat: "ok" }));
+const pdf = await client.callTool({
+  name: "toolmd_md2pdf",
+  arguments: {
+    markdown: "# PDF smoke test\n\nXin chào từ toolmd.",
+    filename: "smoke-test.pdf",
+    format: "a4",
+  },
+});
+const pdfResult = pdf.structuredContent as { base64?: unknown; mimeType?: unknown; bytes?: unknown } | undefined;
+if (pdf.isError || pdfResult?.mimeType !== "application/pdf" || typeof pdfResult.base64 !== "string" || typeof pdfResult.bytes !== "number") {
+  throw new Error("toolmd_md2pdf did not return a PDF payload.");
+}
+
+console.log(JSON.stringify({ endpoint, toolCount: tools.tools.length, catalog: "ok", jsonFormat: "ok", md2pdf: `${pdfResult.bytes} bytes` }));
 await transport.close();
