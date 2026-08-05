@@ -3,5 +3,13 @@ interface ToastProps {
 }
 
 export default function Toast({ message }: ToastProps) {
-  return <div className={`toast ${message ? 'visible' : ''}`} role="status" aria-live="polite">{message}</div>;
+  return (
+    <div
+      className={`toast ${message ? "visible" : ""}`}
+      role="status"
+      aria-live="polite"
+    >
+      {message}
+    </div>
+  );
 }
