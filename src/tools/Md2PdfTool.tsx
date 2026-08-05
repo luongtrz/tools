@@ -4,6 +4,7 @@ import { SAMPLE_MARKDOWN } from "../constants/sampleMarkdown";
 import { useCollaboration } from "../hooks/useCollaboration";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { downloadFile } from "../lib/download";
+import { copyText } from "../lib/clipboard";
 import { renderMarkdown } from "../lib/markdown";
 import MarkdownEditor from "../components/MarkdownEditor";
 import MarkdownPreview from "../components/MarkdownPreview";
@@ -16,6 +17,10 @@ import WorkspaceToolbar from "../components/WorkspaceToolbar";
 
 function randomGuestName(): string {
   return `Guest ${Math.floor(Math.random() * 90 + 10)}`;
+}
+
+function safePdfName(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "-") || "document";
 }
 
 export default function Md2PdfTool() {
@@ -45,10 +50,7 @@ export default function Md2PdfTool() {
   });
   const previewHtml = useMemo(() => renderMarkdown(markdown), [markdown]);
   const command = useMemo(() => {
-    const safeName = (outputName.trim() || "document").replace(
-      /[^a-zA-Z0-9_-]/g,
-      "-",
-    );
+    const safeName = safePdfName(outputName.trim() || "document");
     return `wkhtmltopdf --page-size ${pageSize} --orientation ${orientation} ${safeName}.html ${safeName}.pdf`;
   }, [orientation, outputName, pageSize]);
   const pageCount = Math.max(1, Math.ceil(markdown.length / 1450));
@@ -80,11 +82,19 @@ export default function Md2PdfTool() {
     notify(t("restoreSample"));
   }
   function handleDownloadMarkdown(): void {
-    const safeName = fileBaseName.replace(/[^a-zA-Z0-9_-]/g, "-");
+    const safeName = safePdfName(fileBaseName);
     downloadFile(`${safeName}.md`, markdown, "text/markdown;charset=utf-8");
     notify(t("downloadMarkdown"));
   }
   function handleExport(): void {
+    const previousTitle = document.title;
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    document.title = `${safePdfName(outputName.trim())}.pdf`;
+    window.addEventListener("afterprint", restoreTitle, { once: true });
+    window.setTimeout(restoreTitle, 10_000);
     notify(t("exportPdf"));
     window.setTimeout(() => window.print(), 250);
   }
@@ -101,12 +111,11 @@ export default function Md2PdfTool() {
     else notify(t("connectionFailed"));
   }
   async function copyShareLink(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(collaboration.shareUrl);
+    if (await copyText(collaboration.shareUrl)) {
       notify(t("copyLink"));
-    } catch {
-      notify(t("connectionFailed"));
+      return;
     }
+    notify(t("connectionFailed"));
   }
 
   return (
@@ -221,6 +230,9 @@ export default function Md2PdfTool() {
         className="hidden min-h-screen print:block"
         style={{ padding: `${margins}mm` } as CSSProperties}
       >
+        <style media="print">
+          {`@page { size: ${pageSize} ${orientation.toLowerCase()}; margin: 0; }`}
+        </style>
         <article
           className="w-full text-slate-700 [&_h1]:mb-5 [&_h1]:font-display [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-lg [&_h3]:font-bold [&_p]:mb-4 [&_p]:text-sm [&_p]:leading-7 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-slate-800 [&_pre]:p-4 [&_pre]:text-slate-100"
           dangerouslySetInnerHTML={{ __html: previewHtml }}

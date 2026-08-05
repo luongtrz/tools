@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { categoryLabel, literal, localizedTool, useI18n } from "../i18n";
 import { getTool } from "../toolRegistry";
+import { copyText } from "../lib/clipboard";
 import ToolNavbar from "./ToolNavbar";
 import { toolStyles } from "./toolStyles";
 
@@ -165,24 +166,7 @@ export function CopyButton({
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
 
   async function handleCopy(): Promise<void> {
-    let succeeded = false;
-    try {
-      await navigator.clipboard.writeText(value);
-      succeeded = true;
-    } catch {
-      try {
-        const area = document.createElement("textarea");
-        area.value = value;
-        area.style.position = "fixed";
-        area.style.opacity = "0";
-        document.body.appendChild(area);
-        area.select();
-        succeeded = document.execCommand("copy");
-        area.remove();
-      } catch {
-        succeeded = false;
-      }
-    }
+    const succeeded = await copyText(value);
     if (!succeeded) {
       setCopyState("failed");
       window.setTimeout(() => setCopyState("idle"), 1600);

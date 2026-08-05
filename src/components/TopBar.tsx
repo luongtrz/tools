@@ -17,7 +17,7 @@ export default function TopBar({ onReset }: TopBarProps) {
         <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-5">
           <div className="hidden items-center gap-2 rounded-full border border-slate-200 px-3 py-2 font-mono text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400 sm:flex">
             <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(96,188,135,.14)]" />
-            wkhtmltopdf core
+            {t("browserPrint")}
           </div>
           <LanguageToggle />
           <ThemeToggle />
