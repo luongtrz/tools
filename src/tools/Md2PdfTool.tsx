@@ -48,12 +48,15 @@ export default function Md2PdfTool() {
     setMarkdown,
     name: collaboratorName,
   });
-  const previewHtml = useMemo(() => renderMarkdown(markdown), [markdown]);
+  const previewHtml = useMemo(
+    () => (markdown.trim() ? renderMarkdown(markdown) : ""),
+    [markdown],
+  );
   const command = useMemo(() => {
     const safeName = safePdfName(outputName.trim() || "document");
     return `wkhtmltopdf --page-size ${pageSize} --orientation ${orientation} ${safeName}.html ${safeName}.pdf`;
   }, [orientation, outputName, pageSize]);
-  const pageCount = Math.max(1, Math.ceil(markdown.length / 1450));
+  const pageCount = markdown.trim() ? Math.ceil(markdown.length / 1450) : 0;
   const fileBaseName = outputName.trim() || "untitled";
 
   useEffect(() => {

@@ -69,6 +69,16 @@ function safeDocumentName(value: string, fallback: string): string {
   );
 }
 
+function plainSlideText(value: string): string {
+  return value
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/`{1,3}/g, "")
+    .replace(/[*_~]/g, "")
+    .replace(/^>\s?/, "")
+    .trim();
+}
+
 export function Md2WordTool() {
   const { t } = useI18n();
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
@@ -79,7 +89,7 @@ export function Md2WordTool() {
   function exportWord(): void {
     try {
       setError("");
-      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${safeName()}</title><style>body{font-family:Arial,sans-serif;line-height:1.6;max-width:760px;margin:40px auto}h1,h2,h3{color:#172235}code{background:#f1f3f5;padding:2px 4px}</style></head><body>${renderMarkdown(markdown)}</body></html>`;
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${safeName()}</title><style>body{font-family:Arial,sans-serif;line-height:1.6;max-width:760px;margin:40px auto}h1,h2,h3{color:#172235}code{background:#f1f3f5;padding:2px 4px}</style></head><body>${markdown.trim() ? renderMarkdown(markdown) : ""}</body></html>`;
       downloadFile(`${safeName()}.doc`, html, "application/msword;charset=utf-8");
     } catch {
       setError(t("exportFailed"));
@@ -122,10 +132,14 @@ export function Md2WordTool() {
             </div>
           }
         >
-          <article
-            className={toolStyles.documentPreview}
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }}
-          />
+          {markdown.trim() ? (
+            <article
+              className={toolStyles.documentPreview}
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }}
+            />
+          ) : (
+            <ToolNotice>{t("emptyMarkdown")}</ToolNotice>
+          )}
         </ToolPanel>
       </div>
       <ToolPanel title="File name" actions={<ToolButton variant="quiet" onClick={() => setName("document")}>{t("reset")}</ToolButton>}>
@@ -172,11 +186,14 @@ export function Md2PptxTool() {
         const lines = content.split("\n").filter((line) => line.trim());
         const titleLine = lines.find((line) => /^#{1,3}\s/.test(line));
         const title = titleLine
-          ? titleLine.replace(/^#{1,3}\s+/, "")
+          ? plainSlideText(titleLine.replace(/^#{1,3}\s+/, ""))
           : `Slide ${index + 1}`;
         const body = lines
           .filter((line) => line !== titleLine)
-          .map((line) => line.replace(/^[-*+]\s+/, "• "))
+          .map((line) => {
+            const bullet = line.match(/^[-*+]\s+(.+)$/);
+            return plainSlideText(bullet ? `• ${bullet[1]}` : line);
+          })
           .join("\n");
         slide.addText(title, {
           x: 0.7,
