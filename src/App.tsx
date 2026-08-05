@@ -1,126 +1,119 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { SAMPLE_MARKDOWN } from './constants/sampleMarkdown';
-import { useCollaboration } from './hooks/useCollaboration';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { downloadFile } from './lib/download';
-import { renderMarkdown } from './lib/markdown';
-import MarkdownEditor from './components/MarkdownEditor';
-import MarkdownPreview from './components/MarkdownPreview';
-import OutputSettings from './components/OutputSettings';
-import QuickTip from './components/QuickTip';
-import ShareModal from './components/ShareModal';
-import Toast from './components/Toast';
-import TopBar from './components/TopBar';
-import WorkspaceToolbar from './components/WorkspaceToolbar';
+import { lazy, Suspense, type ReactElement } from "react";
+import { getTool } from "./toolRegistry";
+import ToolHome from "./tools/ToolHome";
 
-function randomGuestName(): string {
-  return `Guest ${Math.floor(Math.random() * 90 + 10)}`;
-}
+const Md2PdfTool = lazy(() => import("./tools/Md2PdfTool"));
+const Md2WordTool = lazy(async () => ({
+  default: (await import("./tools/DocumentTools")).Md2WordTool,
+}));
+const Md2PptxTool = lazy(async () => ({
+  default: (await import("./tools/DocumentTools")).Md2PptxTool,
+}));
+const MergePdfTool = lazy(async () => ({
+  default: (await import("./tools/DocumentTools")).MergePdfTool,
+}));
+const SplitPdfTool = lazy(async () => ({
+  default: (await import("./tools/DocumentTools")).SplitPdfTool,
+}));
+const CompressPdfTool = lazy(async () => ({
+  default: (await import("./tools/DocumentTools")).CompressPdfTool,
+}));
+const MarkdownEditorTool = lazy(async () => ({
+  default: (await import("./tools/MarkdownTools")).MarkdownEditorTool,
+}));
+const MarkdownTableGeneratorTool = lazy(async () => ({
+  default: (await import("./tools/MarkdownTools")).MarkdownTableGeneratorTool,
+}));
+const MarkdownTableFormatterTool = lazy(async () => ({
+  default: (await import("./tools/MarkdownTools")).MarkdownTableFormatterTool,
+}));
+const MarkdownWordCounterTool = lazy(async () => ({
+  default: (await import("./tools/MarkdownTools")).MarkdownWordCounterTool,
+}));
+const HtmlToMarkdownTool = lazy(async () => ({
+  default: (await import("./tools/MarkdownTools")).HtmlToMarkdownTool,
+}));
+const JsonFormatterTool = lazy(async () => {
+  const { JsonTool } = await import("./tools/DataTools");
+  return { default: () => <JsonTool mode="format" /> };
+});
+const JsonValidatorTool = lazy(async () => {
+  const { JsonTool } = await import("./tools/DataTools");
+  return { default: () => <JsonTool mode="validate" /> };
+});
+const JsonDiffTool = lazy(async () => {
+  const { JsonTool } = await import("./tools/DataTools");
+  return { default: () => <JsonTool mode="diff" /> };
+});
+const YamlJsonTool = lazy(async () => ({
+  default: (await import("./tools/DataTools")).YamlJsonTool,
+}));
+const CsvJsonTool = lazy(async () => ({
+  default: (await import("./tools/DataTools")).CsvJsonTool,
+}));
+const TextDiffTool = lazy(async () => ({
+  default: (await import("./tools/TextTools")).TextDiffTool,
+}));
+const RegexTesterTool = lazy(async () => ({
+  default: (await import("./tools/TextTools")).RegexTesterTool,
+}));
+const Base64Tool = lazy(async () => ({
+  default: (await import("./tools/TextTools")).Base64Tool,
+}));
+const CaseConverterTool = lazy(async () => ({
+  default: (await import("./tools/TextTools")).CaseConverterTool,
+}));
+const SlugGeneratorTool = lazy(async () => ({
+  default: (await import("./tools/TextTools")).SlugGeneratorTool,
+}));
+const QrGeneratorTool = lazy(async () => ({
+  default: (await import("./tools/QuickTools")).QrGeneratorTool,
+}));
+const UuidGeneratorTool = lazy(async () => ({
+  default: (await import("./tools/QuickTools")).UuidGeneratorTool,
+}));
+const PasswordGeneratorTool = lazy(async () => ({
+  default: (await import("./tools/QuickTools")).PasswordGeneratorTool,
+}));
+const ColorPickerTool = lazy(async () => ({
+  default: (await import("./tools/QuickTools")).ColorPickerTool,
+}));
+
+const routeComponents: Record<string, () => ReactElement> = {
+  md2pdf: () => <Md2PdfTool />,
+  md2word: () => <Md2WordTool />,
+  md2pptx: () => <Md2PptxTool />,
+  "merge-pdf": () => <MergePdfTool />,
+  "split-pdf": () => <SplitPdfTool />,
+  "compress-pdf": () => <CompressPdfTool />,
+  "markdown-editor": () => <MarkdownEditorTool />,
+  "markdown-table-generator": () => <MarkdownTableGeneratorTool />,
+  "markdown-table-formatter": () => <MarkdownTableFormatterTool />,
+  "markdown-word-counter": () => <MarkdownWordCounterTool />,
+  "html-to-markdown": () => <HtmlToMarkdownTool />,
+  "json-formatter": () => <JsonFormatterTool />,
+  "json-validator": () => <JsonValidatorTool />,
+  "json-diff": () => <JsonDiffTool />,
+  "yaml-json": () => <YamlJsonTool />,
+  "csv-json": () => <CsvJsonTool />,
+  "text-diff": () => <TextDiffTool />,
+  "regex-tester": () => <RegexTesterTool />,
+  base64: () => <Base64Tool />,
+  "case-converter": () => <CaseConverterTool />,
+  "slug-generator": () => <SlugGeneratorTool />,
+  "qr-generator": () => <QrGeneratorTool />,
+  "uuid-generator": () => <UuidGeneratorTool />,
+  "password-generator": () => <PasswordGeneratorTool />,
+  "color-picker": () => <ColorPickerTool />,
+};
 
 export default function App() {
-  const [markdown, setMarkdown] = useLocalStorage('md2pdf-content', SAMPLE_MARKDOWN);
-  const [outputName, setOutputName] = useLocalStorage('md2pdf-name', 'project-brief');
-  const [collaboratorName, setCollaboratorName] = useLocalStorage('md2pdf-collab-name', randomGuestName());
-  const [pageSize, setPageSize] = useState('A4');
-  const [orientation, setOrientation] = useState('Portrait');
-  const [margins, setMargins] = useState('18');
-  const [zoom, setZoom] = useState(1);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [toast, setToast] = useState('');
-  const collaboration = useCollaboration({ markdown, setMarkdown: (value) => setMarkdown(value), name: collaboratorName });
-  const previewHtml = useMemo(() => renderMarkdown(markdown), [markdown]);
-  const command = useMemo(() => {
-    const safeName = (outputName.trim() || 'document').replace(/[^a-zA-Z0-9_-]/g, '-');
-    return `wkhtmltopdf --page-size ${pageSize} --orientation ${orientation} ${safeName}.html ${safeName}.pdf`;
-  }, [orientation, outputName, pageSize]);
-  const pageCount = Math.max(1, Math.ceil(markdown.length / 1450));
-  const fileBaseName = outputName.trim() || 'untitled';
-
-  useEffect(() => {
-    if (!toast) return undefined;
-    const timer = window.setTimeout(() => setToast(''), 2500);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
-
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setShareOpen(false);
-    };
-    document.addEventListener('keydown', closeOnEscape);
-    return () => document.removeEventListener('keydown', closeOnEscape);
-  }, []);
-
-  function notify(message: string): void {
-    setToast(message);
-  }
-
-  function handleMarkdownChange(value: string): void {
-    setMarkdown(value);
-    collaboration.syncLocalChange(value);
-  }
-
-  function resetDocument(): void {
-    handleMarkdownChange(SAMPLE_MARKDOWN);
-    setOutputName('project-brief');
-    notify('Đã khôi phục tài liệu mẫu');
-  }
-
-  function handleDownloadMarkdown(): void {
-    const safeName = fileBaseName.replace(/[^a-zA-Z0-9_-]/g, '-');
-    downloadFile(`${safeName}.md`, markdown, 'text/markdown;charset=utf-8');
-    notify('Đang tải Markdown…');
-  }
-
-  function handleExport(): void {
-    notify('Mở hộp thoại in để lưu PDF');
-    window.setTimeout(() => window.print(), 250);
-  }
-
-  function handleRename(): void {
-    const nextName = window.prompt('Tên tài liệu', outputName || 'project-brief');
-    if (nextName !== null) setOutputName(nextName.replace(/\.md$/i, ''));
-  }
-
-  async function handleShare(): Promise<void> {
-    const room = await collaboration.createRoom();
-    if (room) setShareOpen(true);
-    else notify('Không thể tạo live room — hãy thử lại');
-  }
-
-  async function copyShareLink(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(collaboration.shareUrl);
-      notify('Đã copy share link');
-    } catch {
-      notify('Không thể copy tự động — hãy chọn link');
-    }
-  }
-
-  function handleNameChange(value: string): void {
-    setCollaboratorName(value);
-    collaboration.setName(value);
-  }
-
+  const slug = window.location.pathname.split("/").filter(Boolean)[0] || "";
+  const render = routeComponents[slug];
+  if (!render || !getTool(slug)) return <ToolHome />;
   return (
-    <>
-      <div className="app-shell">
-        <TopBar onReset={resetDocument} />
-        <main>
-          <section className="hero-row">
-            <div><p className="eyebrow"><span className="eyebrow-line" /> DOCUMENT WORKSPACE</p><h1>Markdown, <em>ready to print.</em></h1><p className="hero-copy">Biến ghi chú và tài liệu của bạn thành PDF sạch đẹp trong vài giây.</p></div>
-            <div className="hero-meta"><span className="meta-label">{collaboration.status === 'connected' ? 'LIVE WORKSPACE' : 'LOCAL WORKSPACE'}</span><span className="meta-value"><span className="status-dot" /> {collaboration.status === 'connected' ? 'Đang cộng tác' : 'Đã đồng bộ'}</span></div>
-          </section>
-          <section className="workspace-card" aria-label="Markdown editor and preview">
-            <WorkspaceToolbar fileName={fileBaseName} status={collaboration.status} collaboratorCount={collaboration.collaboratorCount} onShare={handleShare} onDownload={handleDownloadMarkdown} onExport={handleExport} onRename={handleRename} />
-            <div className="editor-grid"><MarkdownEditor value={markdown} onChange={handleMarkdownChange} /><div className="splitter" aria-hidden="true"><span /></div><MarkdownPreview html={previewHtml} zoom={zoom} pageCount={pageCount} onZoomIn={() => setZoom((value) => Math.min(1.2, +(value + 0.1).toFixed(1)))} onZoomOut={() => setZoom((value) => Math.max(0.8, +(value - 0.1).toFixed(1)))} /></div>
-          </section>
-          <section className="bottom-grid"><OutputSettings pageSize={pageSize} orientation={orientation} margins={margins} outputName={outputName} onPageSizeChange={setPageSize} onOrientationChange={setOrientation} onMarginsChange={setMargins} onOutputNameChange={setOutputName} command={command} onCopyCommand={async () => { try { await navigator.clipboard.writeText(command); notify('Đã copy lệnh wkhtmltopdf'); } catch { notify('Không thể copy tự động — hãy chọn lệnh'); } }} /><QuickTip /></section>
-        </main>
-        <footer className="footer"><span>md2pdf <span className="muted">/</span> static workspace</span><span>Made for focused writing <span className="heart">♥</span></span></footer>
-      </div>
-      <ShareModal open={shareOpen} shareUrl={collaboration.shareUrl} roomId={collaboration.roomId} status={collaboration.status} collaboratorCount={collaboration.collaboratorCount} name={collaboratorName} onNameChange={handleNameChange} onClose={() => setShareOpen(false)} onCopy={copyShareLink} />
-      <div className="print-sheet" style={{ '--print-margin': `${margins}mm` } as CSSProperties}><article className="paper" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
-      <Toast message={toast} />
-    </>
+    <Suspense fallback={<div className="toolmd-loading">Loading tool…</div>}>
+      {render()}
+    </Suspense>
   );
 }
