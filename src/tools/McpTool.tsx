@@ -1,57 +1,56 @@
+import { useState } from "react";
 import { literal, useI18n } from "../i18n";
 import { CopyButton, ToolPage, ToolPanel } from "../components/ToolUI";
 import { toolStyles } from "../components/toolStyles";
 
-const MCP_CONFIG = `{
-  "mcpServers": {
-    "toolmd": {
-      "command": "toolmd",
-      "args": ["mcp"]
-    }
-  }
-}`;
-const MCP_COMMAND = "toolmd mcp";
-const MCP_SMOKE_COMMAND = "TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke";
+const MCP_ENDPOINT = import.meta.env.VITE_MCP_URL || "https://toolmd-mcp.22120199.workers.dev/mcp";
+
+function createMcpConfig(token: string): string {
+  return JSON.stringify({
+    mcpServers: {
+      toolmd: {
+        url: MCP_ENDPOINT,
+        headers: {
+          Authorization: `Bearer ${token || "<YOUR_MCP_AUTH_TOKEN>"}`,
+        },
+      },
+    },
+  }, null, 2);
+}
 
 const AGENT_SETUP_PROMPT = `Bạn là agent đang tích hợp toolmd MCP vào workspace hiện tại.
 
 Mục tiêu:
-1. Tìm thư mục project toolmd bằng package.json có tên "toolmd".
-2. Trong project đó chạy: npm install
-3. Đăng ký command local bằng: npm link
-4. Kiểm tra command bằng: which toolmd và toolmd
-5. Chạy smoke test MCP bằng: TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke
-6. Đăng ký MCP server vào host bằng cấu hình:
-   command: toolmd
-   args: ["mcp"]
+1. Đăng ký MCP server remote bằng Streamable HTTP với URL:
+   ${MCP_ENDPOINT}
+2. Gửi header xác thực:
+   Authorization: Bearer <YOUR_MCP_AUTH_TOKEN>
+3. Nếu token còn là placeholder hoặc chưa được cung cấp, yêu cầu người dùng cung cấp token; không tự đoán token.
+4. Sau khi kết nối, gọi toolmd_catalog để kiểm tra server và discover tool.
 
 Sau khi kết nối:
-- Gọi toolmd_catalog để discover tool trước khi xử lý.
 - Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password.
-- Trả kết quả dựa trên structuredContent của tool; chỉ dùng CLI khi MCP host không hỗ trợ tool call.
+- Trả kết quả dựa trên structuredContent của tool.
 - Với mỗi yêu cầu, chọn đúng tool, truyền dữ liệu người dùng vào, rồi giải thích ngắn gọn kết quả.
-- Không dùng npm làm command MCP; command chuẩn là toolmd.
-- Nếu setup hoặc smoke test lỗi, báo lỗi thật và hướng dẫn sửa, không giả vờ rằng MCP đã kết nối.`;
+- Không chạy npm install, npm link hoặc toolmd mcp. Đây là MCP remote, không cần môi trường local của workspace.
+- Nếu kết nối hoặc authentication lỗi, báo lỗi thật và hướng dẫn sửa, không giả vờ rằng MCP đã kết nối.`;
 
 const AGENT_SETUP_PROMPT_EN = `You are an agent integrating toolmd MCP into the current workspace.
 
 Goal:
-1. Find the toolmd project directory by locating package.json with the name "toolmd".
-2. Run in that project: npm install
-3. Register the local command with: npm link
-4. Check the command with: which toolmd and toolmd
-5. Run the MCP smoke test with: TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke
-6. Register the MCP server in the host with:
-   command: toolmd
-   args: ["mcp"]
+1. Register the remote MCP server over Streamable HTTP at:
+   ${MCP_ENDPOINT}
+2. Send this authentication header:
+   Authorization: Bearer <YOUR_MCP_AUTH_TOKEN>
+3. If the token is still a placeholder or has not been provided, ask the user for it; never guess the token.
+4. After connecting, call toolmd_catalog to verify the server and discover tools.
 
 After connecting:
-- Call toolmd_catalog to discover tools before processing a request.
 - Prefer toolmd MCP for Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID and password tasks.
-- Use the tool's structuredContent for the result; fall back to the CLI only when the MCP host does not support tool calls.
+- Use the tool's structuredContent for the result.
 - For each request, choose the right tool, pass the user's data to it, then briefly explain the result.
-- Do not use npm as the MCP command; the standard command is toolmd.
-- If setup or the smoke test fails, report the real error and explain how to fix it. Never pretend MCP is connected.`;
+- Do not run npm install, npm link or toolmd mcp. This is a remote MCP server and does not require a local workspace environment.
+- If connection or authentication fails, report the real error and explain how to fix it. Never pretend MCP is connected.`;
 
 const PROMPTS = [
   {
@@ -104,7 +103,9 @@ const MCP_TOOLS = [
 
 export default function McpTool() {
   const { language, t } = useI18n();
+  const [token, setToken] = useState("");
   const agentSetupPrompt = language === "vi" ? AGENT_SETUP_PROMPT : AGENT_SETUP_PROMPT_EN;
+  const mcpConfig = createMcpConfig(token);
   return (
     <ToolPage slug="mcp" eyebrow={t("aiIntegration")}>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,.75fr)]">
@@ -121,39 +122,53 @@ export default function McpTool() {
         <ToolPanel
           title={t("connectAiHost")}
           description={t("connectAiHostDescription")}
-          actions={<CopyButton value={MCP_CONFIG} label={t("copyConfig")} />}
-        >
-          <pre className={`${toolStyles.codeOutput} min-h-0 text-xs leading-6`}>
-            {MCP_CONFIG}
-          </pre>
-          <div className="mt-5 rounded-xl border border-orange-100 bg-orange-50/60 p-4 text-sm leading-6 text-slate-600 dark:border-orange-900/70 dark:bg-orange-950/30 dark:text-slate-300">
-            <strong className="font-semibold text-[#b34835]">{t("note")}</strong>{" "}
-            {t("browserCannotSpawn")}
-          </div>
-          <p className="mt-4 text-sm leading-6 text-slate-500 dark:text-slate-400">
-            {t("installCommand")} <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">npm link</code>. {t("mcpHostCanCall")} <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">toolmd mcp</code>.
-          </p>
-          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{MCP_COMMAND}</span>
-              <CopyButton value={MCP_COMMAND} label={t("copyMcpCommand")} />
+          actions={<CopyButton value={mcpConfig} label={t("copyConfig")} />}
+          >
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block font-mono text-xs text-slate-500 dark:text-slate-400" htmlFor="mcp-endpoint">
+                {t("endpointLabel")}
+              </label>
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
+                <code className="min-w-0 flex-1 overflow-x-auto font-mono text-sm text-slate-700 dark:text-slate-200" id="mcp-endpoint">
+                  {MCP_ENDPOINT}
+                </code>
+                <CopyButton value={MCP_ENDPOINT} label={t("copyEndpoint")} />
+              </div>
             </div>
-            <code className="block overflow-x-auto font-mono text-sm text-slate-700 dark:text-slate-200">{MCP_COMMAND}</code>
+            <div>
+              <label className="mb-2 block font-mono text-xs text-slate-500 dark:text-slate-400" htmlFor="mcp-token">
+                {t("tokenLabel")}
+              </label>
+              <input
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm text-slate-700 outline-none transition focus:border-[#d9684a] focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:ring-orange-950"
+                id="mcp-token"
+                onChange={(event) => setToken(event.target.value)}
+                placeholder={t("tokenPlaceholder")}
+                spellCheck={false}
+                type="password"
+                value={token}
+              />
+              <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{t("tokenDescription")}</p>
+            </div>
+            <pre className={`${toolStyles.codeOutput} min-h-0 text-xs leading-6`}>
+              {mcpConfig}
+            </pre>
           </div>
         </ToolPanel>
 
         <ToolPanel
-          title={t("testFromTerminal")}
-          description={t("smokeTestDescription")}
-          actions={<CopyButton value={MCP_SMOKE_COMMAND} />}
+          title={t("testConnection")}
+          description={t("remoteSmokeDescription")}
         >
-          <pre className={`${toolStyles.codeOutput} min-h-0 text-sm leading-7`}>
-            {MCP_SMOKE_COMMAND}
-          </pre>
+          <div className="rounded-xl border border-orange-100 bg-orange-50/60 p-4 text-sm leading-6 text-slate-600 dark:border-orange-900/70 dark:bg-orange-950/30 dark:text-slate-300">
+            <strong className="font-semibold text-[#b34835]">{t("note")}</strong>{" "}
+            {t("remoteMcpNote")}
+          </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <Info label={literal("Transport", language) || "Transport"} value="stdio" />
+            <Info label={literal("Transport", language) || "Transport"} value="Streamable HTTP" />
             <Info label={literal("Tools", language) || "Tools"} value={`15 ${t("available")}`} />
-            <Info label={literal("Auth", language) || "Auth"} value={t("notRequired")} />
+            <Info label={literal("Auth", language) || "Auth"} value="Bearer token" />
           </div>
         </ToolPanel>
       </div>

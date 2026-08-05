@@ -10,25 +10,28 @@ Monorepo frontend React + TypeScript với các route dùng chung một React sh
 
 UI dùng Tailwind CSS qua Vite plugin; `src/index.css` chỉ là entrypoint tối thiểu để nạp Tailwind và font theme. Các style giao diện được đặt trực tiếp trong TSX để dễ trace cùng component.
 
-## MCP và CLI cho AI
+## MCP remote cho AI
 
-Toolmd có MCP server chạy qua `stdio`, để các AI host có thể tự discover và gọi các tool xử lý Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. MCP chạy local, không cần API key và không upload nội dung.
+Toolmd cung cấp MCP server dạng Streamable HTTP trên Cloudflare Worker. Agent chỉ cần kết nối tới endpoint public bằng Bearer token; không cần clone project, cài Node.js, chạy `npm install` hay `npm link` trên máy của người dùng.
 
-Khởi động MCP server:
+Endpoint mặc định:
 
-```bash
-npm install
-npm link
+```text
+https://toolmd-mcp.22120199.workers.dev/mcp
 ```
 
-Ví dụ cấu hình cho MCP client:
+Agent có thể đọc [introduction.md](https://toolmd.pages.dev/introduction.md) để tự nhận biết endpoint, transport, authentication và quy trình test. File này không chứa token thật.
+
+Cấu hình cho MCP client:
 
 ```json
 {
   "mcpServers": {
     "toolmd": {
-      "command": "toolmd",
-      "args": ["mcp"]
+      "url": "https://toolmd-mcp.22120199.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer <YOUR_MCP_AUTH_TOKEN>"
+      }
     }
   }
 }
@@ -38,34 +41,31 @@ Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_json_format`,
 
 ### Prompt setup cho agent
 
-Có thể copy nguyên prompt dưới đây và dán vào agent để agent tự setup, test và sử dụng MCP khi cần:
+Có thể copy nguyên prompt dưới đây và dán vào agent để agent tự kết nối, test và sử dụng MCP khi cần:
 
 ```text
-Bạn là agent đang tích hợp toolmd MCP vào workspace hiện tại.
+Bạn là agent đang tích hợp toolmd MCP remote.
 
-1. Tìm thư mục project toolmd bằng package.json có tên "toolmd".
-2. Trong project đó chạy: npm install
-3. Đăng ký command local bằng: npm link
-4. Kiểm tra command bằng: which toolmd và toolmd
-5. Chạy smoke test MCP bằng: TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke
-6. Đăng ký MCP server vào host bằng command toolmd với args ["mcp"].
+1. Đăng ký MCP server bằng Streamable HTTP với URL:
+   https://toolmd-mcp.22120199.workers.dev/mcp
+2. Gửi header xác thực:
+   Authorization: Bearer <YOUR_MCP_AUTH_TOKEN>
+3. Nếu token còn là placeholder hoặc chưa được cung cấp, yêu cầu người dùng cung cấp token; không tự đoán token.
+4. Sau khi kết nối, gọi toolmd_catalog để kiểm tra server và discover tool.
 
-Sau khi kết nối, gọi toolmd_catalog để discover tool trước. Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu setup hoặc smoke test thất bại. Không dùng npm làm command MCP; command chuẩn là toolmd.
+Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu kết nối hoặc authentication thất bại.
+
+Không chạy npm install, npm link hoặc toolmd mcp. Đây là MCP remote, không cần môi trường local của workspace.
 ```
 
-Test MCP protocol bằng client thật:
+Token không được commit vào repository. Người quản trị đặt token cho Worker bằng Cloudflare Secret:
 
 ```bash
-npm run mcp:smoke
+npx wrangler secret put MCP_AUTH_TOKEN --config cloudflare/mcp-worker/wrangler.toml
+npm run mcp:deploy
 ```
 
-Nếu cần chạy không qua MCP, CLI dùng cùng adapter xử lý:
-
-```bash
-npm run toolmd -- json-format --text '{"name":"toolmd"}'
-npm run toolmd -- markdown-render --file ./document.md
-npm run toolmd -- slug --text "Markdown, ready to print!"
-```
+Nếu Worker dùng account subdomain khác, đặt `VITE_MCP_URL` khi build frontend để thay endpoint hiển thị trong trang MCP.
 
 ## Live collaboration
 
@@ -101,7 +101,14 @@ Các lệnh kiểm tra/build:
 ```bash
 npm run typecheck
 npm run build
+npm run mcp:deploy:dry-run
 npm run collab:deploy -- --dry-run
+```
+
+Smoke test remote MCP sau khi Worker đã được deploy (chỉ dành cho maintainer có token):
+
+```bash
+MCP_AUTH_TOKEN=<YOUR_MCP_AUTH_TOKEN> npm run mcp:smoke:http
 ```
 
 Sau đó truy cập URL Vite hiển thị trong terminal.
