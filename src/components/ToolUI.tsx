@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { categoryLabel, literal, localizedTool, useI18n } from "../i18n";
 import { getTool } from "../toolRegistry";
 import ToolNavbar from "./ToolNavbar";
@@ -92,6 +92,7 @@ interface ButtonProps {
   type?: "button" | "submit";
   variant?: "primary" | "quiet" | "danger";
   disabled?: boolean;
+  busy?: boolean;
 }
 
 export function ToolButton({
@@ -100,6 +101,7 @@ export function ToolButton({
   type = "button",
   variant = "primary",
   disabled,
+  busy = false,
 }: ButtonProps) {
   const { language } = useI18n();
   const variantClasses = {
@@ -112,7 +114,8 @@ export function ToolButton({
       className={`min-h-11 rounded-lg px-4 text-sm font-semibold transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-40 ${variantClasses[variant]}`}
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || busy}
+      aria-busy={busy}
     >
       {typeof children === "string" ? literal(children, language) : children}
     </button>
@@ -158,14 +161,56 @@ export function CopyButton({
   value: string;
   label?: string;
 }) {
-  const { language } = useI18n();
+  const { language, t } = useI18n();
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy(): Promise<void> {
+    let succeeded = false;
+    try {
+      await navigator.clipboard.writeText(value);
+      succeeded = true;
+    } catch {
+      const area = document.createElement("textarea");
+      area.value = value;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      succeeded = document.execCommand("copy");
+      area.remove();
+    }
+    if (!succeeded) return;
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
+  }
+
   return (
     <ToolButton
       variant="quiet"
-      onClick={() => navigator.clipboard.writeText(value)}
+      onClick={() => void handleCopy()}
     >
-      {literal(label, language)}
+      {copied ? t("copied") : literal(label, language)}
     </ToolButton>
+  );
+}
+
+export function ToolNotice({
+  children,
+  variant = "info",
+}: {
+  children: ReactNode;
+  variant?: "info" | "success" | "warning" | "error";
+}) {
+  const variantClasses = {
+    info: "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300",
+    warning: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300",
+    error: "border-red-200 bg-red-50 text-red-700 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-300",
+  };
+  return (
+    <div className={`rounded-xl border px-4 py-3 text-sm leading-6 ${variantClasses[variant]}`} role={variant === "error" ? "alert" : "status"}>
+      {children}
+    </div>
   );
 }
 
