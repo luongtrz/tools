@@ -1,11 +1,14 @@
 import { useMemo, useState } from "react";
 import { SAMPLE_MARKDOWN } from "../constants/sampleMarkdown";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useI18n } from "../i18n";
 import { renderMarkdown } from "../lib/markdown";
 import { downloadFile } from "../lib/download";
 import {
   CopyButton,
   ToolButton,
   ToolLabel,
+  ToolNotice,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -13,7 +16,8 @@ import {
 import { toolStyles } from "../components/toolStyles";
 
 export function MarkdownEditorTool() {
-  const [value, setValue] = useState(SAMPLE_MARKDOWN);
+  const { t } = useI18n();
+  const [value, setValue] = useLocalStorage("markdown-editor-content", SAMPLE_MARKDOWN);
   return (
     <ToolPage slug="markdown-editor">
       <div className={toolStyles.splitLayout}>
@@ -25,6 +29,12 @@ export function MarkdownEditorTool() {
             rows={22}
           />
           <div className={toolStyles.panelActions}>
+            <ToolButton variant="quiet" onClick={() => setValue("")}>
+              {t("clear")}
+            </ToolButton>
+            <ToolButton variant="quiet" onClick={() => setValue(SAMPLE_MARKDOWN)}>
+              {t("reset")}
+            </ToolButton>
             <ToolButton
               variant="quiet"
               onClick={() =>
@@ -41,10 +51,14 @@ export function MarkdownEditorTool() {
           </div>
         </ToolPanel>
         <ToolPanel title="Live preview">
-          <article
-            className={toolStyles.documentPreview}
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(value) }}
-          />
+          {value.trim() ? (
+            <article
+              className={toolStyles.documentPreview}
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(value) }}
+            />
+          ) : (
+            <ToolNotice>{t("emptyMarkdown")}</ToolNotice>
+          )}
         </ToolPanel>
       </div>
     </ToolPage>
@@ -143,10 +157,12 @@ function formatMarkdownTable(value: string): string {
 }
 
 export function MarkdownTableFormatterTool() {
+  const { t } = useI18n();
   const [value, setValue] = useState(
     "| Name | Status |\n| --- | --- |\n| md2pdf | ready |\n| md2word | next |",
   );
   const output = useMemo(() => formatMarkdownTable(value), [value]);
+  const isValidTable = output.trim().includes("|") && output.split("\n").length >= 2;
   return (
     <ToolPage slug="markdown-table-formatter">
       <ToolPanel title="Unformatted table">
@@ -162,7 +178,11 @@ export function MarkdownTableFormatterTool() {
         </div>
       </ToolPanel>
       <ToolPanel title="Result">
-        <pre className={toolStyles.codeOutput}>{output}</pre>
+        {isValidTable ? (
+          <pre className={toolStyles.codeOutput}>{output}</pre>
+        ) : (
+          <ToolNotice variant="warning">{t("noTableFound")}</ToolNotice>
+        )}
       </ToolPanel>
     </ToolPage>
   );
@@ -172,7 +192,7 @@ export function MarkdownWordCounterTool() {
   const [value, setValue] = useState(SAMPLE_MARKDOWN);
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
   const lines = value ? value.split(/\r?\n/).length : 0;
-  const readingMinutes = Math.max(1, Math.ceil(words / 220));
+  const readingMinutes = words ? Math.ceil(words / 220) : 0;
   return (
     <ToolPage slug="markdown-word-counter">
       <ToolPanel title="Markdown text">
@@ -263,6 +283,7 @@ function htmlToMarkdown(value: string): string {
 }
 
 export function HtmlToMarkdownTool() {
+  const { t } = useI18n();
   const [value, setValue] = useState(
     "<h1>Project brief</h1><p>Write <strong>focused</strong> documents.</p><ul><li>Draft</li><li>Review</li></ul>",
   );
@@ -282,7 +303,11 @@ export function HtmlToMarkdownTool() {
           title="Markdown result"
           actions={<CopyButton value={output} />}
         >
-          <pre className={toolStyles.codeOutput}>{output}</pre>
+          {output ? (
+            <pre className={toolStyles.codeOutput}>{output}</pre>
+          ) : (
+            <ToolNotice>{t("emptyHtml")}</ToolNotice>
+          )}
         </ToolPanel>
       </div>
     </ToolPage>
