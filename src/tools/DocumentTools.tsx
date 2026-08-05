@@ -74,7 +74,8 @@ function plainSlideText(value: string): string {
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/`{1,3}/g, "")
-    .replace(/[*_~]/g, "")
+    .replace(/[*~]/g, "")
+    .replace(/^#{1,6}\s+/gm, "")
     .replace(/^>\s?/, "")
     .trim();
 }

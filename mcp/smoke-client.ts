@@ -47,7 +47,7 @@ const responses = {
   stats: await call("toolmd_markdown_stats", { markdown: "# Hello\n\n**ready**" }),
   json: await call("toolmd_json_format", { json: '{"name":"toolmd","ready":true}' }),
   jsonValidate: await call("toolmd_json_validate", { json: '{"ready":true}' }),
-  jsonDiff: await call("toolmd_json_diff", { first: '{"ready":false}', second: '{"ready":true}' }),
+  jsonDiff: await call("toolmd_json_diff", { first: '{"items":["one","two"]}', second: '{"items":["one","inserted","two"]}' }),
   yaml: await call("toolmd_data_convert", { format: "yaml-to-json", value: "ready: true" }),
   csv: await call("toolmd_data_convert", { format: "csv-to-json", value: "name,status\ntoolmd,ready" }),
   table: await call("toolmd_markdown_table", { operation: "generate", headers: "Name,Status", rows: 2 }),
@@ -66,6 +66,14 @@ if (
   !textDiffRows.some((row) => typeof row === "object" && row !== null && "type" in row && row.type === "added" && "text" in row && row.text === "inserted")
 ) {
   throw new Error("MCP text diff did not preserve an inserted line");
+}
+const jsonDiffResult = (responses.jsonDiff.structuredContent as { result?: unknown }).result;
+if (typeof jsonDiffResult !== "string" || !jsonDiffResult.includes("inserted")) {
+  throw new Error("MCP JSON diff did not preserve an inserted value");
+}
+const password = (responses.password.structuredContent as { password?: unknown }).password;
+if (typeof password !== "string" || password.length !== 20) {
+  throw new Error("MCP password generator returned an unexpected length");
 }
 
 process.stdout.write(`${JSON.stringify({ toolCount: discovered.tools.length, calledTools: Object.keys(responses), sampleResponses: { json: responses.json, markdown: responses.markdown, slug: responses.slug } }, null, 2)}\n`);

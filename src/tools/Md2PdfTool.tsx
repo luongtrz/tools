@@ -97,7 +97,7 @@ export default function Md2PdfTool() {
     };
     document.title = `${safePdfName(outputName.trim())}.pdf`;
     window.addEventListener("afterprint", restoreTitle, { once: true });
-    window.setTimeout(restoreTitle, 10_000);
+    window.setTimeout(restoreTitle, 60_000);
     notify(t("exportPdf"));
     window.setTimeout(() => window.print(), 250);
   }
@@ -230,7 +230,7 @@ export default function Md2PdfTool() {
         onCopy={copyShareLink}
       />
       <div
-        className="hidden min-h-screen print:block"
+        className="hidden print:block"
         style={{ padding: `${margins}mm` } as CSSProperties}
       >
         <style media="print">
