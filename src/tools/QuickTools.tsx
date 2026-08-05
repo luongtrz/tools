@@ -129,6 +129,7 @@ export function UuidGeneratorTool() {
               type="number"
               min="1"
               max="50"
+              step="1"
               value={count}
               onChange={(event) => setCount(Number(event.target.value) || 1)}
             />
@@ -150,7 +151,10 @@ export function UuidGeneratorTool() {
 
 function generatePassword(length: number, symbols: boolean): string {
   const alphabet = `ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789${symbols ? "!@#$%^&*_-+=" : ""}`;
-  const bytes = new Uint32Array(length);
+  const safeLength = Number.isFinite(length)
+    ? Math.max(8, Math.min(128, length))
+    : 20;
+  const bytes = new Uint32Array(safeLength);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
 }
@@ -175,6 +179,7 @@ export function PasswordGeneratorTool() {
               type="number"
               min="8"
               max="128"
+              step="1"
               value={length}
               onChange={(event) => setLength(Number(event.target.value))}
             />

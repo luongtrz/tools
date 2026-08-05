@@ -70,7 +70,10 @@ function makeMarkdownTable(headers: string[], rowCount: number): string {
     (header, index) => header.trim() || `Column ${index + 1}`,
   );
   const separator = cleanHeaders.map(() => "---");
-  const rows = Array.from({ length: rowCount }, (_, row) =>
+  const safeRowCount = Number.isFinite(rowCount)
+    ? Math.max(1, Math.min(30, rowCount))
+    : 3;
+  const rows = Array.from({ length: safeRowCount }, (_, row) =>
     cleanHeaders.map((_, column) => `Value ${row + 1}.${column + 1}`),
   );
   return [cleanHeaders, separator, ...rows]
@@ -114,6 +117,7 @@ export function MarkdownTableGeneratorTool() {
             type="number"
             min="1"
             max="30"
+            step="1"
             value={rowCount}
             onChange={(event) => setRowCount(Number(event.target.value))}
           />

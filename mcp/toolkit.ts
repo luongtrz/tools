@@ -61,19 +61,17 @@ export function validateJson(value: string) {
 
 export function diffJson(first: string, second: string) {
   try {
-    const left = JSON.stringify(JSON.parse(first), null, 2).split("\n");
-    const right = JSON.stringify(JSON.parse(second), null, 2).split("\n");
-    const lines: string[] = [];
-    const total = Math.max(left.length, right.length);
-    for (let index = 0; index < total; index += 1) {
-      if (left[index] === right[index]) {
-        if (left[index] !== undefined) lines.push(`  ${left[index]}`);
-        continue;
-      }
-      if (left[index] !== undefined) lines.push(`- ${left[index]}`);
-      if (right[index] !== undefined) lines.push(`+ ${right[index]}`);
-    }
-    return { valid: true, result: lines.join("\n") || "  (no changes)" };
+    const rows = diffLines(
+      JSON.stringify(JSON.parse(first), null, 2),
+      JSON.stringify(JSON.parse(second), null, 2),
+    );
+    return {
+      valid: true,
+      result:
+        rows
+          .map((row) => `${row.type === "added" ? "+" : row.type === "removed" ? "-" : " "} ${row.text}`)
+          .join("\n") || "  (no changes)",
+    };
   } catch {
     return { valid: false, result: "Both inputs must be valid JSON before comparing." };
   }

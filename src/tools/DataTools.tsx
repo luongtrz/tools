@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import YAML from "yaml";
 import { useI18n } from "../i18n";
+import { diffLines } from "../lib/diff";
 import {
   CopyButton,
   ToolButton,
@@ -130,19 +131,15 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
 }
 
 function diffJson(first: string, second: string): string {
-  const left = JSON.stringify(JSON.parse(first), null, 2).split("\n");
-  const right = JSON.stringify(JSON.parse(second), null, 2).split("\n");
-  const lines: string[] = [];
-  const total = Math.max(left.length, right.length);
-  for (let index = 0; index < total; index += 1) {
-    if (left[index] === right[index]) {
-      if (left[index] !== undefined) lines.push(`  ${left[index]}`);
-      continue;
-    }
-    if (left[index] !== undefined) lines.push(`- ${left[index]}`);
-    if (right[index] !== undefined) lines.push(`+ ${right[index]}`);
-  }
-  return lines.join("\n") || "  (no changes)";
+  const rows = diffLines(
+    JSON.stringify(JSON.parse(first), null, 2),
+    JSON.stringify(JSON.parse(second), null, 2),
+  );
+  return (
+    rows
+      .map((row) => `${row.type === "added" ? "+" : row.type === "removed" ? "-" : " "} ${row.text}`)
+      .join("\n") || "  (no changes)"
+  );
 }
 
 export function YamlJsonTool() {
