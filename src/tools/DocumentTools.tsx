@@ -62,13 +62,22 @@ function outputStem(fileName: string, fallback: string): string {
   return fileName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-") || fallback;
 }
 
+function safeDocumentName(value: string, fallback: string): string {
+  return (
+    value
+      .trim()
+      .replace(/\.(?:docx?|pptx)$/i, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "-") || fallback
+  );
+}
+
 export function Md2WordTool() {
   const { t } = useI18n();
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
   const [name, setName] = useState("document");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const safeName = () => name.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || "document";
+  const safeName = () => safeDocumentName(name, "document");
   function exportWord(): void {
     try {
       setError("");
@@ -95,7 +104,7 @@ export function Md2WordTool() {
         <ToolPanel
           title="Markdown input"
           description="Paste or write the content you want to export."
-          actions={<ToolButton variant="quiet" onClick={() => setMarkdown(SAMPLE_MARKDOWN)}>{t("reset")}</ToolButton>}
+          actions={<ToolButton variant="quiet" onClick={() => { setMarkdown(SAMPLE_MARKDOWN); setError(""); }}>{t("reset")}</ToolButton>}
         >
           <ToolTextArea
             value={markdown}
@@ -206,7 +215,7 @@ export function Md2PptxTool() {
         });
       });
       await pptx.writeFile({
-        fileName: `${name.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || "presentation"}.pptx`,
+        fileName: `${safeDocumentName(name, "presentation")}.pptx`,
       });
     } catch {
       setError(t("exportFailed"));
@@ -227,7 +236,7 @@ export function Md2PptxTool() {
           rows={18}
         />
         <div className={toolStyles.panelActions}>
-          <ToolButton variant="quiet" onClick={() => { setMarkdown("# Project brief\n\nA focused presentation from Markdown.\n\n---\n\n## Next steps\n\n- Choose a clear story\n- Keep each slide focused"); setName("presentation"); }}>{t("reset")}</ToolButton>
+          <ToolButton variant="quiet" onClick={() => { setMarkdown("# Project brief\n\nA focused presentation from Markdown.\n\n---\n\n## Next steps\n\n- Choose a clear story\n- Keep each slide focused"); setName("presentation"); setError(""); }}>{t("reset")}</ToolButton>
           <input
             className={toolStyles.input}
             value={name}
@@ -279,11 +288,11 @@ export function MergePdfTool() {
         title="PDF files"
         description="Files stay in your browser and are never uploaded."
       >
-        <FilePicker multiple onFiles={setFiles} />
+        <FilePicker multiple onFiles={(nextFiles) => { setFiles(nextFiles); setError(""); }} />
         {files.length > 0 && (
           <div className="mb-4 flex items-center justify-between gap-3 font-mono text-xs text-slate-500 dark:text-slate-400">
             <span>{t("filesSelected", { count: files.length })}</span>
-            <ToolButton variant="quiet" onClick={() => setFiles([])}>
+            <ToolButton variant="quiet" onClick={() => { setFiles([]); setError(""); }}>
               {t("clear")}
             </ToolButton>
           </div>
@@ -312,25 +321,33 @@ export function MergePdfTool() {
 
 function parseRanges(value: string, total: number): number[] {
   const pages = new Set<number>();
-  value
+  const parts = value
     .split(",")
     .map((part) => part.trim())
-    .filter(Boolean)
-    .forEach((part) => {
-      if (!/^\d+(?:\s*-\s*\d+)?$/.test(part)) return;
-      const [startRaw, endRaw] = part
-        .split("-")
-        .map((item) => Number(item.trim()));
-      const start = Math.max(1, Math.min(total, startRaw));
-      const end = Math.max(1, Math.min(total, endRaw || start));
-      for (
-        let page = Math.min(start, end);
-        page <= Math.max(start, end);
-        page += 1
-      )
-        pages.add(page);
-    });
-  return Array.from(pages).sort((a, b) => a - b);
+    .filter(Boolean);
+  if (
+    !parts.length ||
+    parts.some((part) => !/^\d+(?:\s*-\s*\d+)?$/.test(part))
+  )
+    return [];
+  let invalidRange = false;
+  parts.forEach((part) => {
+    const [startRaw, endRaw] = part
+      .split("-")
+      .map((item) => Number(item.trim()));
+    const end = endRaw ?? startRaw;
+    if (startRaw < 1 || end < 1 || startRaw > total || end > total) {
+      invalidRange = true;
+      return;
+    }
+    for (
+      let page = Math.min(startRaw, end);
+      page <= Math.max(startRaw, end);
+      page += 1
+    )
+      pages.add(page);
+  });
+  return invalidRange ? [] : Array.from(pages).sort((a, b) => a - b);
 }
 
 export function SplitPdfTool() {
@@ -368,9 +385,9 @@ export function SplitPdfTool() {
       <ToolPanel
         title="Choose a PDF"
         description="Use page numbers like 1, 3-5, 8."
-        actions={<ToolButton variant="quiet" onClick={() => { setFile(null); setRanges("1"); }}>{t("reset")}</ToolButton>}
+        actions={<ToolButton variant="quiet" onClick={() => { setFile(null); setRanges("1"); setError(""); }}>{t("reset")}</ToolButton>}
       >
-        <FilePicker onFiles={(files) => setFile(files[0] || null)} />
+        <FilePicker onFiles={(files) => { setFile(files[0] || null); setError(""); }} />
         <p className={toolStyles.selectedFile}>
           {file ? file.name : <ToolLabel>No file selected</ToolLabel>}
         </p>
