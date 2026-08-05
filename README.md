@@ -2,6 +2,12 @@
 
 Một static GitHub Page chuyển Markdown thành bản preview PDF sạch đẹp, với command preview tương thích `wkhtmltopdf`.
 
+## Live collaboration
+
+Nhấn `Share live` để tạo một room và gửi URL có mã phòng cho những người khác. Các client trong cùng room đồng bộ Markdown theo thời gian thực bằng Yjs CRDT và WebRTC; signaling dùng server công khai của y-webrtc, còn dữ liệu tài liệu đi peer-to-peer giữa các trình duyệt.
+
+Room là dạng unlisted: ai có share link đều có thể tham gia. Bản static này không lưu tài liệu trên server; ít nhất một peer cần đang online để truyền nội dung cho người mới vào room.
+
 ## Chạy local
 
 Mở `index.html` trực tiếp trong browser, hoặc chạy một static server:
