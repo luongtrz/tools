@@ -162,7 +162,7 @@ export function CopyButton({
   label?: string;
 }) {
   const { language, t } = useI18n();
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
 
   async function handleCopy(): Promise<void> {
     let succeeded = false;
@@ -170,18 +170,26 @@ export function CopyButton({
       await navigator.clipboard.writeText(value);
       succeeded = true;
     } catch {
-      const area = document.createElement("textarea");
-      area.value = value;
-      area.style.position = "fixed";
-      area.style.opacity = "0";
-      document.body.appendChild(area);
-      area.select();
-      succeeded = document.execCommand("copy");
-      area.remove();
+      try {
+        const area = document.createElement("textarea");
+        area.value = value;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        succeeded = document.execCommand("copy");
+        area.remove();
+      } catch {
+        succeeded = false;
+      }
     }
-    if (!succeeded) return;
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+    if (!succeeded) {
+      setCopyState("failed");
+      window.setTimeout(() => setCopyState("idle"), 1600);
+      return;
+    }
+    setCopyState("copied");
+    window.setTimeout(() => setCopyState("idle"), 1600);
   }
 
   return (
@@ -189,7 +197,7 @@ export function CopyButton({
       variant="quiet"
       onClick={() => void handleCopy()}
     >
-      {copied ? t("copied") : literal(label, language)}
+      {copyState === "copied" ? t("copied") : copyState === "failed" ? t("copyFailed") : literal(label, language)}
     </ToolButton>
   );
 }
