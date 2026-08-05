@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { categoryLabel, localizedTool, useI18n } from "../i18n";
 import {
   TOOL_CATEGORIES,
   TOOL_REGISTRY,
@@ -18,6 +19,7 @@ function initialCategory(): ToolCategory | "All" {
 }
 
 export default function ToolHome() {
+  const { language, t } = useI18n();
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<ToolCategory | "All">(
     initialCategory,
@@ -27,11 +29,12 @@ export default function ToolHome() {
       TOOL_REGISTRY.filter((tool) => {
         const matchesCategory =
           category === "All" || tool.category === category;
+        const localized = localizedTool(tool, language);
         const haystack =
-          `${tool.title} ${tool.description} ${tool.category}`.toLowerCase();
+          `${localized.title} ${localized.description} ${categoryLabel(tool.category, language)}`.toLowerCase();
         return matchesCategory && haystack.includes(query.trim().toLowerCase());
       }),
-    [category, query],
+    [category, language, query],
   );
   const featured = visibleTools.filter((tool) => tool.featured);
 
@@ -39,23 +42,22 @@ export default function ToolHome() {
     <ToolShell>
       <section className="mb-14 flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
         <div>
-          <p className="mb-4 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">A SMALL, FOCUSED TOOLBOX</p>
+          <p className="mb-4 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{t("heroEyebrow")}</p>
           <h1 className="mb-4 font-display text-[clamp(42px,5vw,70px)] font-bold leading-[.98] tracking-[-3px] text-slate-800">
-            Useful tools,
+            {t("heroTitleLead")}
             <br />
-            <em className="not-italic text-[#f2633d]">without the noise.</em>
+            <em className="not-italic text-[#f2633d]">{t("heroTitleAccent")}</em>
           </h1>
           <p className="m-0 max-w-[600px] text-base leading-7 text-slate-500">
-            Markdown, document and developer utilities that run in your browser.
-            Pick one thing, finish it, move on.
+            {t("heroDescription")}
           </p>
         </div>
         <div className="flex items-baseline gap-3 pb-2 font-mono text-sm leading-snug text-slate-400 sm:text-right">
           <strong className="font-display text-[54px] font-bold leading-none tracking-[-2px] text-slate-800">{TOOL_REGISTRY.length}</strong>
           <span>
-            curated tools
+            {t("curatedTools")}
             <br />
-            and growing
+            {t("andGrowing")}
           </span>
         </div>
       </section>
@@ -66,19 +68,19 @@ export default function ToolHome() {
             className="h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-slate-800 outline-none"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search tools by name or purpose…"
-            aria-label="Search tools"
+            placeholder={t("searchTools")}
+            aria-label={t("searchToolsLabel")}
           />
           <kbd className="rounded-md border border-slate-200 bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-400">⌘ K</kbd>
         </label>
         <div className="flex items-center gap-4 text-sm text-slate-400">
           <span>
-            {category === "All" ? "All tools" : category}
-            {query ? ` · ${visibleTools.length} results` : ""}
+            {category === "All" ? t("allTools") : categoryLabel(category, language)}
+            {query ? ` · ${t("resultsCount", { count: visibleTools.length })}` : ""}
           </span>
           {category !== "All" && (
             <button className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-orange-50 hover:text-[#f2633d]" type="button" onClick={() => setCategory("All")}>
-              Clear filter
+              {t("clearFilter")}
             </button>
           )}
         </div>
@@ -87,10 +89,10 @@ export default function ToolHome() {
         <section className="mt-16">
           <div className="mb-5 flex items-end justify-between gap-3">
             <div>
-              <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">START HERE</p>
-              <h2 className="m-0 font-display text-[28px] font-bold tracking-tight text-slate-800">Most useful first</h2>
+              <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{t("startHere")}</p>
+              <h2 className="m-0 font-display text-[28px] font-bold tracking-tight text-slate-800">{t("mostUsefulFirst")}</h2>
             </div>
-            <span>For everyday work</span>
+            <span>{t("everydayWork")}</span>
           </div>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {featured.map((tool) => (
@@ -110,16 +112,16 @@ export default function ToolHome() {
           <section className="mt-16" key={item}>
             <div className="mb-5 flex items-end justify-between gap-3">
               <div>
-                <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{item.toUpperCase()}</p>
+                <p className="mb-3 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">{categoryLabel(item, language).toUpperCase()}</p>
                 <h2 className="m-0 font-display text-[28px] font-bold tracking-tight text-slate-800">
                   {item === "Developer data"
-                    ? "Make data readable"
+                    ? t("makeDataReadable")
                     : item === "Text utility"
-                      ? "Shape your text"
-                      : item}
+                      ? t("shapeYourText")
+                      : categoryLabel(item, language)}
                 </h2>
               </div>
-              <span>{tools.length} tools</span>
+              <span>{t("toolsCount", { count: tools.length })}</span>
             </div>
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {tools.map((tool) => (
@@ -131,7 +133,7 @@ export default function ToolHome() {
       })}
       {!visibleTools.length && (
         <div className="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-base text-slate-500">
-          No tools matched “{query}”. Try a shorter search.
+          {t("noToolsMatched", { query })}
         </div>
       )}
     </ToolShell>
@@ -151,6 +153,8 @@ function ToolCard({
   category: ToolCategory;
   featured?: boolean;
 }) {
+  const { language } = useI18n();
+  const localized = localizedTool({ slug, title, description, category }, language);
   return (
     <a
       className={`relative flex min-h-[176px] items-start gap-4 rounded-2xl border bg-white p-6 text-slate-800 no-underline shadow-sm transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-xl ${featured ? "min-h-[194px] border-orange-100 bg-orange-50/30" : "border-slate-200"}`}
@@ -170,9 +174,9 @@ function ToolCard({
                 : "✦"}
       </span>
       <div>
-        <span className="font-mono text-[11px] font-medium tracking-wide text-slate-400">{category}</span>
-        <h3 className="mb-2 mr-5 mt-2 font-display text-lg font-semibold leading-tight text-slate-800">{title}</h3>
-        <p className="m-0 text-sm leading-6 text-slate-500">{description}</p>
+        <span className="font-mono text-[11px] font-medium tracking-wide text-slate-400">{categoryLabel(category, language)}</span>
+        <h3 className="mb-2 mr-5 mt-2 font-display text-lg font-semibold leading-tight text-slate-800">{localized.title}</h3>
+        <p className="m-0 text-sm leading-6 text-slate-500">{localized.description}</p>
       </div>
       <span className="absolute right-5 top-5 text-lg text-slate-400">↗</span>
     </a>

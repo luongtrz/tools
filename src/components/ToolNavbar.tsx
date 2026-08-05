@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { categoryLabel, localizedTool, useI18n } from "../i18n";
 import { TOOL_CATEGORIES, TOOL_REGISTRY, getTool } from "../toolRegistry";
+import LanguageToggle from "./LanguageToggle";
 
 interface ToolNavbarProps {
   activeSlug?: string;
@@ -7,6 +9,7 @@ interface ToolNavbarProps {
 }
 
 export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
+  const { language, t } = useI18n();
   const activeTool = activeSlug ? getTool(activeSlug) : undefined;
 
   return (
@@ -15,7 +18,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
         <a
           className="inline-flex w-max shrink-0 items-center gap-2.5 font-display text-[23px] font-bold tracking-tight text-slate-800 no-underline"
           href="/"
-          aria-label="toolmd home"
+          aria-label={`${t("home")} toolmd`}
         >
           <span className="grid size-9 place-items-center rounded-xl bg-[#fff0eb] text-[25px] leading-none text-[#f2633d]">
             ⌁
@@ -26,19 +29,19 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
         </a>
         <nav
           className="order-3 flex w-full min-w-0 items-center gap-1 overflow-x-auto border-t border-slate-100 pt-2 lg:order-none lg:w-auto lg:flex-1 lg:overflow-visible lg:border-0 lg:pt-0"
-          aria-label="Tool categories"
+          aria-label={t("toolCategories")}
         >
           <a
             className={`inline-flex min-h-10 shrink-0 items-center rounded-lg px-3.5 text-sm font-medium no-underline transition hover:bg-orange-50 hover:text-[#f2633d] ${!activeSlug ? "bg-orange-50 text-[#f2633d]" : "text-slate-500"}`}
             href="/"
           >
-            Home
+            {t("home")}
           </a>
           <a
             className={`inline-flex min-h-10 shrink-0 items-center rounded-lg px-3.5 text-sm font-medium no-underline transition hover:bg-orange-50 hover:text-[#f2633d] ${activeSlug === "mcp" ? "bg-orange-50 text-[#f2633d]" : "text-slate-500"}`}
             href="/mcp/"
           >
-            MCP
+            {t("mcp")}
           </a>
           {TOOL_CATEGORIES.map((category) => {
             const categoryTools = TOOL_REGISTRY.filter(
@@ -50,7 +53,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
                 <summary
                   className={`inline-flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-lg px-3.5 text-sm font-medium transition hover:bg-orange-50 hover:text-[#f2633d] [&::-webkit-details-marker]:hidden ${isActive ? "bg-orange-50 text-[#f2633d]" : "text-slate-500"}`}
                 >
-                  {category}
+                  {categoryLabel(category, language)}
                   <span className="text-xs text-slate-400" aria-hidden="true">
                     ⌄
                   </span>
@@ -60,9 +63,9 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
                     className="mb-1 flex flex-row items-center justify-between rounded-xl border-b border-slate-100 px-3.5 py-3 pb-3 text-sm font-semibold text-[#d95132] no-underline hover:bg-orange-50"
                     href={`/?category=${encodeURIComponent(category)}`}
                   >
-                    <span>View all {category}</span>
+                    <span>{t("viewAll", { category: categoryLabel(category, language) })}</span>
                     <small className="rounded-full bg-orange-50 px-2 py-1 text-[10px] font-medium text-[#d95132]">
-                      {categoryTools.length} tools
+                      {t("toolsCount", { count: categoryTools.length })}
                     </small>
                   </a>
                   {categoryTools.map((tool) => (
@@ -71,9 +74,9 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
                       href={`/${tool.slug}/`}
                       key={tool.slug}
                     >
-                      <span>{tool.title}</span>
+                      <span>{localizedTool(tool, language).title}</span>
                       <small className="text-xs font-normal leading-snug text-slate-400">
-                        {tool.description}
+                        {localizedTool(tool, language).description}
                       </small>
                     </a>
                   ))}
@@ -83,16 +86,17 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
           })}
         </nav>
         {rightSlot || (
-          <div className="ml-auto flex shrink-0 items-center gap-5">
+          <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-5">
+            <LanguageToggle />
             <div className="hidden items-center gap-2 font-mono text-[11px] font-medium text-slate-400 xl:flex">
               <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(98,189,138,.14)]" />
-              Runs in your browser
+              {t("runsInBrowser")}
             </div>
             <a
               className="whitespace-nowrap font-mono text-xs font-medium text-slate-500 no-underline hover:text-[#f2633d]"
               href="/"
             >
-              All tools <span className="ml-2 rounded-md border border-slate-200 bg-slate-100 px-2 py-1 text-[10px] text-slate-400">⌘K</span>
+              {t("allTools")} <span className="ml-2 rounded-md border border-slate-200 bg-slate-100 px-2 py-1 text-[10px] text-slate-400">⌘K</span>
             </a>
           </div>
         )}
