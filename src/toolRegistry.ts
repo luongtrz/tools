@@ -86,6 +86,12 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     category: "Markdown",
   },
   {
+    slug: "jwt-decoder",
+    title: "JWT Decoder",
+    description: "Decode JWT header and payload locally without verifying the signature.",
+    category: "Developer data",
+  },
+  {
     slug: "json-formatter",
     title: "JSON Formatter",
     description: "Format, minify và kiểm tra JSON nhanh.",
@@ -145,6 +151,12 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     slug: "slug-generator",
     title: "Slug Generator",
     description: "Tạo URL slug không dấu từ tiêu đề.",
+    category: "Text utility",
+  },
+  {
+    slug: "url-codec",
+    title: "URL Encode / Decode",
+    description: "Encode or decode URL components privately in the browser.",
     category: "Text utility",
   },
   {

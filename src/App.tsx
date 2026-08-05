@@ -34,6 +34,9 @@ const MarkdownWordCounterTool = lazy(async () => ({
 const HtmlToMarkdownTool = lazy(async () => ({
   default: (await import("./tools/MarkdownTools")).HtmlToMarkdownTool,
 }));
+const JwtDecoderTool = lazy(async () => ({
+  default: (await import("./tools/SecurityTools")).JwtDecoderTool,
+}));
 const JsonFormatterTool = lazy(async () => {
   const { JsonTool } = await import("./tools/DataTools");
   return { default: () => <JsonTool mode="format" /> };
@@ -67,6 +70,9 @@ const CaseConverterTool = lazy(async () => ({
 const SlugGeneratorTool = lazy(async () => ({
   default: (await import("./tools/TextTools")).SlugGeneratorTool,
 }));
+const UrlCodecTool = lazy(async () => ({
+  default: (await import("./tools/SecurityTools")).UrlCodecTool,
+}));
 const QrGeneratorTool = lazy(async () => ({
   default: (await import("./tools/QuickTools")).QrGeneratorTool,
 }));
@@ -93,6 +99,7 @@ const routeComponents: Record<string, () => ReactElement> = {
   "markdown-table-formatter": () => <MarkdownTableFormatterTool />,
   "markdown-word-counter": () => <MarkdownWordCounterTool />,
   "html-to-markdown": () => <HtmlToMarkdownTool />,
+  "jwt-decoder": () => <JwtDecoderTool />,
   "json-formatter": () => <JsonFormatterTool />,
   "json-validator": () => <JsonValidatorTool />,
   "json-diff": () => <JsonDiffTool />,
@@ -103,6 +110,7 @@ const routeComponents: Record<string, () => ReactElement> = {
   base64: () => <Base64Tool />,
   "case-converter": () => <CaseConverterTool />,
   "slug-generator": () => <SlugGeneratorTool />,
+  "url-codec": () => <UrlCodecTool />,
   "qr-generator": () => <QrGeneratorTool />,
   "uuid-generator": () => <UuidGeneratorTool />,
   "password-generator": () => <PasswordGeneratorTool />,

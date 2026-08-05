@@ -11,6 +11,7 @@
 /markdown-table-formatter /markdown-table-formatter/ 301
 /markdown-word-counter /markdown-word-counter/ 301
 /html-to-markdown /html-to-markdown/ 301
+/jwt-decoder /jwt-decoder/ 301
 /json-formatter /json-formatter/ 301
 /json-validator /json-validator/ 301
 /json-diff /json-diff/ 301
@@ -21,6 +22,7 @@
 /base64 /base64/ 301
 /case-converter /case-converter/ 301
 /slug-generator /slug-generator/ 301
+/url-codec /url-codec/ 301
 /qr-generator /qr-generator/ 301
 /uuid-generator /uuid-generator/ 301
 /password-generator /password-generator/ 301
