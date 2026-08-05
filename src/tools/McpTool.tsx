@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { CopyButton, ToolPage, ToolPanel } from "../components/ToolUI";
 import { toolStyles } from "../components/toolStyles";
 
@@ -30,22 +31,54 @@ Sau khi kết nối:
 - Không dùng npm làm command MCP; command chuẩn là toolmd.
 - Nếu setup hoặc smoke test lỗi, báo lỗi thật và hướng dẫn sửa, không giả vờ rằng MCP đã kết nối.`;
 
+const AGENT_SETUP_PROMPT_EN = `You are an agent integrating toolmd MCP into the current workspace.
+
+Goal:
+1. Find the toolmd project directory by locating package.json with the name "toolmd".
+2. Run in that project: npm install
+3. Register the local command with: npm link
+4. Check the command with: which toolmd and toolmd
+5. Run the MCP smoke test with: TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke
+6. Register the MCP server in the host with:
+   command: toolmd
+   args: ["mcp"]
+
+After connecting:
+- Call toolmd_catalog to discover tools before processing a request.
+- Prefer toolmd MCP for Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID and password tasks.
+- Use the tool's structuredContent for the result; fall back to the CLI only when the MCP host does not support tool calls.
+- For each request, choose the right tool, pass the user's data to it, then briefly explain the result.
+- Do not use npm as the MCP command; the standard command is toolmd.
+- If setup or the smoke test fails, report the real error and explain how to fix it. Never pretend MCP is connected.`;
+
 const PROMPTS = [
   {
     title: "Format JSON",
+    titleVi: "Định dạng JSON",
+    titleEn: "Format JSON",
     prompt: 'Dùng toolmd_json_format để format JSON này: {"name":"toolmd","ready":true}',
+    promptEn: 'Use toolmd_json_format to format this JSON: {"name":"toolmd","ready":true}',
   },
   {
     title: "Render Markdown",
+    titleVi: "Render Markdown",
+    titleEn: "Render Markdown",
     prompt: "Dùng toolmd_markdown_render để render Markdown và trả về HTML cùng thống kê: # Project brief",
+    promptEn: "Use toolmd_markdown_render to render Markdown and return HTML with stats: # Project brief",
   },
   {
     title: "Chuyển đổi dữ liệu",
+    titleVi: "Chuyển đổi dữ liệu",
+    titleEn: "Convert data",
     prompt: "Dùng toolmd_data_convert với format csv-to-json cho dữ liệu: name,status\\nmd2pdf,ready",
+    promptEn: "Use toolmd_data_convert with csv-to-json for this data: name,status\\nmd2pdf,ready",
   },
   {
     title: "So sánh text",
+    titleVi: "So sánh text",
+    titleEn: "Compare text",
     prompt: "Dùng toolmd_text_diff để so sánh bản gốc và bản mới, rồi tóm tắt các dòng thay đổi.",
+    promptEn: "Use toolmd_text_diff to compare the original and new versions, then summarize changed lines.",
   },
 ];
 
@@ -68,41 +101,41 @@ const MCP_TOOLS = [
 ];
 
 export default function McpTool() {
+  const { language, t } = useI18n();
+  const agentSetupPrompt = language === "vi" ? AGENT_SETUP_PROMPT : AGENT_SETUP_PROMPT_EN;
   return (
-    <ToolPage slug="mcp" eyebrow="AI INTEGRATION">
+    <ToolPage slug="mcp" eyebrow={t("aiIntegration")}>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,.75fr)]">
         <ToolPanel
-          title="Copy instruction for your agent"
-          description="Dán nguyên block này vào agent. Agent sẽ tự setup command, test MCP và biết khi nào nên gọi toolmd."
+          title={t("copyInstruction")}
+          description={t("copyInstructionDescription")}
           className="xl:col-span-2"
-          actions={<CopyButton value={AGENT_SETUP_PROMPT} label="Copy agent guide" />}
+          actions={<CopyButton value={agentSetupPrompt} label={t("copyAgentGuide")} />}
         >
-          <pre className={`${toolStyles.codeOutput} min-h-0 whitespace-pre-wrap text-sm leading-7`}>
-            {AGENT_SETUP_PROMPT}
+            <pre className={`${toolStyles.codeOutput} min-h-0 whitespace-pre-wrap text-sm leading-7`}>
+            {agentSetupPrompt}
           </pre>
         </ToolPanel>
         <ToolPanel
-          title="Connect an AI host"
-          description="Toolmd MCP chạy local qua stdio. Dán cấu hình này vào MCP client như Claude Desktop, Cursor hoặc host hỗ trợ MCP rồi thay đường dẫn project thật."
-          actions={<CopyButton value={MCP_CONFIG} label="Copy config" />}
+          title={t("connectAiHost")}
+          description={t("connectAiHostDescription")}
+          actions={<CopyButton value={MCP_CONFIG} label={t("copyConfig")} />}
         >
           <pre className={`${toolStyles.codeOutput} min-h-0 text-xs leading-6`}>
             {MCP_CONFIG}
           </pre>
           <div className="mt-5 rounded-xl border border-orange-100 bg-orange-50/60 p-4 text-sm leading-6 text-slate-600">
-            <strong className="font-semibold text-[#b34835]">Lưu ý:</strong>{" "}
-            trình duyệt không thể tự spawn process stdio. Việc kết nối phải do
-            AI host chạy MCP server, còn trang này là nơi hướng dẫn và tạo
-            prompt test.
+            <strong className="font-semibold text-[#b34835]">{t("note")}</strong>{" "}
+            {t("browserCannotSpawn")}
           </div>
           <p className="mt-4 text-sm leading-6 text-slate-500">
-            Cài command một lần trong repository: <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700">npm link</code>. Sau đó MCP host có thể gọi trực tiếp <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700">toolmd mcp</code> mà không cần lặp lại đường dẫn project.
+            {t("installCommand")} <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700">npm link</code>. {t("mcpHostCanCall")} <code className="rounded bg-slate-100 px-1.5 py-1 font-mono text-xs text-slate-700">toolmd mcp</code>.
           </p>
         </ToolPanel>
 
         <ToolPanel
-          title="Test từ terminal"
-          description="Smoke test dùng MCP client thật, kiểm tra discovery và gọi nhiều tool."
+          title={t("testFromTerminal")}
+          description={t("smokeTestDescription")}
           actions={<CopyButton value="npm run mcp:smoke" />}
         >
           <pre className={`${toolStyles.codeOutput} min-h-0 text-sm leading-7`}>
@@ -110,15 +143,15 @@ export default function McpTool() {
           </pre>
           <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             <Info label="Transport" value="stdio" />
-            <Info label="Tools" value="15 available" />
-            <Info label="Auth" value="Not required" />
+            <Info label="Tools" value={`15 ${t("available")}`} />
+            <Info label="Auth" value={t("notRequired")} />
           </div>
         </ToolPanel>
       </div>
 
       <ToolPanel
-        title="Prompt mẫu để thử ngay"
-        description="Sau khi host đã kết nối MCP server, gửi một trong các prompt dưới đây cho AI."
+        title={t("tryNow")}
+        description={t("tryNowDescription")}
       >
         <div className="grid gap-4 md:grid-cols-2">
           {PROMPTS.map((item) => (
@@ -128,21 +161,21 @@ export default function McpTool() {
             >
               <div>
                 <h3 className="font-display text-lg font-semibold text-slate-800">
-                  {item.title}
+                  {language === "vi" ? item.titleVi || item.title : item.titleEn || item.title}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {item.prompt}
+                  {language === "vi" ? item.prompt : item.promptEn}
                 </p>
               </div>
-              <CopyButton value={item.prompt} />
+              <CopyButton value={language === "vi" ? item.prompt : item.promptEn} />
             </article>
           ))}
         </div>
       </ToolPanel>
 
       <ToolPanel
-        title="Tool AI có thể gọi"
-        description="Các tool trả về JSON có cấu trúc để AI có thể đọc, tóm tắt hoặc chuyển tiếp sang bước tiếp theo."
+        title={t("callableTools")}
+        description={t("callableToolsDescription")}
       >
         <div className="flex flex-wrap gap-2">
           {MCP_TOOLS.map((name) => (
