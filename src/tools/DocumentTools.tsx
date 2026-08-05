@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { literal, useI18n } from "../i18n";
 import pptxgen from "pptxgenjs";
 import { PDFDocument } from "pdf-lib";
@@ -8,6 +8,7 @@ import { downloadBlob, downloadFile } from "../lib/download";
 import {
   ToolButton,
   ToolLabel,
+  ToolNotice,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -42,12 +43,19 @@ function pdfBlob(bytes: Uint8Array): Blob {
 }
 
 export function Md2WordTool() {
+  const { t } = useI18n();
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
   const [name, setName] = useState("document");
+  const [error, setError] = useState("");
   function exportWord(): void {
-    const safeName = name.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || "document";
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${safeName}</title><style>body{font-family:Arial,sans-serif;line-height:1.6;max-width:760px;margin:40px auto}h1,h2,h3{color:#172235}code{background:#f1f3f5;padding:2px 4px}</style></head><body>${renderMarkdown(markdown)}</body></html>`;
-    downloadFile(`${safeName}.doc`, html, "application/msword;charset=utf-8");
+    try {
+      setError("");
+      const safeName = name.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || "document";
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${safeName}</title><style>body{font-family:Arial,sans-serif;line-height:1.6;max-width:760px;margin:40px auto}h1,h2,h3{color:#172235}code{background:#f1f3f5;padding:2px 4px}</style></head><body>${renderMarkdown(markdown)}</body></html>`;
+      downloadFile(`${safeName}.doc`, html, "application/msword;charset=utf-8");
+    } catch {
+      setError(t("exportFailed"));
+    }
   }
   return (
     <ToolPage slug="md2word">
@@ -80,25 +88,36 @@ export function Md2WordTool() {
           onChange={(event) => setName(event.target.value)}
           placeholder="document"
         />
+        {error && <ToolNotice variant="error">{error}</ToolNotice>}
       </ToolPanel>
     </ToolPage>
   );
 }
 
 export function Md2PptxTool() {
+  const { t } = useI18n();
   const [markdown, setMarkdown] = useState(
     `# Project brief\n\nA focused presentation from Markdown.\n\n---\n\n## Next steps\n\n- Choose a clear story\n- Keep each slide focused`,
   );
   const [name, setName] = useState("presentation");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const slides = useMemo(
+    () => markdown.split(/\n\s*---+\s*\n/g).map((slide) => slide.trim()).filter(Boolean),
+    [markdown],
+  );
   async function exportPptx(): Promise<void> {
+    if (!slides.length) {
+      setError(t("exportFailed"));
+      return;
+    }
     setBusy(true);
+    setError("");
     try {
       const pptx = new pptxgen();
       pptx.layout = "LAYOUT_WIDE";
       pptx.author = "toolmd";
       pptx.subject = "Markdown presentation";
-      const slides = markdown.split(/\n\s*---+\s*\n/g).filter(Boolean);
       slides.forEach((content, index) => {
         const slide = pptx.addSlide();
         slide.background = { color: "F7F8FA" };
@@ -149,6 +168,8 @@ export function Md2PptxTool() {
       await pptx.writeFile({
         fileName: `${name.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || "presentation"}.pptx`,
       });
+    } catch {
+      setError(t("exportFailed"));
     } finally {
       setBusy(false);
     }
@@ -172,10 +193,14 @@ export function Md2PptxTool() {
             onChange={(event) => setName(event.target.value)}
             placeholder="presentation"
           />
-          <ToolButton onClick={exportPptx} disabled={busy}>
-            {busy ? "Building…" : "Download .pptx"}
+          <ToolButton onClick={() => void exportPptx()} busy={busy}>
+            {busy ? t("processing") : "Download .pptx"}
           </ToolButton>
         </div>
+        <p className="mt-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+          {t("slidesCount", { count: slides.length })}
+        </p>
+        {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
       </ToolPanel>
       <div className={toolStyles.hint}>
         Tip: use <code>---</code> between sections to create a new slide.
@@ -185,11 +210,14 @@ export function Md2PptxTool() {
 }
 
 export function MergePdfTool() {
+  const { t } = useI18n();
   const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   async function merge(): Promise<void> {
     if (!files.length) return;
     setBusy(true);
+    setError("");
     try {
       const output = await PDFDocument.create();
       for (const file of files) {
@@ -198,6 +226,8 @@ export function MergePdfTool() {
         pages.forEach((page) => output.addPage(page));
       }
       downloadBlob("merged.pdf", pdfBlob(await output.save()));
+    } catch {
+      setError(t("pdfLoadFailed"));
     } finally {
       setBusy(false);
     }
@@ -209,6 +239,14 @@ export function MergePdfTool() {
         description="Files stay in your browser and are never uploaded."
       >
         <FilePicker multiple onFiles={setFiles} />
+        {files.length > 0 && (
+          <div className="mb-4 flex items-center justify-between gap-3 font-mono text-xs text-slate-500 dark:text-slate-400">
+            <span>{t("filesSelected", { count: files.length })}</span>
+            <ToolButton variant="quiet" onClick={() => setFiles([])}>
+              {t("clear")}
+            </ToolButton>
+          </div>
+        )}
         <div className={toolStyles.fileList}>
           {files.map((file, index) => (
             <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300" key={`${file.name}-${index}`}>
@@ -218,11 +256,14 @@ export function MergePdfTool() {
             </div>
           ))}
         </div>
-        <ToolButton onClick={merge} disabled={!files.length || busy}>
+        <ToolButton onClick={() => void merge()} busy={busy} disabled={!files.length}>
           {busy
-            ? "Merging…"
-            : `Merge ${files.length || ""} PDF${files.length === 1 ? "" : "s"}`}
+            ? t("processing")
+            : files.length === 1
+              ? t("mergePdf", { count: files.length })
+              : t("mergePdfs", { count: files.length })}
         </ToolButton>
+        {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
       </ToolPanel>
     </ToolPage>
   );
@@ -235,11 +276,12 @@ function parseRanges(value: string, total: number): number[] {
     .map((part) => part.trim())
     .filter(Boolean)
     .forEach((part) => {
+      if (!/^\d+(?:\s*-\s*\d+)?$/.test(part)) return;
       const [startRaw, endRaw] = part
         .split("-")
         .map((item) => Number(item.trim()));
-      const start = Math.max(1, startRaw || 1);
-      const end = Math.min(total, endRaw || start);
+      const start = Math.max(1, Math.min(total, startRaw));
+      const end = Math.max(1, Math.min(total, endRaw || start));
       for (
         let page = Math.min(start, end);
         page <= Math.max(start, end);
@@ -251,15 +293,22 @@ function parseRanges(value: string, total: number): number[] {
 }
 
 export function SplitPdfTool() {
+  const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [ranges, setRanges] = useState("1");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   async function split(): Promise<void> {
     if (!file) return;
     setBusy(true);
+    setError("");
     try {
       const source = await PDFDocument.load(await file.arrayBuffer());
       const pages = parseRanges(ranges, source.getPageCount());
+      if (!pages.length) {
+        setError(t("invalidRange"));
+        return;
+      }
       const output = await PDFDocument.create();
       const copied = await output.copyPages(
         source,
@@ -267,6 +316,8 @@ export function SplitPdfTool() {
       );
       copied.forEach((page) => output.addPage(page));
       downloadBlob("split.pdf", pdfBlob(await output.save()));
+    } catch {
+      setError(t("pdfLoadFailed"));
     } finally {
       setBusy(false);
     }
@@ -290,20 +341,24 @@ export function SplitPdfTool() {
             placeholder="1, 3-5"
           />
         </label>
-        <ToolButton onClick={split} disabled={!file || busy}>
-          {busy ? "Splitting…" : "Download split PDF"}
+        <ToolButton onClick={() => void split()} busy={busy} disabled={!file}>
+          {busy ? t("processing") : t("splitPdf")}
         </ToolButton>
+        {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
       </ToolPanel>
     </ToolPage>
   );
 }
 
 export function CompressPdfTool() {
+  const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   async function compress(): Promise<void> {
     if (!file) return;
     setBusy(true);
+    setError("");
     try {
       const source = await PDFDocument.load(await file.arrayBuffer());
       const bytes = await source.save({
@@ -311,6 +366,8 @@ export function CompressPdfTool() {
         addDefaultPage: false,
       });
       downloadBlob("compressed.pdf", pdfBlob(bytes));
+    } catch {
+      setError(t("pdfLoadFailed"));
     } finally {
       setBusy(false);
     }
@@ -327,9 +384,10 @@ export function CompressPdfTool() {
             ? `${file.name} · ${Math.round(file.size / 1024)} KB`
             : <ToolLabel>No file selected</ToolLabel>}
         </p>
-        <ToolButton onClick={compress} disabled={!file || busy}>
-          {busy ? "Optimizing…" : "Download optimized PDF"}
+        <ToolButton onClick={() => void compress()} busy={busy} disabled={!file}>
+          {busy ? t("processing") : t("optimizePdf")}
         </ToolButton>
+        {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
       </ToolPanel>
     </ToolPage>
   );
