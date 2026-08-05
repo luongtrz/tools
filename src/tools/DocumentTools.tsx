@@ -4,6 +4,7 @@ import pptxgen from "pptxgenjs";
 import { PDFDocument } from "pdf-lib";
 import { SAMPLE_MARKDOWN } from "../constants/sampleMarkdown";
 import { renderMarkdown } from "../lib/markdown";
+import { markdownToDocxBlob } from "../lib/docx";
 import { downloadBlob, downloadFile } from "../lib/download";
 import {
   ToolButton,
@@ -23,13 +24,20 @@ function FilePicker({
   onFiles: (files: File[]) => void;
 }) {
   const { language } = useI18n();
+  function acceptPdfFiles(files: File[]): void {
+    onFiles(
+      files.filter(
+        (file) => file.type === "application/pdf" || /\.pdf$/i.test(file.name),
+      ),
+    );
+  }
   return (
     <label
       className={toolStyles.filePicker}
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
-        onFiles(Array.from(event.dataTransfer.files));
+        acceptPdfFiles(Array.from(event.dataTransfer.files));
       }}
     >
       <span>{literal(multiple ? "Choose PDF files" : "Choose PDF file", language)}</span>
@@ -38,7 +46,7 @@ function FilePicker({
         type="file"
         accept="application/pdf,.pdf"
         multiple={multiple}
-        onChange={(event) => onFiles(Array.from(event.target.files || []))}
+        onChange={(event) => acceptPdfFiles(Array.from(event.target.files || []))}
       />
     </label>
   );
@@ -58,15 +66,27 @@ export function Md2WordTool() {
   const { t } = useI18n();
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
   const [name, setName] = useState("document");
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const safeName = () => name.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || "document";
   function exportWord(): void {
     try {
       setError("");
-      const safeName = name.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || "document";
-      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${safeName}</title><style>body{font-family:Arial,sans-serif;line-height:1.6;max-width:760px;margin:40px auto}h1,h2,h3{color:#172235}code{background:#f1f3f5;padding:2px 4px}</style></head><body>${renderMarkdown(markdown)}</body></html>`;
-      downloadFile(`${safeName}.doc`, html, "application/msword;charset=utf-8");
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${safeName()}</title><style>body{font-family:Arial,sans-serif;line-height:1.6;max-width:760px;margin:40px auto}h1,h2,h3{color:#172235}code{background:#f1f3f5;padding:2px 4px}</style></head><body>${renderMarkdown(markdown)}</body></html>`;
+      downloadFile(`${safeName()}.doc`, html, "application/msword;charset=utf-8");
     } catch {
       setError(t("exportFailed"));
+    }
+  }
+  async function exportDocx(): Promise<void> {
+    setBusy(true);
+    setError("");
+    try {
+      downloadBlob(`${safeName()}.docx`, await markdownToDocxBlob(markdown, safeName()));
+    } catch {
+      setError(t("exportFailed"));
+    } finally {
+      setBusy(false);
     }
   }
   return (
@@ -85,8 +105,15 @@ export function Md2WordTool() {
         </ToolPanel>
         <ToolPanel
           title="Word preview"
-          description="The exported .doc keeps this basic formatting."
-          actions={<ToolButton onClick={exportWord}>Download .doc</ToolButton>}
+          description="Export a legacy .doc file or a standard .docx document."
+          actions={
+            <div className="flex flex-wrap gap-2">
+              <ToolButton variant="quiet" onClick={exportWord}>Download .doc</ToolButton>
+              <ToolButton onClick={() => void exportDocx()} busy={busy}>
+                {busy ? t("processing") : "Download .docx"}
+              </ToolButton>
+            </div>
+          }
         >
           <article
             className={toolStyles.documentPreview}
@@ -370,6 +397,7 @@ export function CompressPdfTool() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [sizeResult, setSizeResult] = useState<{ before: number; after: number } | null>(null);
   async function compress(): Promise<void> {
     if (!file) return;
     setBusy(true);
@@ -381,6 +409,7 @@ export function CompressPdfTool() {
         addDefaultPage: false,
       });
       downloadBlob(`${outputStem(file.name, "document")}-optimized.pdf`, pdfBlob(bytes));
+      setSizeResult({ before: file.size, after: bytes.byteLength });
     } catch {
       setError(t("pdfLoadFailed"));
     } finally {
@@ -392,9 +421,9 @@ export function CompressPdfTool() {
       <ToolPanel
         title="Compress a PDF"
         description="This browser-side pass removes some redundant PDF structure. Image-heavy PDFs may need a dedicated image optimizer for bigger savings."
-        actions={<ToolButton variant="quiet" onClick={() => setFile(null)}>{t("clear")}</ToolButton>}
+        actions={<ToolButton variant="quiet" onClick={() => { setFile(null); setSizeResult(null); setError(""); }}>{t("clear")}</ToolButton>}
       >
-        <FilePicker onFiles={(files) => setFile(files[0] || null)} />
+        <FilePicker onFiles={(files) => { setFile(files[0] || null); setSizeResult(null); setError(""); }} />
         <p className={toolStyles.selectedFile}>
           {file
             ? `${file.name} · ${Math.round(file.size / 1024)} KB`
@@ -403,8 +432,24 @@ export function CompressPdfTool() {
         <ToolButton onClick={() => void compress()} busy={busy} disabled={!file}>
           {busy ? t("processing") : t("optimizePdf")}
         </ToolButton>
+        {sizeResult && (
+          <div className="mt-4">
+            <ToolNotice variant={sizeResult.after < sizeResult.before ? "success" : "info"}>
+              {t("pdfSizeResult", {
+                before: formatBytes(sizeResult.before),
+                after: formatBytes(sizeResult.after),
+              })}
+            </ToolNotice>
+          </div>
+        )}
         {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
       </ToolPanel>
     </ToolPage>
   );
+}
+
+function formatBytes(value: number): string {
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }

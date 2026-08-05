@@ -6,6 +6,8 @@
 
 Monorepo frontend React + TypeScript với các route dùng chung một React shell. Các route chính gồm `/md2pdf/`, `/md2word/` và `/md2pptx/`; các tool mới có thể thêm dưới cùng domain mà không cần tạo project hosting riêng.
 
+`/md2word/` xuất được cả `.doc` tương thích legacy và `.docx` chuẩn Office Open XML. Bản `.docx` giữ các heading, emphasis, code, link, quote và danh sách cơ bản từ Markdown.
+
 UI dùng Tailwind CSS qua Vite plugin; `src/index.css` chỉ là entrypoint tối thiểu để nạp Tailwind và font theme. Các style giao diện được đặt trực tiếp trong TSX để dễ trace cùng component.
 
 ## MCP và CLI cho AI

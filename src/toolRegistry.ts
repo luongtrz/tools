@@ -25,7 +25,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
   {
     slug: "md2word",
     title: "Markdown → Word",
-    description: "Xuất Markdown thành tài liệu Word có thể chỉnh sửa.",
+    description: "Xuất Markdown thành DOC hoặc DOCX có thể chỉnh sửa.",
     category: "Document",
     featured: true,
   },
