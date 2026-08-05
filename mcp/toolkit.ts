@@ -204,17 +204,32 @@ export function testRegex(pattern: string, flags: string, value: string) {
   }
 }
 
+function encodeBase64(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function decodeBase64(value: string): string {
+  const binary = atob(value);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
 export function base64(value: string, direction: "encode" | "decode") {
   try {
-    if (direction === "encode") return { valid: true, result: Buffer.from(value, "utf8").toString("base64") };
+    if (direction === "encode") return { valid: true, result: encodeBase64(value) };
     const normalized = value.trim();
     if (!normalized || !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized) || normalized.length % 4 === 1) {
       return { valid: false, result: "Invalid Base64 input" };
     }
-    const decoded = Buffer.from(normalized, "base64");
-    const canonical = decoded.toString("base64").replace(/=+$/, "");
+    const decoded = decodeBase64(normalized);
+    const canonical = encodeBase64(decoded).replace(/=+$/, "");
     if (canonical !== normalized.replace(/=+$/, "")) return { valid: false, result: "Invalid Base64 input" };
-    return { valid: true, result: decoded.toString("utf8") };
+    return { valid: true, result: decoded };
   } catch {
     return { valid: false, result: "Invalid Base64 input" };
   }
