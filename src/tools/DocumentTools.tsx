@@ -44,7 +44,10 @@ function FilePicker({
         type="file"
         accept="application/pdf,.pdf"
         multiple={multiple}
-        onChange={(event) => acceptPdfFiles(Array.from(event.target.files || []))}
+        onChange={(event) => {
+          acceptPdfFiles(Array.from(event.target.files || []));
+          event.currentTarget.value = "";
+        }}
       />
     </label>
   );

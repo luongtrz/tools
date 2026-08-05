@@ -118,6 +118,9 @@ export function useCollaboration({
   const [status, setStatus] = useState<CollaborationStatus>(() =>
     roomId && accessToken ? "connecting" : "idle",
   );
+  const statusRef = useRef<CollaborationStatus>(
+    roomId && accessToken ? "connecting" : "idle",
+  );
   const [collaboratorCount, setCollaboratorCount] = useState(0);
   const providerRef = useRef<HocuspocusProvider | null>(null);
   const yTextRef = useRef<Y.Text | null>(null);
@@ -127,12 +130,20 @@ export function useCollaboration({
   const markdownRef = useRef(markdown);
   const nameRef = useRef(name);
 
+  const updateStatus = useCallback((nextStatus: CollaborationStatus) => {
+    statusRef.current = nextStatus;
+    setStatus(nextStatus);
+  }, []);
+
   useEffect(() => {
     markdownRef.current = markdown;
   }, [markdown]);
   useEffect(() => {
     nameRef.current = name;
   }, [name]);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   const setRoomUrl = useCallback((nextRoomId: string, nextToken: string) => {
     window.history.replaceState({}, "", roomUrl(nextRoomId, nextToken));
@@ -154,21 +165,23 @@ export function useCollaboration({
         nextAccessToken,
       );
       const collaborationUrl = `${COLLABORATION_URL.replace(/\/$/, "")}/room/${encodeURIComponent(nextRoomId)}`;
-      if (
-        activeDocumentRef.current === nextDocumentName &&
-        providerRef.current
-      ) {
-        return providerRef.current.isSynced;
+      if (activeDocumentRef.current === nextDocumentName && providerRef.current) {
+        if (providerRef.current.isSynced) return true;
+        if (statusRef.current === "connecting") return false;
       }
       if (!COLLABORATION_URL) {
-        setStatus("error");
+        updateStatus("error");
         return false;
       }
 
       providerRef.current?.destroy();
+      docRef.current?.destroy();
       providerRef.current = null;
+      yTextRef.current = null;
+      docRef.current = null;
       activeDocumentRef.current = null;
-      setStatus("connecting");
+      setCollaboratorCount(0);
+      updateStatus("connecting");
 
       const doc = new Y.Doc();
       const yText = doc.getText("markdown");
@@ -195,13 +208,13 @@ export function useCollaboration({
         token: nextAccessToken,
         flushDelay: 250,
         onStatus: ({ status: providerStatus }) => {
-          if (providerStatus === "connecting") setStatus("connecting");
-          if (providerStatus === "disconnected") setStatus("offline");
+          if (providerStatus === "connecting") updateStatus("connecting");
+          if (providerStatus === "disconnected") updateStatus("offline");
           if (
             providerStatus === "connected" &&
             !providerRef.current?.isSynced
           )
-            setStatus("connecting");
+            updateStatus("connecting");
           updatePresence();
         },
         onSynced: () => {
@@ -211,21 +224,21 @@ export function useCollaboration({
               "initial-seed",
             );
           }
-          setStatus("connected");
+          updateStatus("connected");
           updatePresence();
           finishConnection(true);
         },
         onAuthenticationFailed: () => {
-          setStatus("error");
+          updateStatus("error");
           finishConnection(false);
         },
         onDisconnect: () => {
-          setStatus("offline");
+          updateStatus("offline");
           updatePresence();
           if (!providerRef.current?.isSynced) finishConnection(false);
         },
         onClose: () => {
-          setStatus("offline");
+          updateStatus("offline");
           updatePresence();
           if (!providerRef.current?.isSynced) finishConnection(false);
         },
@@ -253,7 +266,7 @@ export function useCollaboration({
 
       timeoutId = window.setTimeout(() => {
         if (!provider.isSynced) {
-          setStatus("offline");
+          updateStatus("offline");
           finishConnection(false);
         }
       }, CONNECTION_TIMEOUT);
@@ -265,7 +278,7 @@ export function useCollaboration({
       setRoomUrl(nextRoomId, nextAccessToken);
       return true;
     },
-    [setMarkdown, setRoomUrl, updatePresence],
+    [setMarkdown, setRoomUrl, updatePresence, updateStatus],
   );
 
   const createRoom = useCallback(async (): Promise<string | null> => {
