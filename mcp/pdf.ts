@@ -1,9 +1,9 @@
 import { escapeHtml, renderMarkdown } from "../src/lib/markdown";
 
 export type PdfFormat = "a4" | "letter" | "legal";
-export const MAX_MARKDOWN_BYTES = 30_000_000;
+export const MAX_MARKDOWN_BYTES = 45_000_000;
 
-const MAX_BROWSER_HTML_BYTES = 45_000_000;
+const MAX_BROWSER_HTML_BYTES = 49_000_000;
 
 export interface PdfRenderInput {
   markdown: string;

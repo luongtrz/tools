@@ -80,8 +80,8 @@ export function createToolmdServer(options: ToolmdServerOptions = {}): McpServer
       inputSchema: {
         markdown: z.string().refine(
           (value) => new TextEncoder().encode(value).byteLength <= MAX_MARKDOWN_BYTES,
-          { message: "Markdown source must be 30 MB or smaller." },
-        ).describe("Markdown source, up to 30 MB"),
+          { message: "Markdown source must be 45 MB or smaller." },
+        ).describe("Markdown source, up to 45 MB"),
         filename: z.string().max(96).optional().describe("Output filename, with or without .pdf"),
         format: z.enum(["a4", "letter", "legal"]).default("a4"),
         landscape: z.boolean().default(false),
