@@ -1,6 +1,6 @@
 import { escapeHtml, renderMarkdown } from "../src/lib/markdown";
 
-export type PdfFormat = "a4" | "letter" | "legal";
+export type PdfFormat = "a4" | "a5" | "letter" | "legal";
 export const MAX_MARKDOWN_BYTES = 45_000_000;
 
 const MAX_BROWSER_HTML_BYTES = 49_000_000;
@@ -10,6 +10,7 @@ export interface PdfRenderInput {
   filename?: string;
   format?: PdfFormat;
   landscape?: boolean;
+  margins?: "10" | "18" | "25";
 }
 
 export interface PdfRenderOutput {
@@ -19,7 +20,18 @@ export interface PdfRenderOutput {
   base64: string;
 }
 
-export function markdownDocumentHtml(markdown: string, title: string): string {
+export interface PdfRenderBinaryOutput {
+  filename: string;
+  mimeType: "application/pdf";
+  bytes: number;
+  data: Uint8Array;
+}
+
+export function markdownDocumentHtml(
+  markdown: string,
+  title: string,
+  margins = "18",
+): string {
   return `<!doctype html>
 <html lang="vi">
   <head>
@@ -27,7 +39,7 @@ export function markdownDocumentHtml(markdown: string, title: string): string {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
     <style>
-      @page { margin: 18mm; }
+      @page { margin: ${margins}mm; }
       :root { color-scheme: light; font-family: Arial, "Noto Sans", sans-serif; }
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
@@ -72,7 +84,7 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function normalizeFilename(filename: string | undefined): string {
+export function normalizePdfFilename(filename: string | undefined): string {
   const cleaned = (filename || "toolmd-document")
     .trim()
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
@@ -81,12 +93,18 @@ function normalizeFilename(filename: string | undefined): string {
   return cleaned.toLowerCase().endsWith(".pdf") ? cleaned : `${cleaned}.pdf`;
 }
 
-export async function renderMarkdownToPdf(
+async function renderPdfBytes(
   browser: BrowserRun,
   input: PdfRenderInput,
-): Promise<PdfRenderOutput> {
-  const filename = normalizeFilename(input.filename);
-  const html = markdownDocumentHtml(input.markdown, filename.replace(/\.pdf$/i, ""));
+): Promise<PdfRenderBinaryOutput> {
+  const markdownBytes = new TextEncoder().encode(input.markdown).byteLength;
+  if (markdownBytes > MAX_MARKDOWN_BYTES) {
+    throw new Error("Markdown source must be 45 MB or smaller.");
+  }
+
+  const filename = normalizePdfFilename(input.filename);
+  const margins = input.margins || "18";
+  const html = markdownDocumentHtml(input.markdown, filename.replace(/\.pdf$/i, ""), margins);
   if (new TextEncoder().encode(html).byteLength > MAX_BROWSER_HTML_BYTES) {
     throw new Error("The rendered HTML is too large for the PDF service. Reduce the Markdown size.");
   }
@@ -100,7 +118,7 @@ export async function renderMarkdownToPdf(
       landscape: input.landscape || false,
       printBackground: true,
       preferCSSPageSize: true,
-      margin: { top: "18mm", right: "18mm", bottom: "18mm", left: "18mm" },
+      margin: { top: `${margins}mm`, right: `${margins}mm`, bottom: `${margins}mm`, left: `${margins}mm` },
     },
   });
 
@@ -120,6 +138,26 @@ export async function renderMarkdownToPdf(
     filename,
     mimeType: "application/pdf",
     bytes: bytes.byteLength,
-    base64: toBase64(bytes),
+    data: bytes,
   };
+}
+
+export async function renderMarkdownToPdf(
+  browser: BrowserRun,
+  input: PdfRenderInput,
+): Promise<PdfRenderOutput> {
+  const rendered = await renderPdfBytes(browser, input);
+  return {
+    filename: rendered.filename,
+    mimeType: rendered.mimeType,
+    bytes: rendered.bytes,
+    base64: toBase64(rendered.data),
+  };
+}
+
+export async function renderMarkdownToPdfBinary(
+  browser: BrowserRun,
+  input: PdfRenderInput,
+): Promise<PdfRenderBinaryOutput> {
+  return renderPdfBytes(browser, input);
 }

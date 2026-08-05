@@ -85,11 +85,12 @@ export function createToolmdServer(options: ToolmdServerOptions = {}): McpServer
           { message: "Markdown source must be 45 MB or smaller." },
         ).describe("Markdown source, up to 45 MB"),
         filename: z.string().max(96).optional().describe("Output filename, with or without .pdf"),
-        format: z.enum(["a4", "letter", "legal"]).default("a4"),
+        format: z.enum(["a4", "a5", "letter", "legal"]).default("a4"),
         landscape: z.boolean().default(false),
+        margins: z.enum(["10", "18", "25"]).default("18"),
       },
     },
-    async ({ markdown, filename, format, landscape }) => {
+    async ({ markdown, filename, format, landscape, margins }) => {
       if (!options.renderPdf) {
         return {
           ...result({ valid: false, error: "PDF rendering is not configured on this MCP host." }),
@@ -97,7 +98,7 @@ export function createToolmdServer(options: ToolmdServerOptions = {}): McpServer
         };
       }
       try {
-        return pdfResult(await options.renderPdf({ markdown, filename, format, landscape }));
+        return pdfResult(await options.renderPdf({ markdown, filename, format, landscape, margins }));
       } catch (error) {
         return {
           ...result({ valid: false, error: error instanceof Error ? error.message : "PDF rendering failed." }),
