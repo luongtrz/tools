@@ -99,7 +99,14 @@ function diffJson(first: string, second: string): string {
     const right = JSON.stringify(JSON.parse(second), null, 2).split("\n");
     const lines = new Set([...left, ...right]);
     return Array.from(lines)
-      .map((line) => `${right.includes(line) ? "  " : "- "}${line}`)
+      .map((line) => {
+        const marker = !left.includes(line)
+          ? "+ "
+          : !right.includes(line)
+            ? "- "
+            : "  ";
+        return `${marker}${line}`;
+      })
       .join("\n");
   } catch {
     return "Both inputs must be valid JSON before comparing.";
