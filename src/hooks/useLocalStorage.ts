@@ -8,7 +8,8 @@ export function useLocalStorage(
   const [value, setValue] = useState(() => readStorage(key, fallback));
 
   useEffect(() => {
-    writeStorage(key, value);
+    const saveTimer = window.setTimeout(() => writeStorage(key, value), 250);
+    return () => window.clearTimeout(saveTimer);
   }, [key, value]);
 
   return [value, setValue];
