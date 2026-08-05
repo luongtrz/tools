@@ -139,13 +139,19 @@ export function ToolTextArea({
   );
 }
 
-export function CopyButton({ value }: { value: string }) {
+export function CopyButton({
+  value,
+  label = "Copy",
+}: {
+  value: string;
+  label?: string;
+}) {
   return (
     <ToolButton
       variant="quiet"
       onClick={() => navigator.clipboard.writeText(value)}
     >
-      Copy
+      {label}
     </ToolButton>
   );
 }

@@ -10,6 +10,26 @@ const MCP_CONFIG = `{
   }
 }`;
 
+const AGENT_SETUP_PROMPT = `Bạn là agent đang tích hợp toolmd MCP vào workspace hiện tại.
+
+Mục tiêu:
+1. Tìm thư mục project toolmd bằng package.json có tên "toolmd".
+2. Trong project đó chạy: npm install
+3. Đăng ký command local bằng: npm link
+4. Kiểm tra command bằng: which toolmd và toolmd
+5. Chạy smoke test MCP bằng: TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke
+6. Đăng ký MCP server vào host bằng cấu hình:
+   command: toolmd
+   args: ["mcp"]
+
+Sau khi kết nối:
+- Gọi toolmd_catalog để discover tool trước khi xử lý.
+- Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password.
+- Trả kết quả dựa trên structuredContent của tool; chỉ dùng CLI khi MCP host không hỗ trợ tool call.
+- Với mỗi yêu cầu, chọn đúng tool, truyền dữ liệu người dùng vào, rồi giải thích ngắn gọn kết quả.
+- Không dùng npm làm command MCP; command chuẩn là toolmd.
+- Nếu setup hoặc smoke test lỗi, báo lỗi thật và hướng dẫn sửa, không giả vờ rằng MCP đã kết nối.`;
+
 const PROMPTS = [
   {
     title: "Format JSON",
@@ -52,9 +72,19 @@ export default function McpTool() {
     <ToolPage slug="mcp" eyebrow="AI INTEGRATION">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,.75fr)]">
         <ToolPanel
+          title="Copy instruction for your agent"
+          description="Dán nguyên block này vào agent. Agent sẽ tự setup command, test MCP và biết khi nào nên gọi toolmd."
+          className="xl:col-span-2"
+          actions={<CopyButton value={AGENT_SETUP_PROMPT} label="Copy agent guide" />}
+        >
+          <pre className={`${toolStyles.codeOutput} min-h-0 whitespace-pre-wrap text-sm leading-7`}>
+            {AGENT_SETUP_PROMPT}
+          </pre>
+        </ToolPanel>
+        <ToolPanel
           title="Connect an AI host"
           description="Toolmd MCP chạy local qua stdio. Dán cấu hình này vào MCP client như Claude Desktop, Cursor hoặc host hỗ trợ MCP rồi thay đường dẫn project thật."
-          actions={<CopyButton value={MCP_CONFIG} />}
+          actions={<CopyButton value={MCP_CONFIG} label="Copy config" />}
         >
           <pre className={`${toolStyles.codeOutput} min-h-0 text-xs leading-6`}>
             {MCP_CONFIG}

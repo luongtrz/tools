@@ -34,6 +34,23 @@ Ví dụ cấu hình cho MCP client:
 
 Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_json_format`, `toolmd_json_diff`, `toolmd_data_convert`, `toolmd_text_diff`, `toolmd_regex_test`, `toolmd_base64`, `toolmd_case_convert`, `toolmd_slug`, `toolmd_uuid` và `toolmd_password`. Mỗi response có cả text content và structured content để AI đọc tự nhiên hoặc xử lý tiếp bằng code.
 
+### Prompt setup cho agent
+
+Có thể copy nguyên prompt dưới đây và dán vào agent để agent tự setup, test và sử dụng MCP khi cần:
+
+```text
+Bạn là agent đang tích hợp toolmd MCP vào workspace hiện tại.
+
+1. Tìm thư mục project toolmd bằng package.json có tên "toolmd".
+2. Trong project đó chạy: npm install
+3. Đăng ký command local bằng: npm link
+4. Kiểm tra command bằng: which toolmd và toolmd
+5. Chạy smoke test MCP bằng: TOOLMD_MCP_COMMAND=toolmd npm run mcp:smoke
+6. Đăng ký MCP server vào host bằng command toolmd với args ["mcp"].
+
+Sau khi kết nối, gọi toolmd_catalog để discover tool trước. Ưu tiên dùng toolmd MCP cho Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. Dùng structuredContent để xử lý kết quả, chọn đúng tool cho từng yêu cầu và báo lỗi thật nếu setup hoặc smoke test thất bại. Không dùng npm làm command MCP; command chuẩn là toolmd.
+```
+
 Test MCP protocol bằng client thật:
 
 ```bash
