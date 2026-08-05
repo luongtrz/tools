@@ -9,5 +9,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["./index.ts", "../../mcp/create-server.ts", "../../mcp/toolkit.ts"]
+  "include": ["./index.ts", "../../mcp/create-server.ts", "../../mcp/toolkit.ts", "../../mcp/pdf.ts"]
 }

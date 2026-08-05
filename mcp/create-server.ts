@@ -19,6 +19,7 @@ import {
   testRegex,
   validateJson,
 } from "./toolkit";
+import type { PdfRenderInput, PdfRenderOutput } from "./pdf";
 
 function result(value: unknown) {
   const payload = typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -31,7 +32,11 @@ function result(value: unknown) {
   };
 }
 
-export function createToolmdServer(): McpServer {
+export interface ToolmdServerOptions {
+  renderPdf?: (input: PdfRenderInput) => Promise<PdfRenderOutput>;
+}
+
+export function createToolmdServer(options: ToolmdServerOptions = {}): McpServer {
   const server = new McpServer({
     name: "toolmd",
     version: "1.0.0",
@@ -54,6 +59,36 @@ export function createToolmdServer(): McpServer {
       inputSchema: { markdown: z.string().describe("Markdown source") },
     },
     async ({ markdown }) => result(markdownRender(markdown)),
+  );
+
+  server.registerTool(
+    "toolmd_md2pdf",
+    {
+      title: "Convert Markdown to PDF",
+      description: "Render Markdown into a downloadable PDF and return the file as Base64.",
+      inputSchema: {
+        markdown: z.string().max(1_000_000).describe("Markdown source, up to 1 MB"),
+        filename: z.string().max(96).optional().describe("Output filename, with or without .pdf"),
+        format: z.enum(["a4", "letter", "legal"]).default("a4"),
+        landscape: z.boolean().default(false),
+      },
+    },
+    async ({ markdown, filename, format, landscape }) => {
+      if (!options.renderPdf) {
+        return {
+          ...result({ valid: false, error: "PDF rendering is not configured on this MCP host." }),
+          isError: true,
+        };
+      }
+      try {
+        return result(await options.renderPdf({ markdown, filename, format, landscape }));
+      } catch (error) {
+        return {
+          ...result({ valid: false, error: error instanceof Error ? error.message : "PDF rendering failed." }),
+          isError: true,
+        };
+      }
+    },
   );
 
   server.registerTool(

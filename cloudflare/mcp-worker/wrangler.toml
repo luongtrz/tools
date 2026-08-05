@@ -3,3 +3,6 @@ main = "index.ts"
 compatibility_date = "2026-08-05"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
+
+[browser]
+binding = "BROWSER"

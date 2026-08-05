@@ -1,5 +1,10 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createToolmdServer } from "../../mcp/create-server";
+import { renderMarkdownToPdf } from "../../mcp/pdf";
+
+interface Env {
+  BROWSER: BrowserRun;
+}
 
 const MCP_PATHS = new Set(["/mcp", "/mcp/"]);
 const CORS_HEADERS = {
@@ -30,8 +35,10 @@ function withCors(response: Response): Response {
   });
 }
 
-async function handleMcp(request: Request): Promise<Response> {
-  const server = createToolmdServer();
+async function handleMcp(request: Request, env: Env): Promise<Response> {
+  const server = createToolmdServer({
+    renderPdf: (input) => renderMarkdownToPdf(env.BROWSER, input),
+  });
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
@@ -42,7 +49,7 @@ async function handleMcp(request: Request): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
@@ -61,7 +68,7 @@ export default {
     }
 
     try {
-      return await handleMcp(request);
+      return await handleMcp(request, env);
     } catch (error) {
       console.error("toolmd MCP request failed:", error);
       return jsonResponse({ error: "MCP request failed." }, 500);
