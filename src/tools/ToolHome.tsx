@@ -70,22 +70,16 @@ export default function ToolHome() {
           />
           <kbd>⌘ K</kbd>
         </label>
-        <div className="toolmd-filter-list">
-          <button
-            className={category === "All" ? "selected" : ""}
-            onClick={() => setCategory("All")}
-          >
-            All
-          </button>
-          {TOOL_CATEGORIES.map((item) => (
-            <button
-              className={category === item ? "selected" : ""}
-              key={item}
-              onClick={() => setCategory(item)}
-            >
-              {item}
+        <div className="toolmd-search-meta">
+          <span>
+            {category === "All" ? "All tools" : category}
+            {query ? ` · ${visibleTools.length} results` : ""}
+          </span>
+          {category !== "All" && (
+            <button type="button" onClick={() => setCategory("All")}>
+              Clear filter
             </button>
-          ))}
+          )}
         </div>
       </div>
       {featured.length > 0 && category === "All" && !query && (

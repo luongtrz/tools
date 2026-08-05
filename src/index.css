@@ -8,31 +8,78 @@
 
 @layer components {
   .toolmd-shell {
-    @apply min-h-screen bg-slate-50 font-sans text-slate-800;
+    @apply min-h-screen bg-[#f7f8fa] font-sans text-slate-800;
   }
   .toolmd-header {
-    @apply sticky top-0 z-10 grid min-h-[72px] grid-cols-[1fr_auto_1fr] items-center border-b border-slate-200 bg-white/90 px-9 backdrop-blur-lg;
+    @apply sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 px-8 backdrop-blur-xl;
+  }
+  .toolmd-header-inner {
+    @apply mx-auto flex min-h-[76px] max-w-[1440px] items-center gap-8;
   }
   .toolmd-brand {
-    @apply inline-flex w-max items-center gap-2 font-display text-[21px] font-bold tracking-tight text-slate-800 no-underline;
+    @apply inline-flex w-max shrink-0 items-center gap-2.5 font-display text-[23px] font-bold tracking-tight text-slate-800 no-underline;
   }
   .toolmd-brand > span:last-child span {
     @apply text-[#f2633d];
   }
   .toolmd-brand-mark {
-    @apply grid size-[30px] place-items-center rounded-[9px] bg-[#fff0eb] text-[22px] leading-none text-[#f2633d];
+    @apply grid size-[36px] place-items-center rounded-xl bg-[#fff0eb] text-[25px] leading-none text-[#f2633d];
+  }
+  .toolmd-nav {
+    @apply flex min-w-0 flex-1 items-center gap-1;
+  }
+  .toolmd-nav > a,
+  .toolmd-nav-menu > summary {
+    @apply inline-flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-lg px-3.5 text-sm font-medium text-slate-500 no-underline transition hover:bg-orange-50 hover:text-[#f2633d];
+  }
+  .toolmd-nav > a.active,
+  .toolmd-nav-menu > summary.active {
+    @apply bg-orange-50 text-[#f2633d];
+  }
+  .toolmd-nav-menu {
+    @apply relative;
+  }
+  .toolmd-nav-menu > summary::-webkit-details-marker {
+    @apply hidden;
+  }
+  .toolmd-nav-menu > summary span {
+    @apply text-xs text-slate-400 transition;
+  }
+  .toolmd-nav-menu[open] > summary span {
+    @apply rotate-180 text-[#f2633d];
+  }
+  .toolmd-nav-dropdown {
+    @apply absolute left-1/2 top-[calc(100%+10px)] hidden w-[320px] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_60px_rgba(24,38,61,.14)];
+  }
+  .toolmd-nav-menu[open] .toolmd-nav-dropdown {
+    @apply block;
+  }
+  .toolmd-nav-dropdown > a {
+    @apply flex flex-col gap-1 rounded-xl px-3.5 py-3 text-sm font-medium text-slate-700 no-underline transition hover:bg-orange-50 hover:text-[#d95132];
+  }
+  .toolmd-nav-dropdown > a small {
+    @apply text-xs font-normal leading-snug text-slate-400;
+  }
+  .toolmd-nav-dropdown .toolmd-nav-overview {
+    @apply mb-1 flex-row items-center justify-between border-b border-slate-100 rounded-b-none pb-3 font-semibold text-[#d95132];
+  }
+  .toolmd-nav-dropdown .toolmd-nav-overview small {
+    @apply rounded-full bg-orange-50 px-2 py-1 text-[10px] font-medium text-[#d95132];
+  }
+  .toolmd-header-actions {
+    @apply ml-auto flex shrink-0 items-center gap-5;
   }
   .toolmd-header-meta {
-    @apply flex items-center gap-2 font-mono text-[9px] font-medium tracking-[1.1px] text-slate-400;
+    @apply flex items-center gap-2 font-mono text-[11px] font-medium text-slate-400;
   }
   .toolmd-live-dot {
-    @apply size-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(98,189,138,.14)];
+    @apply size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(98,189,138,.14)];
   }
   .toolmd-all-link {
-    @apply justify-self-end font-mono text-[11px] font-medium text-slate-500 no-underline hover:text-[#f2633d];
+    @apply whitespace-nowrap font-mono text-xs font-medium text-slate-500 no-underline hover:text-[#f2633d];
   }
   .toolmd-all-link span {
-    @apply ml-2 rounded border border-slate-200 bg-slate-100 px-1.5 py-1 text-[9px] text-slate-400;
+    @apply ml-2 rounded-md border border-slate-200 bg-slate-100 px-2 py-1 text-[10px] text-slate-400;
   }
   .toolmd-layout {
     @apply mx-auto grid min-h-[calc(100vh-72px)] max-w-[1480px] grid-cols-[220px_minmax(0,1fr)];
@@ -59,49 +106,52 @@
     @apply font-semibold text-slate-500;
   }
   .toolmd-main {
-    @apply min-w-0 w-full max-w-[1180px] px-14 pb-20 pt-14;
+    @apply mx-auto min-w-0 w-full max-w-[1320px] px-8 pb-24 pt-16;
   }
   .toolmd-home-hero,
   .toolmd-page-heading {
     @apply flex items-end justify-between gap-6;
   }
   .toolmd-home-hero {
-    @apply mb-10;
+    @apply mb-14;
   }
   .toolmd-eyebrow {
-    @apply mb-3 font-mono text-[10px] font-medium tracking-[1.6px] text-[#f2633d];
+    @apply mb-4 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d];
   }
   .toolmd-home-hero h1,
   .toolmd-page-heading h1 {
-    @apply mb-3 font-display text-[clamp(35px,5vw,58px)] font-bold leading-none tracking-[-2.6px] text-slate-800;
+    @apply mb-4 font-display text-[clamp(42px,5vw,70px)] font-bold leading-[.98] tracking-[-3px] text-slate-800;
   }
   .toolmd-home-hero h1 em {
     @apply not-italic text-[#f2633d];
   }
   .toolmd-home-copy,
   .toolmd-page-copy {
-    @apply m-0 max-w-[520px] text-[15px] leading-relaxed text-slate-500;
+    @apply m-0 max-w-[600px] text-base leading-7 text-slate-500;
   }
   .toolmd-hero-stat {
     @apply flex items-baseline gap-2 pb-2 text-right font-mono text-[10px] leading-snug text-slate-400;
   }
   .toolmd-hero-stat strong {
-    @apply font-display text-[42px] font-bold leading-none tracking-[-2px] text-slate-800;
+    @apply font-display text-[54px] font-bold leading-none tracking-[-2px] text-slate-800;
   }
   .toolmd-search-row {
-    @apply mb-11 flex items-center justify-between gap-5;
+    @apply mb-14 flex items-center justify-between gap-6;
   }
   .toolmd-search {
-    @apply flex h-[42px] w-full max-w-[390px] items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 text-slate-400 focus-within:border-orange-300 focus-within:ring-4 focus-within:ring-orange-100;
+    @apply flex h-14 w-full max-w-[520px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-slate-400 shadow-sm focus-within:border-orange-300 focus-within:ring-4 focus-within:ring-orange-100;
   }
   .toolmd-search input {
-    @apply h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-xs text-slate-800 outline-none;
+    @apply h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-slate-800 outline-none;
   }
   .toolmd-search kbd {
     @apply ml-auto whitespace-nowrap;
   }
-  .toolmd-filter-list {
-    @apply flex flex-wrap justify-end gap-1;
+  .toolmd-search-meta {
+    @apply flex items-center gap-4 text-sm text-slate-400;
+  }
+  .toolmd-search-meta button {
+    @apply rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-orange-50 hover:text-[#f2633d];
   }
   .toolmd-filter-list button,
   .toolmd-segmented button {
@@ -112,7 +162,7 @@
     @apply border-orange-100 bg-[#fff0eb] text-[#f2633d];
   }
   .toolmd-section {
-    @apply mt-12;
+    @apply mt-16;
   }
   .toolmd-section-heading {
     @apply mb-4 flex items-end justify-between gap-3;
@@ -121,32 +171,32 @@
     @apply mb-2;
   }
   .toolmd-section-heading h2 {
-    @apply m-0 font-display text-[22px] font-bold tracking-tight text-slate-800;
+    @apply m-0 font-display text-[28px] font-bold tracking-tight text-slate-800;
   }
   .toolmd-section-heading > span {
     @apply font-mono text-[10px] text-slate-400;
   }
   .toolmd-card-grid,
   .toolmd-feature-grid {
-    @apply grid grid-cols-3 gap-3;
+    @apply grid grid-cols-3 gap-5;
   }
   .toolmd-card {
-    @apply relative flex min-h-[142px] items-start gap-3 rounded-[10px] border border-slate-200 bg-white p-5 text-slate-800 no-underline transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-lg;
+    @apply relative flex min-h-[176px] items-start gap-4 rounded-2xl border border-slate-200 bg-white p-6 text-slate-800 no-underline shadow-sm transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-xl;
   }
   .toolmd-card.featured {
-    @apply min-h-[158px] border-orange-100 bg-orange-50/30;
+    @apply min-h-[194px] border-orange-100 bg-orange-50/30;
   }
   .toolmd-card-icon {
-    @apply grid size-[31px] shrink-0 place-items-center rounded-lg bg-[#fff0eb] font-mono text-[11px] font-semibold text-[#f2633d];
+    @apply grid size-11 shrink-0 place-items-center rounded-xl bg-[#fff0eb] font-mono text-sm font-semibold text-[#f2633d];
   }
   .toolmd-card-category {
-    @apply font-mono text-[9px] font-medium tracking-wide text-slate-400;
+    @apply font-mono text-[11px] font-medium tracking-wide text-slate-400;
   }
   .toolmd-card h3 {
-    @apply mb-2 mr-5 mt-1.5 font-display text-sm font-semibold leading-tight text-slate-800;
+    @apply mb-2 mr-5 mt-2 font-display text-lg font-semibold leading-tight text-slate-800;
   }
   .toolmd-card p {
-    @apply m-0 text-[11px] leading-snug text-slate-500;
+    @apply m-0 text-sm leading-6 text-slate-500;
   }
   .toolmd-card-arrow {
     @apply absolute right-4 top-4 text-base text-slate-400;
@@ -155,31 +205,31 @@
     @apply mb-9 items-start;
   }
   .toolmd-page-heading h1 {
-    @apply text-[clamp(32px,4vw,48px)];
+    @apply text-[clamp(38px,4vw,58px)];
   }
   .toolmd-back {
-    @apply mb-7 inline-block font-mono text-[11px] font-medium text-slate-500 no-underline hover:text-[#f2633d];
+    @apply mb-8 inline-block font-mono text-sm font-medium text-slate-500 no-underline hover:text-[#f2633d];
   }
   .toolmd-route {
-    @apply rounded bg-slate-100 px-2.5 py-2 font-mono text-[10px] text-slate-400;
+    @apply rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs text-slate-400;
   }
   .toolmd-panel {
-    @apply mb-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm;
+    @apply mb-5 rounded-2xl border border-slate-200 bg-white p-7 shadow-sm;
   }
   .toolmd-panel-heading {
     @apply mb-5 flex items-start justify-between gap-4;
   }
   .toolmd-panel-heading h2 {
-    @apply m-0 font-display text-lg font-semibold tracking-tight text-slate-800;
+    @apply m-0 font-display text-2xl font-semibold tracking-tight text-slate-800;
   }
   .toolmd-panel-heading p {
-    @apply mt-1 max-w-2xl text-xs leading-relaxed text-slate-500;
+    @apply mt-2 max-w-2xl text-sm leading-6 text-slate-500;
   }
   .toolmd-panel-actions {
     @apply mt-4 flex items-end justify-end gap-2.5;
   }
   .toolmd-button {
-    @apply min-h-9 rounded-md px-3 text-[11px] font-semibold transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-40;
+    @apply min-h-11 rounded-lg px-4 text-sm font-semibold transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-40;
   }
   .toolmd-button.primary {
     @apply bg-[#f2633d] text-white shadow-md shadow-orange-100 hover:bg-[#d95132];
@@ -194,17 +244,17 @@
     @apply grid grid-cols-2 items-start gap-4;
   }
   .toolmd-textarea {
-    @apply block min-h-[210px] w-full resize-y rounded-lg border border-slate-200 bg-slate-50 p-3.5 font-mono text-xs leading-relaxed text-slate-700 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100;
+    @apply block min-h-[260px] w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-7 text-slate-700 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100;
   }
   .toolmd-input,
   .toolmd-select {
-    @apply h-[37px] w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 font-mono text-[11px] text-slate-500 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100;
+    @apply h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 font-mono text-sm text-slate-500 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100;
   }
   .toolmd-select {
     @apply mb-3.5;
   }
   .toolmd-label {
-    @apply mb-4 flex flex-col gap-2 font-mono text-[10px] text-slate-500;
+    @apply mb-5 flex flex-col gap-2.5 font-mono text-xs text-slate-500;
   }
   .toolmd-inline-fields {
     @apply grid grid-cols-2 gap-3;
@@ -353,7 +403,7 @@
     @apply grid min-h-screen place-items-center bg-slate-50 font-mono text-xs text-slate-500;
   }
   .toolmd-footer {
-    @apply mx-auto flex max-w-[1480px] justify-between px-9 pb-7 pl-[276px] pt-5 font-mono text-[10px] text-slate-400;
+    @apply mx-auto flex max-w-[1320px] justify-between px-8 pb-8 pt-6 font-mono text-xs text-slate-400;
   }
   .toolmd-footer i {
     @apply mx-2 text-slate-300;
@@ -362,32 +412,28 @@
 
 @media (max-width: 1050px) {
   .toolmd-header {
-    @apply px-6;
+    @apply px-5;
+  }
+  .toolmd-header-inner {
+    @apply flex-wrap gap-3 py-3;
+  }
+  .toolmd-nav {
+    @apply order-3 w-full overflow-x-auto border-t border-slate-100 pt-2;
+  }
+  .toolmd-nav-dropdown {
+    @apply left-0 translate-x-0;
   }
   .toolmd-header-meta {
     @apply hidden;
   }
-  .toolmd-layout {
-    @apply block;
-  }
-  .toolmd-sidebar {
-    @apply flex gap-1 overflow-x-auto border-b border-r-0 border-slate-200 px-6 py-2.5;
-  }
-  .toolmd-side-label,
-  .toolmd-side-note {
-    @apply hidden;
-  }
-  .toolmd-side-link {
-    @apply shrink-0;
-  }
   .toolmd-footer {
-    @apply px-6;
+    @apply px-5;
   }
 }
 
 @media (max-width: 760px) {
   .toolmd-main {
-    @apply px-[18px] pb-12 pt-9;
+    @apply px-5 pb-14 pt-12;
   }
   .toolmd-home-hero,
   .toolmd-page-heading,
@@ -400,8 +446,8 @@
   .toolmd-search {
     @apply mb-3 max-w-none;
   }
-  .toolmd-filter-list {
-    @apply justify-start;
+  .toolmd-search-meta {
+    @apply justify-between;
   }
   .toolmd-card-grid,
   .toolmd-feature-grid,
@@ -413,7 +459,7 @@
     @apply mt-5 inline-block;
   }
   .toolmd-panel {
-    @apply p-[17px];
+    @apply p-5;
   }
   .toolmd-panel-heading {
     @apply block;

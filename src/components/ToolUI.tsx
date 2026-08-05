@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
-import { getTool, type ToolCategory } from "../toolRegistry";
+import {
+  getTool,
+  TOOL_CATEGORIES,
+  TOOL_REGISTRY,
+} from "../toolRegistry";
 
 interface ToolShellProps {
   activeSlug?: string;
@@ -11,65 +15,58 @@ export function ToolShell({ activeSlug, children }: ToolShellProps) {
   return (
     <div className="toolmd-shell">
       <header className="toolmd-header">
-        <a className="toolmd-brand" href="/" aria-label="toolmd home">
-          <span className="toolmd-brand-mark">⌁</span>
-          <span>
-            tool<span>md</span>
-          </span>
-        </a>
-        <div className="toolmd-header-meta">
-          <span>PRIVATE BROWSER TOOLS</span>
-          <span className="toolmd-live-dot" /> Everything runs locally
-        </div>
-        <a className="toolmd-all-link" href="/">
-          All tools <span>⌘K</span>
-        </a>
-      </header>
-      <div className="toolmd-layout">
-        <aside className="toolmd-sidebar">
-          <a
-            className={`toolmd-side-link ${!activeSlug ? "active" : ""}`}
-            href="/"
-          >
-            ⌂ <span>All tools</span>
+        <div className="toolmd-header-inner">
+          <a className="toolmd-brand" href="/" aria-label="toolmd home">
+            <span className="toolmd-brand-mark">⌁</span>
+            <span>
+              tool<span>md</span>
+            </span>
           </a>
-          <div className="toolmd-side-label">COLLECTIONS</div>
-          {(
-            [
-              "Document",
-              "Markdown",
-              "Developer data",
-              "Text utility",
-              "Quick tools",
-            ] as ToolCategory[]
-          ).map((category) => (
-            <a
-              className={`toolmd-side-link ${activeTool?.category === category ? "active" : ""}`}
-              href={`/?category=${encodeURIComponent(category)}`}
-              key={category}
-            >
-              <span className="toolmd-side-icon">
-                {category === "Document"
-                  ? "▣"
-                  : category === "Markdown"
-                    ? "✎"
-                    : category === "Developer data"
-                      ? "{}"
-                      : category === "Text utility"
-                        ? "Aa"
-                        : "✦"}
-              </span>
-              <span>{category}</span>
+          <nav className="toolmd-nav" aria-label="Tool categories">
+            <a className={!activeSlug ? "active" : ""} href="/">
+              Home
             </a>
-          ))}
-          <div className="toolmd-side-note">
-            <strong>Local by default.</strong>
-            <br />
-            No pasted content is uploaded to a server.
+            {TOOL_CATEGORIES.map((category) => {
+              const categoryTools = TOOL_REGISTRY.filter(
+                (tool) => tool.category === category,
+              );
+              const isActive = activeTool?.category === category;
+              return (
+                <details className="toolmd-nav-menu" key={category}>
+                  <summary className={isActive ? "active" : ""}>
+                    {category}
+                    <span aria-hidden="true">⌄</span>
+                  </summary>
+                  <div className="toolmd-nav-dropdown">
+                    <a
+                      className="toolmd-nav-overview"
+                      href={`/?category=${encodeURIComponent(category)}`}
+                    >
+                      <span>View all {category}</span>
+                      <small>{categoryTools.length} tools</small>
+                    </a>
+                    {categoryTools.map((tool) => (
+                      <a href={`/${tool.slug}/`} key={tool.slug}>
+                        <span>{tool.title}</span>
+                        <small>{tool.description}</small>
+                      </a>
+                    ))}
+                  </div>
+                </details>
+              );
+            })}
+          </nav>
+          <div className="toolmd-header-actions">
+            <div className="toolmd-header-meta">
+              <span className="toolmd-live-dot" /> Runs in your browser
+            </div>
+            <a className="toolmd-all-link" href="/">
+              All tools <span>⌘K</span>
+            </a>
           </div>
-        </aside>
-        <main className="toolmd-main">{children}</main>
-      </div>
+        </div>
+      </header>
+      <main className="toolmd-main">{children}</main>
       <footer className="toolmd-footer">
         <span>
           toolmd <i>/</i> a small collection of useful tools
