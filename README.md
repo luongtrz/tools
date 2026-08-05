@@ -6,7 +6,47 @@
 
 Monorepo frontend React + TypeScript với các route dùng chung một React shell. Các route chính gồm `/md2pdf/`, `/md2word/` và `/md2pptx/`; các tool mới có thể thêm dưới cùng domain mà không cần tạo project hosting riêng.
 
-UI dùng Tailwind CSS qua Vite plugin. CSS thuần chỉ còn giữ cho workspace `md2pdf` legacy vì phần editor/print có nhiều chi tiết đặc thù.
+UI dùng Tailwind CSS qua Vite plugin; `src/index.css` chỉ là entrypoint tối thiểu để nạp Tailwind và font theme. Các style giao diện được đặt trực tiếp trong TSX để dễ trace cùng component.
+
+## MCP và CLI cho AI
+
+Toolmd có MCP server chạy qua `stdio`, để các AI host có thể tự discover và gọi các tool xử lý Markdown, JSON, YAML, CSV, text, regex, Base64, case, slug, UUID và password. MCP chạy local, không cần API key và không upload nội dung.
+
+Khởi động MCP server:
+
+```bash
+npm install
+npm run mcp
+```
+
+Ví dụ cấu hình cho MCP client:
+
+```json
+{
+  "mcpServers": {
+    "toolmd": {
+      "command": "npm",
+      "args": ["--prefix", "/absolute/path/to/tools", "run", "mcp"]
+    }
+  }
+}
+```
+
+Server cung cấp các tool như `toolmd_markdown_render`, `toolmd_json_format`, `toolmd_json_diff`, `toolmd_data_convert`, `toolmd_text_diff`, `toolmd_regex_test`, `toolmd_base64`, `toolmd_case_convert`, `toolmd_slug`, `toolmd_uuid` và `toolmd_password`. Mỗi response có cả text content và structured content để AI đọc tự nhiên hoặc xử lý tiếp bằng code.
+
+Test MCP protocol bằng client thật:
+
+```bash
+npm run mcp:smoke
+```
+
+Nếu cần chạy không qua MCP, CLI dùng cùng adapter xử lý:
+
+```bash
+npm run toolmd -- json-format --text '{"name":"toolmd"}'
+npm run toolmd -- markdown-render --file ./document.md
+npm run toolmd -- slug --text "Markdown, ready to print!"
+```
 
 ## Live collaboration
 

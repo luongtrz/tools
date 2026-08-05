@@ -7,13 +7,18 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit && tsc -p cloudflare/collab-worker/tsconfig.json --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p cloudflare/collab-worker/tsconfig.json --noEmit && tsc -p tsconfig.mcp.json --noEmit",
+    "mcp": "tsx mcp/server.ts",
+    "mcp:inspect": "npx @modelcontextprotocol/inspector npm run mcp",
+    "mcp:smoke": "tsx mcp/smoke-client.ts",
+    "toolmd": "tsx cli/toolmd.ts",
     "collab:dev": "wrangler dev --config cloudflare/collab-worker/wrangler.toml",
     "collab:deploy": "wrangler deploy --config cloudflare/collab-worker/wrangler.toml"
   },
   "dependencies": {
     "@hocuspocus/provider": "^4.5.0",
     "@hocuspocus/server": "^4.5.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/qrcode": "^1.5.6",
     "@types/react": "19.2.18",
@@ -28,13 +33,16 @@
     "typescript": "7.0.2",
     "vite": "8.2.0",
     "yaml": "^2.9.0",
-    "yjs": "13.6.32"
+    "yjs": "13.6.32",
+    "zod": "^4.4.3"
   },
   "engines": {
     "node": ">=20.19.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260804.1",
+    "@types/node": "^26.1.2",
+    "tsx": "^4.23.6",
     "wrangler": "^4.118.0"
   }
 }
