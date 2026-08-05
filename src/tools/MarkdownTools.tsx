@@ -5,6 +5,7 @@ import { downloadFile } from "../lib/download";
 import {
   CopyButton,
   ToolButton,
+  ToolLabel,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -81,7 +82,7 @@ export function MarkdownTableGeneratorTool() {
         description="Separate column names with commas."
       >
         <label className={toolStyles.label}>
-          Headers
+          <ToolLabel>Headers</ToolLabel>
           <ToolTextArea
             value={headers}
             onChange={setHeaders}
@@ -90,7 +91,7 @@ export function MarkdownTableGeneratorTool() {
           />
         </label>
         <label className={toolStyles.label}>
-          Rows
+            <ToolLabel>Rows</ToolLabel>
           <input
             className={toolStyles.input}
             type="number"
@@ -195,7 +196,7 @@ export function MarkdownWordCounterTool() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className={toolStyles.stat}>
-      <span className="font-mono text-xs text-slate-500">{label}</span>
+      <span className="font-mono text-xs text-slate-500"><ToolLabel>{label}</ToolLabel></span>
       <strong className="font-display text-3xl font-bold text-slate-800">{value}</strong>
     </div>
   );

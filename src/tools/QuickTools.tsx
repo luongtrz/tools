@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 import {
   CopyButton,
   ToolButton,
+  ToolLabel,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -84,7 +85,7 @@ export function UuidGeneratorTool() {
       <ToolPanel title="UUID v4 generator">
         <div className={toolStyles.panelActions}>
           <label className={toolStyles.label}>
-            Count
+            <ToolLabel>Count</ToolLabel>
             <input
               className={toolStyles.input}
               type="number"
@@ -128,7 +129,7 @@ export function PasswordGeneratorTool() {
       <ToolPanel title="Secure password">
         <div className={toolStyles.inlineFields}>
           <label className={toolStyles.label}>
-            Length
+            <ToolLabel>Length</ToolLabel>
             <input
               className={toolStyles.input}
               type="number"
@@ -144,7 +145,7 @@ export function PasswordGeneratorTool() {
               checked={symbols}
               onChange={(event) => setSymbols(event.target.checked)}
             />{" "}
-            Include symbols
+            <ToolLabel>Include symbols</ToolLabel>
           </label>
         </div>
         <div className={toolStyles.passwordOutput}>

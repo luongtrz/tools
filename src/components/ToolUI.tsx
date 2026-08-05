@@ -146,6 +146,11 @@ export function ToolTextArea({
   );
 }
 
+export function ToolLabel({ children }: { children: string }) {
+  const { language } = useI18n();
+  return <>{literal(children, language)}</>;
+}
+
 export function CopyButton({
   value,
   label = "Copy",

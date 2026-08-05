@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { literal, useI18n } from "../i18n";
 import pptxgen from "pptxgenjs";
 import { PDFDocument } from "pdf-lib";
 import { SAMPLE_MARKDOWN } from "../constants/sampleMarkdown";
@@ -6,6 +7,7 @@ import { renderMarkdown } from "../lib/markdown";
 import { downloadBlob, downloadFile } from "../lib/download";
 import {
   ToolButton,
+  ToolLabel,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -19,9 +21,10 @@ function FilePicker({
   multiple?: boolean;
   onFiles: (files: File[]) => void;
 }) {
+  const { language } = useI18n();
   return (
     <label className={toolStyles.filePicker}>
-      <span>Choose PDF file{multiple ? "s" : ""}</span>
+      <span>{literal(multiple ? "Choose PDF files" : "Choose PDF file", language)}</span>
       <input
         type="file"
         accept="application/pdf,.pdf"
@@ -276,10 +279,10 @@ export function SplitPdfTool() {
       >
         <FilePicker onFiles={(files) => setFile(files[0] || null)} />
         <p className={toolStyles.selectedFile}>
-          {file ? file.name : "No file selected"}
+          {file ? file.name : <ToolLabel>No file selected</ToolLabel>}
         </p>
         <label className={toolStyles.label}>
-          Pages
+          <ToolLabel>Pages</ToolLabel>
           <input
             className={toolStyles.input}
             value={ranges}
@@ -322,7 +325,7 @@ export function CompressPdfTool() {
         <p className={toolStyles.selectedFile}>
           {file
             ? `${file.name} · ${Math.round(file.size / 1024)} KB`
-            : "No file selected"}
+            : <ToolLabel>No file selected</ToolLabel>}
         </p>
         <ToolButton onClick={compress} disabled={!file || busy}>
           {busy ? "Optimizing…" : "Download optimized PDF"}

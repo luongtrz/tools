@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import {
   CopyButton,
   ToolButton,
+  ToolLabel,
   ToolPage,
   ToolPanel,
   ToolTextArea,
@@ -95,7 +96,7 @@ export function RegexTesterTool() {
       <ToolPanel title="Regular expression">
         <div className={toolStyles.inlineFields}>
           <label className={toolStyles.label}>
-            Pattern
+            <ToolLabel>Pattern</ToolLabel>
             <input
               className={toolStyles.input}
               value={pattern}
@@ -103,7 +104,7 @@ export function RegexTesterTool() {
             />
           </label>
           <label className={toolStyles.label}>
-            Flags
+            <ToolLabel>Flags</ToolLabel>
             <input
               className={toolStyles.input}
               value={flags}
@@ -165,13 +166,13 @@ export function Base64Tool() {
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("encode")}
           >
-            Encode
+            <ToolLabel>Encode</ToolLabel>
           </button>
           <button
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("decode")}
           >
-            Decode
+            <ToolLabel>Decode</ToolLabel>
           </button>
         </div>
         <ToolTextArea
