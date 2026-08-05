@@ -23,11 +23,62 @@ function renderInlineMarkdown(value: string): string {
     '<a href="$2" target="_blank" rel="noreferrer">$1</a>',
   );
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+  html = html.replace(/~~([^~]+)~~/g, "<del>$1</del>");
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
   html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
   html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
   return html;
+}
+
+function markdownTableCells(line: string): string[] {
+  let source = line.trim();
+  if (source.startsWith("|")) source = source.slice(1);
+  if (source.endsWith("|")) source = source.slice(0, -1);
+  const cells: string[] = [];
+  let cell = "";
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    if (character === "\\" && source[index + 1] === "|") {
+      cell += "|";
+      index += 1;
+    } else if (character === "|") {
+      cells.push(cell.trim());
+      cell = "";
+    } else {
+      cell += character;
+    }
+  }
+  cells.push(cell.trim());
+  return cells;
+}
+
+function tableAlignment(separator: string): "left" | "center" | "right" | undefined {
+  const trimmed = separator.trim();
+  if (trimmed.startsWith(":") && trimmed.endsWith(":")) return "center";
+  if (trimmed.endsWith(":")) return "right";
+  if (trimmed.startsWith(":")) return "left";
+  return undefined;
+}
+
+function isTableSeparator(line: string): boolean {
+  const cells = markdownTableCells(line);
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
+function renderMarkdownTable(header: string[], separator: string[], rows: string[][]): string {
+  const columnCount = Math.max(header.length, ...rows.map((row) => row.length));
+  const cell = (value: string, tag: "th" | "td", column: number): string => {
+    const alignment = tableAlignment(separator[column] || "");
+    const align = alignment ? ` align="${alignment}"` : "";
+    return `<${tag}${align}>${renderInlineMarkdown(value)}</${tag}>`;
+  };
+  const normalizedHeader = Array.from({ length: columnCount }, (_, column) => header[column] || "");
+  const head = `<thead><tr>${normalizedHeader.map((value, column) => cell(value, "th", column)).join("")}</tr></thead>`;
+  const body = rows.length
+    ? `<tbody>${rows.map((row) => `<tr>${Array.from({ length: columnCount }, (_, column) => cell(row[column] || "", "td", column)).join("")}</tr>`).join("")}</tbody>`
+    : "";
+  return `<table>${head}${body}</table>`;
 }
 
 export function renderMarkdown(markdown: string): string {
@@ -64,7 +115,8 @@ export function renderMarkdown(markdown: string): string {
     }
   };
 
-  lines.forEach((line) => {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
     if (line.trim().startsWith("```")) {
       flushParagraph();
       closeList();
@@ -74,38 +126,53 @@ export function renderMarkdown(markdown: string): string {
       } else {
         closeCode();
       }
-      return;
+      continue;
     }
     if (inCode) {
       codeLines.push(line);
-      return;
+      continue;
+    }
+    const tableHeader = markdownTableCells(line);
+    const tableSeparator = lines[index + 1] && markdownTableCells(lines[index + 1]);
+    if (line.includes("|") && tableSeparator && isTableSeparator(lines[index + 1])) {
+      flushParagraph();
+      closeList();
+      const rows: string[][] = [];
+      index += 2;
+      while (index < lines.length && lines[index].includes("|") && lines[index].trim()) {
+        rows.push(markdownTableCells(lines[index]));
+        index += 1;
+      }
+      output.push(renderMarkdownTable(tableHeader, tableSeparator, rows));
+      index -= 1;
+      continue;
     }
     if (!line.trim()) {
       flushParagraph();
       closeList();
-      return;
+      continue;
     }
-    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       flushParagraph();
       closeList();
       output.push(
         `<h${heading[1].length}>${renderInlineMarkdown(heading[2])}</h${heading[1].length}>`,
       );
-      return;
+      continue;
     }
     if (/^(-{3,}|\*{3,})\s*$/.test(line)) {
       flushParagraph();
       closeList();
       output.push("<hr>");
-      return;
+      continue;
     }
     const quote = line.match(/^>\s?(.*)$/);
     if (quote) {
       flushParagraph();
       closeList();
       output.push(`<blockquote>${renderInlineMarkdown(quote[1])}</blockquote>`);
-      return;
+      continue;
     }
     const unordered = line.match(/^\s*[-*+]\s+(.+)$/);
     const ordered = line.match(/^\s*\d+[.)]\s+(.+)$/);
@@ -118,12 +185,16 @@ export function renderMarkdown(markdown: string): string {
         listType = desiredType;
       }
       const item = unordered?.[1] ?? ordered?.[1] ?? "";
-      output.push(`<li>${renderInlineMarkdown(item)}</li>`);
-      return;
+      const task = item.match(/^\[([ xX])\]\s+(.+)$/);
+      const taskMarkup = task
+        ? `<input type="checkbox" disabled${task[1].toLowerCase() === "x" ? " checked" : ""}> `
+        : "";
+      output.push(`<li>${taskMarkup}${renderInlineMarkdown(task?.[2] || item)}</li>`);
+      continue;
     }
     closeList();
     paragraph.push(line.trim());
-  });
+  }
 
   flushParagraph();
   closeList();
