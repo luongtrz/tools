@@ -1,0 +1,14 @@
+name = "toolmd-collab"
+main = "index.ts"
+compatibility_date = "2026-08-05"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[durable_objects]
+bindings = [
+  { name = "COLLAB_ROOM", class_name = "CollaborationRoom" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["CollaborationRoom"]

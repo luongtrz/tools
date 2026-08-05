@@ -99,8 +99,8 @@ export default function ShareModal({
           </button>
         </div>
         <p className="modal-note">
-          Mã phòng: <code>{roomId ?? "—"}</code> · Đồng bộ peer-to-peer qua
-          WebRTC
+          Mã phòng: <code>{roomId ?? "—"}</code> · Đồng bộ qua Cloudflare
+          WebSocket
         </p>
       </section>
     </div>
