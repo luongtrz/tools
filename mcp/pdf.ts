@@ -56,7 +56,7 @@ export function markdownDocumentHtml(
       blockquote { background: #f8fafc; border-left: 3px solid #f2633d; color: #475569; padding: 0.7em 1em; }
       hr { border: 0; border-top: 1px solid #cbd5e1; margin: 1.6em 0; }
       code { background: #fff1ed; border-radius: 4px; color: #b34835; font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.88em; padding: 0.12em 0.35em; }
-      pre { background: #172235; border: 1px solid #0f172a; border-radius: 7px; color: #f8fafc; padding: 1em 1.1em; white-space: pre-wrap; }
+      pre { background: #f4f6f8; border: 1px solid #dbe3ed; border-radius: 7px; color: #263449; padding: 1em 1.1em; white-space: pre-wrap; }
       pre code { background: transparent; color: inherit; padding: 0; }
       table { border-collapse: collapse; font-size: 10.5pt; width: 100%; }
       thead { display: table-header-group; }
