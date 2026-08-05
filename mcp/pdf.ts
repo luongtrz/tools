@@ -1,6 +1,9 @@
 import { escapeHtml, renderMarkdown } from "../src/lib/markdown";
 
 export type PdfFormat = "a4" | "letter" | "legal";
+export const MAX_MARKDOWN_BYTES = 30_000_000;
+
+const MAX_BROWSER_HTML_BYTES = 45_000_000;
 
 export interface PdfRenderInput {
   markdown: string;
@@ -73,8 +76,12 @@ export async function renderMarkdownToPdf(
   input: PdfRenderInput,
 ): Promise<PdfRenderOutput> {
   const filename = normalizeFilename(input.filename);
+  const html = markdownDocumentHtml(input.markdown, filename.replace(/\.pdf$/i, ""));
+  if (new TextEncoder().encode(html).byteLength > MAX_BROWSER_HTML_BYTES) {
+    throw new Error("The rendered HTML is too large for the PDF service. Reduce the Markdown size.");
+  }
   const response = await browser.quickAction("pdf", {
-    html: markdownDocumentHtml(input.markdown, filename.replace(/\.pdf$/i, "")),
+    html,
     emulateMediaType: "print",
     setJavaScriptEnabled: false,
     rejectResourceTypes: ["image", "media", "font", "script", "xhr", "fetch", "websocket"],

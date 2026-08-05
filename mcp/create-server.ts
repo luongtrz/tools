@@ -19,6 +19,7 @@ import {
   testRegex,
   validateJson,
 } from "./toolkit";
+import { MAX_MARKDOWN_BYTES } from "./pdf";
 import type { PdfRenderInput, PdfRenderOutput } from "./pdf";
 
 function result(value: unknown) {
@@ -29,6 +30,16 @@ function result(value: unknown) {
   return {
     content: [{ type: "text" as const, text: payload }],
     structuredContent: structured,
+  };
+}
+
+function pdfResult(value: PdfRenderOutput) {
+  return {
+    content: [{
+      type: "text" as const,
+      text: JSON.stringify({ filename: value.filename, mimeType: value.mimeType, bytes: value.bytes }, null, 2),
+    }],
+    structuredContent: value as unknown as Record<string, unknown>,
   };
 }
 
@@ -67,7 +78,10 @@ export function createToolmdServer(options: ToolmdServerOptions = {}): McpServer
       title: "Convert Markdown to PDF",
       description: "Render Markdown into a downloadable PDF and return the file as Base64.",
       inputSchema: {
-        markdown: z.string().max(1_000_000).describe("Markdown source, up to 1 MB"),
+        markdown: z.string().refine(
+          (value) => new TextEncoder().encode(value).byteLength <= MAX_MARKDOWN_BYTES,
+          { message: "Markdown source must be 30 MB or smaller." },
+        ).describe("Markdown source, up to 30 MB"),
         filename: z.string().max(96).optional().describe("Output filename, with or without .pdf"),
         format: z.enum(["a4", "letter", "legal"]).default("a4"),
         landscape: z.boolean().default(false),
@@ -81,7 +95,7 @@ export function createToolmdServer(options: ToolmdServerOptions = {}): McpServer
         };
       }
       try {
-        return result(await options.renderPdf({ markdown, filename, format, landscape }));
+        return pdfResult(await options.renderPdf({ markdown, filename, format, landscape }));
       } catch (error) {
         return {
           ...result({ valid: false, error: error instanceof Error ? error.message : "PDF rendering failed." }),
