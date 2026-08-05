@@ -7,6 +7,7 @@ import {
   ToolPanel,
   ToolTextArea,
 } from "../components/ToolUI";
+import { toolStyles } from "../components/toolStyles";
 
 export function QrGeneratorTool() {
   const [value, setValue] = useState("https://toolmd.pages.dev/md2pdf/");
@@ -34,7 +35,7 @@ export function QrGeneratorTool() {
   }
   return (
     <ToolPage slug="qr-generator">
-      <div className="toolmd-split-layout">
+      <div className={toolStyles.splitLayout}>
         <ToolPanel title="Text or URL">
           <ToolTextArea
             value={value}
@@ -47,7 +48,7 @@ export function QrGeneratorTool() {
           title="QR preview"
           actions={<ToolButton onClick={download}>Download PNG</ToolButton>}
         >
-          <div className="toolmd-qr-preview">
+          <div className={toolStyles.qrPreview}>
             {dataUrl && <img src={dataUrl} alt="Generated QR code" />}
           </div>
         </ToolPanel>
@@ -81,11 +82,11 @@ export function UuidGeneratorTool() {
   return (
     <ToolPage slug="uuid-generator">
       <ToolPanel title="UUID v4 generator">
-        <div className="toolmd-panel-actions">
-          <label className="toolmd-label">
+        <div className={toolStyles.panelActions}>
+          <label className={toolStyles.label}>
             Count
             <input
-              className="toolmd-input"
+              className={toolStyles.input}
               type="number"
               min="1"
               max="50"
@@ -95,10 +96,10 @@ export function UuidGeneratorTool() {
           </label>
           <ToolButton onClick={generate}>Generate UUIDs</ToolButton>
         </div>
-        <div className="toolmd-list-output">
+        <div className={toolStyles.listOutput}>
           {values.map((value) => (
-            <div key={value}>
-              <code>{value}</code>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5" key={value}>
+              <code className="min-w-0 overflow-auto font-mono text-sm text-slate-700">{value}</code>
               <CopyButton value={value} />
             </div>
           ))}
@@ -125,11 +126,11 @@ export function PasswordGeneratorTool() {
   return (
     <ToolPage slug="password-generator">
       <ToolPanel title="Secure password">
-        <div className="toolmd-inline-fields">
-          <label className="toolmd-label">
+        <div className={toolStyles.inlineFields}>
+          <label className={toolStyles.label}>
             Length
             <input
-              className="toolmd-input"
+              className={toolStyles.input}
               type="number"
               min="8"
               max="128"
@@ -137,7 +138,7 @@ export function PasswordGeneratorTool() {
               onChange={(event) => setLength(Number(event.target.value))}
             />
           </label>
-          <label className="toolmd-check">
+          <label className={toolStyles.check}>
             <input
               type="checkbox"
               checked={symbols}
@@ -146,8 +147,8 @@ export function PasswordGeneratorTool() {
             Include symbols
           </label>
         </div>
-        <div className="toolmd-password-output">
-          <code>{password}</code>
+        <div className={toolStyles.passwordOutput}>
+          <code className="min-w-0 overflow-auto text-slate-800">{password}</code>
           <CopyButton value={password} />
         </div>
         <ToolButton onClick={generate}>Generate password</ToolButton>
@@ -195,20 +196,20 @@ export function ColorPickerTool() {
   return (
     <ToolPage slug="color-picker">
       <ToolPanel title="Pick a color">
-        <div className="toolmd-color-picker">
+        <div className={toolStyles.colorPicker}>
           <input
             type="color"
             value={color}
             onChange={(event) => setColor(event.target.value)}
           />
-          <div style={{ background: color }} />
-          <strong>{values.hex}</strong>
+          <div className="size-16 rounded-xl border border-slate-200" style={{ background: color }} />
+          <strong className="font-mono text-xl font-semibold text-slate-800">{values.hex}</strong>
         </div>
-        <div className="toolmd-list-output">
+        <div className={toolStyles.listOutput}>
           {Object.entries(values).map(([label, value]) => (
-            <div key={label}>
-              <span>{label.toUpperCase()}</span>
-              <code>{value}</code>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5" key={label}>
+              <span className="font-mono text-xs text-slate-500">{label.toUpperCase()}</span>
+              <code className="ml-auto font-mono text-sm text-slate-800">{value}</code>
               <CopyButton value={value} />
             </div>
           ))}

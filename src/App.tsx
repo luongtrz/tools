@@ -112,7 +112,7 @@ export default function App() {
   const render = routeComponents[slug];
   if (!render || !getTool(slug)) return <ToolHome />;
   return (
-    <Suspense fallback={<div className="toolmd-loading">Loading tool…</div>}>
+    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-slate-50 font-mono text-sm text-slate-500">Loading tool…</div>}>
       {render()}
     </Suspense>
   );

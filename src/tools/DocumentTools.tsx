@@ -10,6 +10,7 @@ import {
   ToolPanel,
   ToolTextArea,
 } from "../components/ToolUI";
+import { toolStyles } from "../components/toolStyles";
 
 function FilePicker({
   multiple = false,
@@ -19,7 +20,7 @@ function FilePicker({
   onFiles: (files: File[]) => void;
 }) {
   return (
-    <label className="toolmd-file-picker">
+    <label className={toolStyles.filePicker}>
       <span>Choose PDF file{multiple ? "s" : ""}</span>
       <input
         type="file"
@@ -47,7 +48,7 @@ export function Md2WordTool() {
   }
   return (
     <ToolPage slug="md2word">
-      <div className="toolmd-split-layout">
+      <div className={toolStyles.splitLayout}>
         <ToolPanel
           title="Markdown input"
           description="Paste or write the content you want to export."
@@ -64,14 +65,14 @@ export function Md2WordTool() {
           actions={<ToolButton onClick={exportWord}>Download .doc</ToolButton>}
         >
           <article
-            className="toolmd-document-preview"
+            className={toolStyles.documentPreview}
             dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }}
           />
         </ToolPanel>
       </div>
       <ToolPanel title="File name">
         <input
-          className="toolmd-input"
+          className={toolStyles.input}
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="document"
@@ -161,9 +162,9 @@ export function Md2PptxTool() {
           ariaLabel="Markdown slides input"
           rows={18}
         />
-        <div className="toolmd-panel-actions">
+        <div className={toolStyles.panelActions}>
           <input
-            className="toolmd-input"
+            className={toolStyles.input}
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="presentation"
@@ -173,7 +174,7 @@ export function Md2PptxTool() {
           </ToolButton>
         </div>
       </ToolPanel>
-      <div className="toolmd-hint">
+      <div className={toolStyles.hint}>
         Tip: use <code>---</code> between sections to create a new slide.
       </div>
     </ToolPage>
@@ -205,12 +206,12 @@ export function MergePdfTool() {
         description="Files stay in your browser and are never uploaded."
       >
         <FilePicker multiple onFiles={setFiles} />
-        <div className="toolmd-file-list">
+        <div className={toolStyles.fileList}>
           {files.map((file, index) => (
-            <div key={`${file.name}-${index}`}>
-              <span>{index + 1}</span>
+            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600" key={`${file.name}-${index}`}>
+              <span className="font-mono text-[#f2633d]">{index + 1}</span>
               {file.name}
-              <small>{Math.round(file.size / 1024)} KB</small>
+              <small className="ml-auto text-xs text-slate-400">{Math.round(file.size / 1024)} KB</small>
             </div>
           ))}
         </div>
@@ -274,13 +275,13 @@ export function SplitPdfTool() {
         description="Use page numbers like 1, 3-5, 8."
       >
         <FilePicker onFiles={(files) => setFile(files[0] || null)} />
-        <p className="toolmd-selected-file">
+        <p className={toolStyles.selectedFile}>
           {file ? file.name : "No file selected"}
         </p>
-        <label className="toolmd-label">
+        <label className={toolStyles.label}>
           Pages
           <input
-            className="toolmd-input"
+            className={toolStyles.input}
             value={ranges}
             onChange={(event) => setRanges(event.target.value)}
             placeholder="1, 3-5"
@@ -318,7 +319,7 @@ export function CompressPdfTool() {
         description="This browser-side pass removes some redundant PDF structure. Image-heavy PDFs may need a dedicated image optimizer for bigger savings."
       >
         <FilePicker onFiles={(files) => setFile(files[0] || null)} />
-        <p className="toolmd-selected-file">
+        <p className={toolStyles.selectedFile}>
           {file
             ? `${file.name} · ${Math.round(file.size / 1024)} KB`
             : "No file selected"}

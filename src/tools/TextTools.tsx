@@ -6,6 +6,7 @@ import {
   ToolPanel,
   ToolTextArea,
 } from "../components/ToolUI";
+import { toolStyles } from "../components/toolStyles";
 
 export function TextDiffTool() {
   const [left, setLeft] = useState("toolmd\nmd2pdf\nmd2word");
@@ -13,7 +14,7 @@ export function TextDiffTool() {
   const rows = useMemo(() => diffLines(left, right), [left, right]);
   return (
     <ToolPage slug="text-diff">
-      <div className="toolmd-split-layout">
+      <div className={toolStyles.splitLayout}>
         <ToolPanel title="Original">
           <ToolTextArea
             value={left}
@@ -32,10 +33,10 @@ export function TextDiffTool() {
         </ToolPanel>
       </div>
       <ToolPanel title="Diff result">
-        <div className="toolmd-diff-output">
+        <div className={toolStyles.diffOutput}>
           {rows.map((row, index) => (
-            <div className={row.type} key={`${index}-${row.text}`}>
-              <span>
+            <div className={`whitespace-pre-wrap px-2 ${row.type === "added" ? "bg-emerald-50 text-emerald-700" : row.type === "removed" ? "bg-orange-50 text-[#b34835]" : "text-slate-600"}`} key={`${index}-${row.text}`}>
+              <span className="mr-3 inline-block w-4 text-slate-400">
                 {row.type === "added"
                   ? "+"
                   : row.type === "removed"
@@ -92,19 +93,19 @@ export function RegexTesterTool() {
   return (
     <ToolPage slug="regex-tester">
       <ToolPanel title="Regular expression">
-        <div className="toolmd-inline-fields">
-          <label className="toolmd-label">
+        <div className={toolStyles.inlineFields}>
+          <label className={toolStyles.label}>
             Pattern
             <input
-              className="toolmd-input"
+              className={toolStyles.input}
               value={pattern}
               onChange={(event) => setPattern(event.target.value)}
             />
           </label>
-          <label className="toolmd-label">
+          <label className={toolStyles.label}>
             Flags
             <input
-              className="toolmd-input"
+              className={toolStyles.input}
               value={flags}
               onChange={(event) => setFlags(event.target.value)}
             />
@@ -118,13 +119,13 @@ export function RegexTesterTool() {
         />
       </ToolPanel>
       <ToolPanel title="Matches">
-        <div className={`toolmd-match-summary ${result.error ? "error" : ""}`}>
+        <div className={`${toolStyles.matchSummary} ${result.error ? "bg-red-50 text-[#b34835]" : ""}`}>
           {result.error ||
             `${result.matches.length} match${result.matches.length === 1 ? "" : "es"}`}
         </div>
-        <div className="toolmd-chip-list">
+        <div className={toolStyles.chipList}>
           {result.matches.map((match, index) => (
-            <code key={`${match}-${index}`}>{match}</code>
+            <code className="rounded bg-orange-50 px-2.5 py-1.5 font-mono text-sm text-[#bd4d32]" key={`${match}-${index}`}>{match}</code>
           ))}
         </div>
       </ToolPanel>
@@ -159,15 +160,15 @@ export function Base64Tool() {
   return (
     <ToolPage slug="base64">
       <ToolPanel title="Base64 converter">
-        <div className="toolmd-segmented">
+        <div className={toolStyles.segmented}>
           <button
-            className={direction === "encode" ? "selected" : ""}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("encode")}
           >
             Encode
           </button>
           <button
-            className={direction === "decode" ? "selected" : ""}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("decode")}
           >
             Decode
@@ -179,8 +180,8 @@ export function Base64Tool() {
           ariaLabel="Base64 input"
           rows={12}
         />
-        <div className="toolmd-result-row">
-          <pre className="toolmd-code-output">{result}</pre>
+        <div className="mt-5 flex items-start gap-3">
+          <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{result}</pre>
           <CopyButton value={result} />
         </div>
       </ToolPanel>
@@ -225,7 +226,7 @@ export function CaseConverterTool() {
     <ToolPage slug="case-converter">
       <ToolPanel title="Convert text">
         <select
-          className="toolmd-select"
+          className={toolStyles.select}
           value={mode}
           onChange={(event) => setMode(event.target.value)}
         >
@@ -242,8 +243,8 @@ export function CaseConverterTool() {
           ariaLabel="Text case input"
           rows={8}
         />
-        <div className="toolmd-result-row">
-          <pre className="toolmd-code-output">{output}</pre>
+        <div className="mt-5 flex items-start gap-3">
+          <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{output}</pre>
           <CopyButton value={output} />
         </div>
       </ToolPanel>
@@ -272,8 +273,8 @@ export function SlugGeneratorTool() {
           ariaLabel="Slug source text"
           rows={6}
         />
-        <div className="toolmd-result-row">
-          <pre className="toolmd-code-output">{output}</pre>
+        <div className="mt-5 flex items-start gap-3">
+          <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{output}</pre>
           <CopyButton value={output} />
         </div>
       </ToolPanel>

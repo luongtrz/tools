@@ -7,6 +7,7 @@ import {
   ToolPanel,
   ToolTextArea,
 } from "../components/ToolUI";
+import { toolStyles } from "../components/toolStyles";
 
 const SAMPLE_JSON =
   '{"name":"toolmd","tools":["md2pdf","md2word"],"private":true}';
@@ -39,7 +40,7 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
         : "json-diff";
   return (
     <ToolPage slug={slug}>
-      <div className={mode === "diff" ? "toolmd-split-layout" : ""}>
+      <div className={mode === "diff" ? toolStyles.splitLayout : ""}>
         {mode === "diff" && (
           <ToolPanel title="JSON A">
             <ToolTextArea
@@ -71,7 +72,7 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
               ariaLabel="JSON input"
               rows={18}
             />
-            <div className="toolmd-panel-actions">
+            <div className={toolStyles.panelActions}>
               <ToolButton
                 onClick={() => setValue(mode === "format" ? result : value)}
               >
@@ -84,7 +85,7 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
       </div>
       <ToolPanel title={mode === "diff" ? "JSON changes" : "Result"}>
         <pre
-          className={`toolmd-code-output ${result.startsWith("Invalid") || result.startsWith("JSON error") ? "error" : ""}`}
+          className={`${toolStyles.codeOutput} ${result.startsWith("Invalid") || result.startsWith("JSON error") ? "border-red-200 bg-red-50 text-[#b34835]" : ""}`}
         >
           {result}
         </pre>
@@ -133,28 +134,28 @@ export function YamlJsonTool() {
   return (
     <ToolPage slug="yaml-json">
       <ToolPanel title="Convert YAML and JSON">
-        <div className="toolmd-segmented">
+        <div className={toolStyles.segmented}>
           <button
-            className={direction === "yaml-to-json" ? "selected" : ""}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "yaml-to-json" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("yaml-to-json")}
           >
             YAML → JSON
           </button>
           <button
-            className={direction === "json-to-yaml" ? "selected" : ""}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-yaml" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("json-to-yaml")}
           >
             JSON → YAML
           </button>
         </div>
-        <div className="toolmd-split-layout">
+        <div className={toolStyles.splitLayout}>
           <ToolTextArea
             value={value}
             onChange={setValue}
             ariaLabel="YAML or JSON input"
             rows={18}
           />
-          <pre className="toolmd-code-output">{result}</pre>
+          <pre className={toolStyles.codeOutput}>{result}</pre>
         </div>
         <CopyButton value={result} />
       </ToolPanel>
@@ -251,15 +252,15 @@ export function CsvJsonTool() {
   return (
     <ToolPage slug="csv-json">
       <ToolPanel title="Convert CSV and JSON">
-        <div className="toolmd-segmented">
+        <div className={toolStyles.segmented}>
           <button
-            className={direction === "csv-to-json" ? "selected" : ""}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "csv-to-json" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("csv-to-json")}
           >
             CSV → JSON
           </button>
           <button
-            className={direction === "json-to-csv" ? "selected" : ""}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-csv" ? "bg-white text-[#f2633d] shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
             onClick={() => setDirection("json-to-csv")}
           >
             JSON → CSV
@@ -271,8 +272,8 @@ export function CsvJsonTool() {
           ariaLabel="CSV or JSON input"
           rows={16}
         />
-        <div className="toolmd-result-row">
-          <pre className="toolmd-code-output">{result}</pre>
+        <div className="mt-5 flex items-start gap-3">
+          <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{result}</pre>
           <CopyButton value={result} />
         </div>
       </ToolPanel>

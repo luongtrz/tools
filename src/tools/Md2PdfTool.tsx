@@ -109,30 +109,30 @@ export default function Md2PdfTool() {
 
   return (
     <>
-      <div className="app-shell">
+      <div className="mx-auto min-h-screen max-w-[1600px] px-4 font-sans text-[#152031] sm:px-8 lg:px-12 print:hidden">
         <TopBar onReset={resetDocument} />
-        <main>
-          <section className="hero-row">
+        <main className="py-10 sm:py-14">
+          <section className="mb-10 flex flex-col items-start justify-between gap-7 sm:mb-12 sm:flex-row sm:items-end">
             <div>
-              <p className="eyebrow">
-                <span className="eyebrow-line" /> DOCUMENT WORKSPACE
+              <p className="mb-4 flex items-center gap-2 font-mono text-xs font-medium tracking-[1.5px] text-[#f2633d]">
+                <span className="h-px w-6 bg-[#f2633d]" /> DOCUMENT WORKSPACE
               </p>
-              <h1>
-                Markdown, <em>ready to print.</em>
+              <h1 className="mb-4 font-display text-[clamp(40px,5vw,68px)] font-bold leading-[.98] tracking-[-3px] text-[#111b2c]">
+                Markdown, <em className="not-italic text-[#f2633d]">ready to print.</em>
               </h1>
-              <p className="hero-copy">
+              <p className="m-0 max-w-[620px] text-base leading-7 text-slate-500 sm:text-lg">
                 Biến ghi chú và tài liệu của bạn thành PDF sạch đẹp trong vài
                 giây.
               </p>
             </div>
-            <div className="hero-meta">
-              <span className="meta-label">
+            <div className="flex flex-col items-start gap-2 pb-1 sm:items-end">
+              <span className="font-mono text-xs font-medium tracking-[1.3px] text-slate-400">
                 {collaboration.status === "connected"
                   ? "LIVE WORKSPACE"
                   : "LOCAL WORKSPACE"}
               </span>
-              <span className="meta-value">
-                <span className="status-dot" />{" "}
+              <span className="flex items-center gap-2 font-mono text-sm text-slate-500">
+                <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(96,188,135,.14)]" />{" "}
                 {collaboration.status === "connected"
                   ? "Đang cộng tác"
                   : "Đã đồng bộ"}
@@ -140,7 +140,7 @@ export default function Md2PdfTool() {
             </div>
           </section>
           <section
-            className="workspace-card"
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(24,38,61,.09),0_3px_12px_rgba(24,38,61,.04)]"
             aria-label="Markdown editor and preview"
           >
             <WorkspaceToolbar
@@ -152,14 +152,11 @@ export default function Md2PdfTool() {
               onExport={handleExport}
               onRename={handleRename}
             />
-            <div className="editor-grid">
+            <div className="grid min-h-[520px] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <MarkdownEditor
                 value={markdown}
                 onChange={handleMarkdownChange}
               />
-              <div className="splitter" aria-hidden="true">
-                <span />
-              </div>
               <MarkdownPreview
                 html={previewHtml}
                 zoom={zoom}
@@ -173,7 +170,7 @@ export default function Md2PdfTool() {
               />
             </div>
           </section>
-          <section className="bottom-grid">
+          <section className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(250px,.85fr)]">
             <OutputSettings
               pageSize={pageSize}
               orientation={orientation}
@@ -196,12 +193,12 @@ export default function Md2PdfTool() {
             <QuickTip />
           </section>
         </main>
-        <footer className="footer">
+        <footer className="flex flex-col justify-between gap-2 px-1 py-7 font-mono text-xs text-slate-400 sm:flex-row">
           <span>
-            toolmd <span className="muted">/</span> md2pdf workspace
+            toolmd <span className="mx-2 text-slate-300">/</span> md2pdf workspace
           </span>
           <span>
-            Made for focused writing <span className="heart">♥</span>
+            Made for focused writing <span className="text-[#f2633d]">♥</span>
           </span>
         </footer>
       </div>
@@ -220,11 +217,11 @@ export default function Md2PdfTool() {
         onCopy={copyShareLink}
       />
       <div
-        className="print-sheet"
-        style={{ "--print-margin": `${margins}mm` } as CSSProperties}
+        className="hidden min-h-screen print:block"
+        style={{ padding: `${margins}mm` } as CSSProperties}
       >
         <article
-          className="paper"
+          className="w-full text-slate-700 [&_h1]:mb-5 [&_h1]:font-display [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-lg [&_h3]:font-bold [&_p]:mb-4 [&_p]:text-sm [&_p]:leading-7 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-slate-800 [&_pre]:p-4 [&_pre]:text-slate-100"
           dangerouslySetInnerHTML={{ __html: previewHtml }}
         />
       </div>

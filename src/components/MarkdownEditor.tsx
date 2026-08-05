@@ -27,19 +27,19 @@ export default function MarkdownEditor({
   }
 
   return (
-    <section className="editor-pane">
-      <div className="pane-heading">
-        <div className="pane-title">
-          <span className="pane-number">01</span>
+    <section className="flex min-w-0 flex-col">
+      <div className="flex h-14 items-center justify-between border-b border-slate-100 px-4 sm:px-6">
+        <div className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[1px] text-slate-500">
+          <span className="text-[#f2633d]">01</span>
           <span>MARKDOWN</span>
         </div>
-        <span className="keyboard-hint">
-          <kbd>⌘</kbd>
-          <kbd>↵</kbd> Preview
+        <span className="hidden font-mono text-xs text-slate-400 sm:inline">
+          <kbd className="mr-1 inline-grid min-w-5 place-items-center rounded border border-slate-200 bg-slate-100 px-1 py-0.5 text-[10px]">⌘</kbd>
+          <kbd className="mr-1 inline-grid min-w-5 place-items-center rounded border border-slate-200 bg-slate-100 px-1 py-0.5 text-[10px]">↵</kbd> Preview
         </span>
       </div>
-      <div className="editor-wrap">
-        <div className="line-numbers" aria-hidden="true">
+      <div className="flex min-h-[420px] flex-1 bg-[#fbfcfd]">
+        <div className="w-12 shrink-0 border-r border-slate-100 px-3 pt-6 text-right font-mono text-sm leading-7 text-slate-300 select-none" aria-hidden="true">
           {Array.from({ length: lines }, (_, index) => index + 1).join("\n")}
         </div>
         <textarea
@@ -48,9 +48,10 @@ export default function MarkdownEditor({
           onKeyDown={handleKeyDown}
           spellCheck={false}
           aria-label="Markdown input"
+          className="min-h-[420px] w-full resize-none border-0 bg-transparent px-4 py-6 font-mono text-[15px] leading-7 text-slate-700 outline-none selection:bg-orange-100 sm:px-6"
         />
       </div>
-      <div className="pane-footer">
+      <div className="flex min-h-11 items-center justify-between border-t border-slate-100 px-4 font-mono text-xs text-slate-400 sm:px-6">
         <span>
           {words} {words === 1 ? "word" : "words"}
         </span>

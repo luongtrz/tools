@@ -9,12 +9,13 @@ import {
   ToolPanel,
   ToolTextArea,
 } from "../components/ToolUI";
+import { toolStyles } from "../components/toolStyles";
 
 export function MarkdownEditorTool() {
   const [value, setValue] = useState(SAMPLE_MARKDOWN);
   return (
     <ToolPage slug="markdown-editor">
-      <div className="toolmd-split-layout">
+      <div className={toolStyles.splitLayout}>
         <ToolPanel title="Write Markdown">
           <ToolTextArea
             value={value}
@@ -22,7 +23,7 @@ export function MarkdownEditorTool() {
             ariaLabel="Markdown editor"
             rows={22}
           />
-          <div className="toolmd-panel-actions">
+          <div className={toolStyles.panelActions}>
             <ToolButton
               variant="quiet"
               onClick={() =>
@@ -40,7 +41,7 @@ export function MarkdownEditorTool() {
         </ToolPanel>
         <ToolPanel title="Live preview">
           <article
-            className="toolmd-document-preview"
+            className={toolStyles.documentPreview}
             dangerouslySetInnerHTML={{ __html: renderMarkdown(value) }}
           />
         </ToolPanel>
@@ -79,7 +80,7 @@ export function MarkdownTableGeneratorTool() {
         title="Table setup"
         description="Separate column names with commas."
       >
-        <label className="toolmd-label">
+        <label className={toolStyles.label}>
           Headers
           <ToolTextArea
             value={headers}
@@ -88,10 +89,10 @@ export function MarkdownTableGeneratorTool() {
             rows={3}
           />
         </label>
-        <label className="toolmd-label">
+        <label className={toolStyles.label}>
           Rows
           <input
-            className="toolmd-input"
+            className={toolStyles.input}
             type="number"
             min="1"
             max="30"
@@ -104,7 +105,7 @@ export function MarkdownTableGeneratorTool() {
         title="Generated Markdown"
         actions={<CopyButton value={output} />}
       >
-        <pre className="toolmd-code-output">{output}</pre>
+        <pre className={toolStyles.codeOutput}>{output}</pre>
       </ToolPanel>
     </ToolPage>
   );
@@ -154,13 +155,13 @@ export function MarkdownTableFormatterTool() {
           ariaLabel="Markdown table input"
           rows={10}
         />
-        <div className="toolmd-panel-actions">
+        <div className={toolStyles.panelActions}>
           <ToolButton onClick={() => setValue(output)}>Format table</ToolButton>
           <CopyButton value={output} />
         </div>
       </ToolPanel>
       <ToolPanel title="Result">
-        <pre className="toolmd-code-output">{output}</pre>
+        <pre className={toolStyles.codeOutput}>{output}</pre>
       </ToolPanel>
     </ToolPage>
   );
@@ -181,7 +182,7 @@ export function MarkdownWordCounterTool() {
           rows={19}
         />
       </ToolPanel>
-      <div className="toolmd-stat-grid">
+      <div className={toolStyles.statGrid}>
         <Stat label="Words" value={words.toLocaleString()} />
         <Stat label="Characters" value={value.length.toLocaleString()} />
         <Stat label="Lines" value={lines.toLocaleString()} />
@@ -193,9 +194,9 @@ export function MarkdownWordCounterTool() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="toolmd-stat">
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <div className={toolStyles.stat}>
+      <span className="font-mono text-xs text-slate-500">{label}</span>
+      <strong className="font-display text-3xl font-bold text-slate-800">{value}</strong>
     </div>
   );
 }
@@ -267,7 +268,7 @@ export function HtmlToMarkdownTool() {
   const output = useMemo(() => htmlToMarkdown(value), [value]);
   return (
     <ToolPage slug="html-to-markdown">
-      <div className="toolmd-split-layout">
+      <div className={toolStyles.splitLayout}>
         <ToolPanel title="HTML input">
           <ToolTextArea
             value={value}
@@ -280,7 +281,7 @@ export function HtmlToMarkdownTool() {
           title="Markdown result"
           actions={<CopyButton value={output} />}
         >
-          <pre className="toolmd-code-output">{output}</pre>
+          <pre className={toolStyles.codeOutput}>{output}</pre>
         </ToolPanel>
       </div>
     </ToolPage>
