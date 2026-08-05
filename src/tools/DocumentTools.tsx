@@ -270,7 +270,7 @@ export function Md2PptxTool() {
         {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
       </ToolPanel>
       <div className={toolStyles.hint}>
-        Tip: use <code>---</code> between sections to create a new slide.
+        {t("pptxTip")}
       </div>
     </ToolPage>
   );
