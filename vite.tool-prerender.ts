@@ -1,4 +1,6 @@
 import type { Plugin } from "vite";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 const SITE = "https://toolmd.pages.dev";
 
@@ -46,6 +48,7 @@ function renderToolHtml(
   slug: string,
   language: "vi" | "en",
   category: string,
+  assetTags: string[],
 ): string {
   const ogImage = `${SITE}/og-default.svg`;
   const canonical = `${SITE}/${slug}/`;
@@ -123,26 +126,12 @@ function renderToolHtml(
     <meta name="twitter:title" content="${safeTitle}" />
     <meta name="twitter:description" content="${safeDescription}" />
     <meta name="twitter:image" content="${ogImage}" />
-    <script type="application/ld+json">${JSON.stringify(jsonLd[0])}</script>
-    <script type="application/ld+json">${JSON.stringify(jsonLd[1])}</script>
-    <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f1724; color: #f1f5f9; margin: 0; padding: 0; min-height: 100vh; display: grid; place-items: center; }
-      main { max-width: 640px; padding: 32px; text-align: center; }
-      h1 { font-size: 32px; margin: 0 0 16px; }
-      p { font-size: 16px; line-height: 1.6; color: #cbd5e1; }
-      a { color: #f2633d; text-decoration: none; font-weight: 600; }
-      .spinner { width: 32px; height: 32px; border: 3px solid #1e293b; border-top-color: #f2633d; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-      @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    <script type="application/ld+json" data-seo="jsonld">${JSON.stringify(jsonLd[0])}</script>
+    <script type="application/ld+json" data-seo="jsonld">${JSON.stringify(jsonLd[1])}</script>
+${assetTags.map((tag) => `    ${tag}`).join("\n")}
   </head>
   <body>
-    <main>
-      <div class="spinner" aria-hidden="true"></div>
-      <h1>${safeTitle}</h1>
-      <p>${safeDescription}</p>
-      <p>Loading the tool… <a href="${canonical}">Continue to the app</a>.</p>
-    </main>
-    <script>window.location.replace(${JSON.stringify(canonical)});</script>
+    <div id="root"></div>
   </body>
 </html>
 `;
@@ -152,7 +141,25 @@ function toolPrerenderPlugin(): Plugin {
   return {
     name: "tool-prerender",
     apply: "build",
-    generateBundle(_options, bundle) {
+    writeBundle(options) {
+      const outDir = options.dir ?? "dist";
+      const indexHtmlSource = readFileSync(join(outDir, "index.html"), "utf-8");
+      // Reuse the exact <script type="module">/<link modulepreload|stylesheet>
+      // tags Vite generated for the real entry point, so the prerendered
+      // shell always loads the same JS/CSS graph without hand-tracking chunks.
+      const assetTags = indexHtmlSource
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(
+          (line) =>
+            line.startsWith('<script type="module"') ||
+            line.startsWith('<link rel="modulepreload"') ||
+            line.startsWith('<link rel="stylesheet"'),
+        );
+      if (assetTags.length === 0) {
+        throw new Error("tool-prerender: found no asset tags in index.html");
+      }
+
       for (const tool of TOOLS) {
         const html = renderToolHtml(
           tool.title,
@@ -160,12 +167,11 @@ function toolPrerenderPlugin(): Plugin {
           tool.slug,
           "en",
           tool.category,
+          assetTags,
         );
-        this.emitFile({
-          type: "asset",
-          fileName: `${tool.slug}/index.html`,
-          source: html,
-        });
+        const toolDir = join(outDir, tool.slug);
+        mkdirSync(toolDir, { recursive: true });
+        writeFileSync(join(toolDir, "index.html"), html);
       }
     },
   };
