@@ -74,8 +74,12 @@ export default function ToolHome() {
           </p>
           <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">
             {t("heroTitleLead")}
-            <br />
-            <span className="text-primary">{t("heroTitleAccent")}</span>
+            {t("heroTitleAccent") && (
+              <>
+                <br />
+                <span className="text-primary">{t("heroTitleAccent")}</span>
+              </>
+            )}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
             {t("heroDescription")}

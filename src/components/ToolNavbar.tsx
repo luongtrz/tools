@@ -1,11 +1,9 @@
 import type { ReactNode } from "react";
 import { categoryLabel, localizedTool, useI18n } from "@/i18n";
 import { TOOL_CATEGORIES, TOOL_REGISTRY, getTool } from "@/toolRegistry";
-import LanguageToggle from "./LanguageToggle";
-import ThemeToggle from "./ThemeToggle";
+import SettingsMenu from "./SettingsMenu";
 import ToolSearch from "./ToolSearch";
 import Icon from "./Icon";
-import { Button } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,17 +133,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
 
         <div className="ml-auto flex items-center gap-2">
           <ToolSearch />
-          {rightSlot || (
-            <>
-              <div className="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1 font-mono text-[10px] font-medium text-muted-foreground xl:flex">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-                {t("runsInBrowser")}
-              </div>
-              <div className="hidden h-6 w-px bg-border xl:block" />
-              <LanguageToggle />
-              <ThemeToggle />
-            </>
-          )}
+          {rightSlot || <SettingsMenu />}
         </div>
       </div>
     </header>
