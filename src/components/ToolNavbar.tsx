@@ -28,7 +28,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 w-full max-w-[1600px] flex-wrap items-center gap-3 px-4 sm:px-8 lg:px-12">
+      <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center gap-2 px-4 sm:px-6 lg:gap-3 lg:px-8">
         <a
           className="inline-flex shrink-0 items-center gap-2.5 font-display text-lg font-bold tracking-tight text-foreground no-underline"
           href="/"
@@ -48,7 +48,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
         />
 
         <nav
-          className="order-3 flex w-full min-w-0 flex-wrap items-center gap-1 md:order-2 md:w-auto md:flex-1"
+          className="hidden min-w-0 flex-1 items-center gap-1 md:flex"
           aria-label={t("toolCategories")}
         >
           <NavLink href="/" active={!activeSlug}>
@@ -66,7 +66,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
               <DropdownMenu key={category}>
                 <DropdownMenuTrigger
                   className={cn(
-                    "inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors",
+                    "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors",
                     "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                     isActive
                       ? "bg-accent text-accent-foreground"
@@ -128,7 +128,12 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
           })}
         </nav>
 
-        <div className="order-2 ml-auto flex w-full items-center justify-end gap-2 md:order-3 md:w-auto">
+        <MobileMenu
+          activeSlug={activeSlug}
+          activeToolCategory={activeTool?.category}
+        />
+
+        <div className="ml-auto flex items-center gap-2">
           <ToolSearch />
           {rightSlot || (
             <>
@@ -144,6 +149,86 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
         </div>
       </div>
     </header>
+  );
+}
+
+function MobileMenu({
+  activeSlug,
+  activeToolCategory,
+}: {
+  activeSlug?: string;
+  activeToolCategory?: string;
+}) {
+  const { language, t } = useI18n();
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring md:hidden"
+        aria-label={t("toolCategories")}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="size-4"
+          aria-hidden="true"
+        >
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[280px] p-1 md:hidden">
+        <DropdownMenuItem asChild>
+          <a
+            href="/"
+            aria-current={!activeSlug ? "page" : undefined}
+            className="font-medium"
+          >
+            {t("home")}
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a
+            href="/mcp/"
+            aria-current={activeSlug === "mcp" ? "page" : undefined}
+            className="font-medium"
+          >
+            {t("mcp")}
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {TOOL_CATEGORIES.map((category) => {
+          const categoryTools = TOOL_REGISTRY.filter(
+            (tool) => tool.category === category,
+          );
+          const isActive = activeToolCategory === category;
+          return (
+            <DropdownMenuItem
+              key={category}
+              asChild
+              className="flex flex-col items-start gap-0.5 py-2"
+            >
+              <a
+                href={`/?category=${encodeURIComponent(category)}`}
+                className={cn(
+                  "flex w-full flex-col items-start gap-0.5",
+                  isActive && "text-primary",
+                )}
+              >
+                <span className="text-sm font-medium">
+                  {categoryLabel(category, language)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {t("toolsCount", { count: categoryTools.length })}
+                </span>
+              </a>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
