@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, type ReactElement } from "react";
-import { getTool } from "./toolRegistry";
-import { localizedTool, useI18n } from "./i18n";
-import ToolHome from "./tools/ToolHome";
+import { getTool } from "@/toolRegistry";
+import { useI18n } from "@/i18n";
+import { useSeoMeta } from "@/hooks/useSeoMeta";
+import ToolHome from "@/tools/ToolHome";
 
 const Md2PdfTool = lazy(() => import("./tools/Md2PdfTool"));
 const Md2WordTool = lazy(async () => ({
@@ -123,11 +124,10 @@ export default function App() {
   const slug = window.location.pathname.split("/").filter(Boolean)[0] || "";
   const tool = getTool(slug);
   const render = routeComponents[slug];
+  useSeoMeta(tool ? tool.slug : undefined);
   useEffect(() => {
-    document.title = tool
-      ? `${localizedTool(tool, language).title} — toolmd`
-      : "toolmd — focused browser tools";
-  }, [language, slug, tool]);
+    document.documentElement.lang = language;
+  }, [language]);
   if (!render || !tool) return <ToolHome />;
   return (
     <Suspense fallback={<LoadingFallback />}>
