@@ -238,8 +238,8 @@ export function MarkdownWordCounterTool() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className={toolStyles.stat}>
-      <span className="font-mono text-xs text-slate-500"><ToolLabel>{label}</ToolLabel></span>
-      <strong className="font-display text-3xl font-bold text-slate-800 dark:text-slate-100">{value}</strong>
+      <span className="font-mono text-xs text-muted-foreground"><ToolLabel>{label}</ToolLabel></span>
+      <strong className="font-display text-3xl font-bold text-foreground">{value}</strong>
     </div>
   );
 }
