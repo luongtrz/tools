@@ -310,7 +310,7 @@ export function Md2PptxTool() {
             {busy ? t("processing") : "Download .pptx"}
           </ToolButton>
         </div>
-        <p className="mt-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-4 font-mono text-xs text-muted-foreground">
           {t("slidesCount", { count: slides.length })}
         </p>
         {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
@@ -354,7 +354,7 @@ export function MergePdfTool() {
       >
         <FilePicker multiple onFiles={(nextFiles) => { setFiles(nextFiles); setError(""); }} />
         {files.length > 0 && (
-          <div className="mb-4 flex items-center justify-between gap-3 font-mono text-xs text-slate-500 dark:text-slate-400">
+          <div className="mb-4 flex items-center justify-between gap-3 font-mono text-xs text-muted-foreground">
             <span>{t("filesSelected", { count: files.length })}</span>
             <ToolButton variant="quiet" onClick={() => { setFiles([]); setError(""); }}>
               {t("clear")}
@@ -363,10 +363,10 @@ export function MergePdfTool() {
         )}
         <div className={toolStyles.fileList}>
           {files.map((file, index) => (
-            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300" key={`${file.name}-${index}`}>
-              <span className="font-mono text-[#f2633d]">{index + 1}</span>
+            <div className="flex items-center gap-3 rounded-md border border-border bg-muted/30 px-3 py-3 text-sm text-foreground" key={`${file.name}-${index}`}>
+              <span className="font-mono text-primary">{index + 1}</span>
               {file.name}
-              <small className="ml-auto text-xs text-slate-400 dark:text-slate-500">{Math.round(file.size / 1024)} KB</small>
+              <small className="ml-auto text-xs text-muted-foreground">{Math.round(file.size / 1024)} KB</small>
             </div>
           ))}
         </div>
