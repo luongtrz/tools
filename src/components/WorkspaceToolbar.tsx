@@ -10,7 +10,6 @@ interface WorkspaceToolbarProps {
   onShare: () => void;
   onDownload: () => void;
   onExport: () => void;
-  onPrint?: () => void;
   onImport?: (text: string, fileName: string) => void;
   onRename: () => void;
 }
@@ -22,7 +21,6 @@ export default function WorkspaceToolbar({
   onShare,
   onDownload,
   onExport,
-  onPrint,
   onImport,
   onRename,
 }: WorkspaceToolbarProps) {
@@ -123,16 +121,6 @@ export default function WorkspaceToolbar({
         >
           <Icon name="download" /> {t("downloadMarkdown")}
         </button>
-        {onPrint && (
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-input bg-background px-4 text-sm font-semibold text-foreground transition hover:bg-accent"
-            type="button"
-            onClick={onPrint}
-            title="Open the browser print dialog as a fallback"
-          >
-            <Icon name="print" /> {t("browserPrint")}
-          </button>
-        )}
         <button
           className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-px hover:bg-primary"
           type="button"

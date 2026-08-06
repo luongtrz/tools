@@ -91,10 +91,6 @@ export default function Md2PdfTool() {
     downloadFile(`${safeName}.md`, markdown, "text/markdown;charset=utf-8");
     notify(t("downloadMarkdown"));
   }
-  function handlePrint(): void {
-    notify(t("processing"));
-    window.setTimeout(() => window.print(), 50);
-  }
   function handleImport(text: string, fileName: string): void {
     setMarkdown(text);
     const base = fileName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-");
@@ -198,7 +194,6 @@ export default function Md2PdfTool() {
               onShare={handleShare}
               onDownload={handleDownloadMarkdown}
               onExport={handleExport}
-              onPrint={handlePrint}
               onImport={(text, name) => handleImport(text, name)}
               onRename={handleRename}
             />

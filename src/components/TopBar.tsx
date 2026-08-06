@@ -14,10 +14,6 @@ export default function TopBar({ onReset }: TopBarProps) {
       activeSlug="md2pdf"
       rightSlot={
         <div className="ml-auto flex w-full flex-wrap items-center justify-end gap-3 sm:gap-5 2xl:w-auto">
-          <div className="hidden items-center gap-2 rounded-full border border-border px-3 py-2 font-mono text-xs text-muted-foreground dark:border-border  sm:flex">
-            <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(96,188,135,.14)]" />
-            {t("browserPrint")}
-          </div>
           <SettingsMenu />
           <button
             className="grid size-10 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted/50 hover:text-foreground  dark:hover:bg-muted dark:hover:text-foreground"
