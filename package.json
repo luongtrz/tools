@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsx scripts/build-sitemap.ts && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc -p cloudflare/collab-worker/tsconfig.json --noEmit && tsc -p cloudflare/mcp-worker/tsconfig.json --noEmit",
+    "seo:sitemap": "tsx scripts/build-sitemap.ts",
     "mcp:deploy": "wrangler deploy cloudflare/mcp-worker/index.ts --name toolmd-mcp --config cloudflare/mcp-worker/wrangler.toml --keep-vars",
     "mcp:deploy:dry-run": "wrangler deploy cloudflare/mcp-worker/index.ts --name toolmd-mcp --config cloudflare/mcp-worker/wrangler.toml --keep-vars --dry-run",
     "mcp:smoke:http": "tsx mcp/http-smoke.ts",
