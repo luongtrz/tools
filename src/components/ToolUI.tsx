@@ -251,9 +251,11 @@ export function CopyButton({
 export function ToolNotice({
   children,
   variant = "info",
+  className,
 }: {
   children: ReactNode;
   variant?: "info" | "success" | "warning" | "error";
+  className?: string;
 }) {
   const variantClasses = {
     info: "border-border bg-muted/40 text-muted-foreground",
@@ -269,6 +271,7 @@ export function ToolNotice({
       className={cn(
         "rounded-md border px-4 py-3 text-sm leading-6",
         variantClasses[variant],
+        className,
       )}
       role={variant === "error" ? "alert" : "status"}
     >

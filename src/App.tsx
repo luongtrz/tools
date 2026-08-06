@@ -71,7 +71,7 @@ const SlugGeneratorTool = lazy(async () => ({
   default: (await import("./tools/TextTools")).SlugGeneratorTool,
 }));
 const UrlCodecTool = lazy(async () => ({
-  default: (await import("./tools/SecurityTools")).UrlCodecTool,
+  default: (await import("./tools/TextTools")).UrlCodecTool,
 }));
 const QrGeneratorTool = lazy(async () => ({
   default: (await import("./tools/QuickTools")).QrGeneratorTool,
