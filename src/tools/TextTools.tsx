@@ -43,8 +43,8 @@ export function TextDiffTool() {
       <ToolPanel title="Diff result" actions={<><ToolButton variant="quiet" onClick={() => { setLeft("toolmd\nmd2pdf\nmd2word"); setRight("toolmd\nmd2pdf\nmd2pptx"); }}>{t("reset")}</ToolButton><CopyButton value={diffText} /></>}>
         <div className={toolStyles.diffOutput}>
           {rows.length ? rows.map((row, index) => (
-            <div className={`whitespace-pre-wrap px-2 ${row.type === "added" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : row.type === "removed" ? "bg-orange-50 text-[#b34835] dark:bg-orange-950/40 dark:text-orange-300" : "text-slate-600 dark:text-slate-300"}`} key={`${index}-${row.text}`}>
-              <span className="mr-3 inline-block w-4 text-slate-400">
+            <div className={`whitespace-pre-wrap px-2 ${row.type === "added" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : row.type === "removed" ? "bg-primary/10 text-destructive dark:bg-primary/10 dark:text-primary" : "text-foreground"}`} key={`${index}-${row.text}`}>
+              <span className="mr-3 inline-block w-4 text-muted-foreground">
                 {row.type === "added"
                   ? "+"
                   : row.type === "removed"
@@ -117,7 +117,7 @@ export function RegexTesterTool() {
             </div>
             <div className={toolStyles.chipList}>
               {result.matches.map((match, index) => (
-                <code className="rounded bg-orange-50 px-2.5 py-1.5 font-mono text-sm text-[#bd4d32] dark:bg-orange-950/50 dark:text-orange-300" key={`${match}-${index}`}>
+                <code className="rounded bg-primary/10 px-2.5 py-1.5 font-mono text-sm text-primary dark:bg-primary/10 dark:text-primary" key={`${match}-${index}`}>
                   {match}
                 </code>
               ))}
@@ -181,13 +181,13 @@ export function Base64Tool() {
       <ToolPanel title="Base64 converter" actions={<ToolButton variant="quiet" onClick={() => { setValue("Xin chào toolmd"); setDirection("encode"); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.segmented}>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             onClick={() => setDirection("encode")}
           >
             <ToolLabel>Encode</ToolLabel>
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             onClick={() => setDirection("decode")}
           >
             <ToolLabel>Decode</ToolLabel>

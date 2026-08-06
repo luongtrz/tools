@@ -51,14 +51,14 @@ export function UrlCodecTool() {
       >
         <div className={toolStyles.segmented}>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "encode" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             type="button"
             onClick={() => setDirection("encode")}
           >
             {literal("Encode URL", language)}
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "decode" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             type="button"
             onClick={() => setDirection("decode")}
           >
@@ -180,7 +180,7 @@ export function JwtDecoderTool() {
             </ToolPanel>
           </div>
           <ToolPanel title="JWT status">
-            <div className="flex flex-wrap items-center gap-3 font-mono text-sm text-slate-600 dark:text-slate-300">
+            <div className="flex flex-wrap items-center gap-3 font-mono text-sm text-foreground ">
               <span className="rounded-lg bg-amber-50 px-3 py-2 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
                 {expirationDate
                   ? expirationDate.getTime() < Date.now()

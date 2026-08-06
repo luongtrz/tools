@@ -127,11 +127,11 @@ export default function McpTool() {
           >
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block font-mono text-xs text-slate-500 dark:text-slate-400" htmlFor="mcp-endpoint">
+              <label className="mb-2 block font-mono text-xs text-muted-foreground " htmlFor="mcp-endpoint">
                 {t("endpointLabel")}
               </label>
-              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
-                <code className="min-w-0 flex-1 overflow-x-auto font-mono text-sm text-slate-700 dark:text-slate-200" id="mcp-endpoint">
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 p-3 dark:border-border dark:bg-muted/30">
+                <code className="min-w-0 flex-1 overflow-x-auto font-mono text-sm text-foreground " id="mcp-endpoint">
                   {MCP_ENDPOINT}
                 </code>
                 <CopyButton value={MCP_ENDPOINT} label={t("copyEndpoint")} />
@@ -147,8 +147,8 @@ export default function McpTool() {
           title={t("testConnection")}
           description={t("remoteSmokeDescription")}
         >
-          <div className="rounded-xl border border-orange-100 bg-orange-50/60 p-4 text-sm leading-6 text-slate-600 dark:border-orange-900/70 dark:bg-orange-950/30 dark:text-slate-300">
-            <strong className="font-semibold text-[#b34835]">{t("note")}</strong>{" "}
+          <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm leading-6 text-foreground dark:border-primary/40 dark:bg-primary/5">
+            <strong className="font-semibold text-destructive">{t("note")}</strong>{" "}
             {t("remoteMcpNote")}
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
@@ -166,14 +166,14 @@ export default function McpTool() {
         <div className="grid gap-4 md:grid-cols-2">
           {PROMPTS.map((item) => (
             <article
-              className="flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950"
+              className="flex flex-col justify-between gap-4 rounded-xl border border-border bg-muted/30 p-5 dark:border-border dark:bg-muted/30"
               key={item.title}
             >
               <div>
-                <h3 className="font-display text-lg font-semibold text-slate-800 dark:text-slate-100">
+                <h3 className="font-display text-lg font-semibold text-foreground ">
                   {language === "vi" ? item.titleVi || item.title : item.titleEn || item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                <p className="mt-2 text-sm leading-6 text-muted-foreground ">
                   {language === "vi" ? item.prompt : item.promptEn}
                 </p>
               </div>
@@ -190,7 +190,7 @@ export default function McpTool() {
         <div className="flex flex-wrap gap-2">
           {MCP_TOOLS.map((name) => (
             <code
-              className="rounded-lg border border-orange-100 bg-orange-50 px-3 py-2 font-mono text-xs text-[#bd4d32] dark:border-orange-900/70 dark:bg-orange-950/40 dark:text-orange-300"
+              className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 font-mono text-xs text-primary dark:border-primary/40 dark:bg-primary/10 dark:text-primary"
               key={name}
             >
               {name}
@@ -204,9 +204,9 @@ export default function McpTool() {
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-      <span className="block font-mono text-xs text-slate-400 dark:text-slate-500">{label}</span>
-      <strong className="mt-1 block font-display text-lg font-semibold text-slate-800 dark:text-slate-100">
+    <div className="rounded-xl border border-border bg-background p-4 dark:border-border dark:bg-card">
+      <span className="block font-mono text-xs text-muted-foreground ">{label}</span>
+      <strong className="mt-1 block font-display text-lg font-semibold text-foreground ">
         {value}
       </strong>
     </div>

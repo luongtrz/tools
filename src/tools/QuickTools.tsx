@@ -139,8 +139,8 @@ export function UuidGeneratorTool() {
         </div>
         <div className={toolStyles.listOutput}>
           {values.map((value) => (
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-950" key={value}>
-              <code className="min-w-0 overflow-auto font-mono text-sm text-slate-700 dark:text-slate-200">{value}</code>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-4 py-2.5 dark:border-border dark:bg-muted/30" key={value}>
+              <code className="min-w-0 overflow-auto font-mono text-sm text-foreground ">{value}</code>
               <CopyButton value={value} />
             </div>
           ))}
@@ -193,11 +193,11 @@ export function PasswordGeneratorTool() {
           </label>
         </div>
         <div className={toolStyles.passwordOutput}>
-          <code className="min-w-0 overflow-auto text-slate-800 dark:text-slate-200">{password}</code>
+          <code className="min-w-0 overflow-auto text-foreground ">{password}</code>
           <CopyButton value={password} />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{t("strength")}: <strong className="text-emerald-600 dark:text-emerald-400">{passwordStrength}</strong></span>
+          <span className="font-mono text-xs text-muted-foreground ">{t("strength")}: <strong className="text-emerald-600 dark:text-emerald-400">{passwordStrength}</strong></span>
           <ToolButton onClick={generate}>Generate password</ToolButton>
         </div>
       </ToolPanel>
@@ -251,14 +251,14 @@ export function ColorPickerTool() {
             value={color}
             onChange={(event) => setColor(event.target.value)}
           />
-          <div className="size-16 rounded-xl border border-slate-200" style={{ background: color }} />
-          <strong className="font-mono text-xl font-semibold text-slate-800 dark:text-slate-100">{values.hex}</strong>
+          <div className="size-16 rounded-xl border border-border" style={{ background: color }} />
+          <strong className="font-mono text-xl font-semibold text-foreground ">{values.hex}</strong>
         </div>
         <div className={toolStyles.listOutput}>
           {Object.entries(values).map(([label, value]) => (
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-950" key={label}>
-              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{label.toUpperCase()}</span>
-              <code className="ml-auto font-mono text-sm text-slate-800 dark:text-slate-200">{value}</code>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-4 py-2.5 dark:border-border dark:bg-muted/30" key={label}>
+              <span className="font-mono text-xs text-muted-foreground ">{label.toUpperCase()}</span>
+              <code className="ml-auto font-mono text-sm text-foreground ">{value}</code>
               <CopyButton value={value} />
             </div>
           ))}

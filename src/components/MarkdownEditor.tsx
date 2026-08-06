@@ -38,17 +38,17 @@ export default function MarkdownEditor({
 
   return (
     <section className="flex min-w-0 flex-col">
-      <div className="flex h-14 items-center justify-between border-b border-slate-100 px-4 dark:border-slate-800 sm:px-6">
-        <div className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[1px] text-slate-500 dark:text-slate-400">
-          <span className="text-[#f2633d]">01</span>
+      <div className="flex h-14 items-center justify-between border-b border-border px-4 dark:border-border sm:px-6">
+        <div className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[1px] text-muted-foreground ">
+          <span className="text-primary">01</span>
           <span>{t("markdownPane")}</span>
         </div>
-        <span className="hidden font-mono text-xs text-slate-400 dark:text-slate-500 sm:inline">
+        <span className="hidden font-mono text-xs text-muted-foreground  sm:inline">
           {t("realtimeUpdate")}
         </span>
       </div>
-      <div className="flex min-h-[420px] flex-1 bg-[#fbfcfd] dark:bg-slate-950">
-        <div ref={lineNumberRef} className="h-[420px] w-12 shrink-0 overflow-hidden whitespace-pre-line border-r border-slate-100 px-3 pt-6 text-right font-mono text-sm leading-7 text-slate-300 select-none dark:border-slate-800 dark:text-slate-700" aria-hidden="true">
+      <div className="flex min-h-[420px] flex-1 bg-background dark:bg-muted/30">
+        <div ref={lineNumberRef} className="h-[420px] w-12 shrink-0 overflow-hidden whitespace-pre-line border-r border-border px-3 pt-6 text-right font-mono text-sm leading-7 text-foreground select-none dark:border-border " aria-hidden="true">
           {Array.from({ length: lines }, (_, index) => index + 1).join("\n")}
         </div>
         <textarea
@@ -58,10 +58,10 @@ export default function MarkdownEditor({
           onScroll={handleScroll}
           spellCheck={false}
           aria-label={t("markdownInput")}
-          className="min-h-[420px] w-full resize-none border-0 bg-transparent px-4 py-6 font-mono text-[15px] leading-7 text-slate-700 outline-none selection:bg-orange-100 dark:text-slate-200 dark:selection:bg-orange-950/60 sm:px-6"
+          className="min-h-[420px] w-full resize-none border-0 bg-transparent px-4 py-6 font-mono text-[15px] leading-7 text-foreground outline-none selection:bg-primary/20  dark:selection:bg-primary/20 sm:px-6"
         />
       </div>
-      <div className="flex min-h-11 items-center justify-between border-t border-slate-100 px-4 font-mono text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500 sm:px-6">
+      <div className="flex min-h-11 items-center justify-between border-t border-border px-4 font-mono text-xs text-muted-foreground dark:border-border  sm:px-6">
         <span>
           {words} {words === 1 ? t("word") : t("words")}
         </span>

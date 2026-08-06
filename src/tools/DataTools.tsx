@@ -174,13 +174,13 @@ export function YamlJsonTool() {
       <ToolPanel title="Convert YAML and JSON" actions={<ToolButton variant="quiet" onClick={() => { setValue(initialValue); setDirection("yaml-to-json"); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.segmented}>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "yaml-to-json" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "yaml-to-json" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             onClick={() => setDirection("yaml-to-json")}
           >
             YAML → JSON
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-yaml" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-yaml" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             onClick={() => setDirection("json-to-yaml")}
           >
             JSON → YAML
@@ -306,13 +306,13 @@ export function CsvJsonTool() {
       <ToolPanel title="Convert CSV and JSON" actions={<ToolButton variant="quiet" onClick={() => { setValue(initialValue); setDirection("csv-to-json"); }}>{t("reset")}</ToolButton>}>
         <div className={toolStyles.segmented}>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "csv-to-json" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "csv-to-json" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             onClick={() => setDirection("csv-to-json")}
           >
             CSV → JSON
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-csv" ? "bg-white text-[#f2633d] shadow-sm dark:bg-slate-900" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-csv" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
             onClick={() => setDirection("json-to-csv")}
           >
             JSON → CSV
