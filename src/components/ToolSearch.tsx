@@ -78,7 +78,7 @@ export default function ToolSearch({ className = "" }: ToolSearchProps) {
       >
         <span className="text-base" aria-hidden="true">⌕</span>
         <span className="hidden sm:inline">{t("searchToolsShort")}</span>
-        <kbd className="rounded-md border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">Ctrl K</kbd>
+        <kbd className="hidden rounded-md border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">Ctrl K</kbd>
       </button>
 
       {open && (

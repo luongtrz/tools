@@ -1,6 +1,17 @@
 import type { ReactNode } from "react";
 
 const paths: Record<string, ReactNode> = {
+  brand: (
+    <>
+      <path
+        d="M5.25 3.75h8.5l5 5v11.5H5.25V3.75Z"
+        fill="currentColor"
+        opacity=".16"
+      />
+      <path d="M13.75 3.75v5h5M8 12h8M8 15.5h4" />
+      <path d="m15.5 14.25.75 1.5 1.5.75-1.5.75-.75 1.5-.75-1.5-1.5-.75 1.5-.75.75-1.5Z" />
+    </>
+  ),
   file: (
     <>
       <path d="M6 3.75h8.172L18.5 8.078V20.25H6V3.75Z" />
@@ -54,9 +65,13 @@ interface IconProps {
 export default function Icon({ name, className = "" }: IconProps) {
   return (
     <svg
-      className={className}
+      className={`size-4 shrink-0 ${className}`}
       viewBox="0 0 24 24"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"
     >
       {paths[name]}

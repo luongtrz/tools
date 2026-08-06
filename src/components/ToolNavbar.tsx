@@ -4,6 +4,7 @@ import { TOOL_CATEGORIES, TOOL_REGISTRY, getTool } from "../toolRegistry";
 import LanguageToggle from "./LanguageToggle";
 import ThemeToggle from "./ThemeToggle";
 import ToolSearch from "./ToolSearch";
+import Icon from "./Icon";
 
 interface ToolNavbarProps {
   activeSlug?: string;
@@ -16,21 +17,21 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 px-5 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/90 sm:px-8">
-      <div className="mx-auto flex min-h-[76px] max-w-[1440px] flex-wrap items-center gap-3 py-3 lg:flex-nowrap lg:gap-8 lg:py-0">
+      <div className="mx-auto flex min-h-[76px] max-w-[1440px] flex-wrap items-center gap-3 py-3 2xl:flex-nowrap 2xl:gap-8 2xl:py-0">
         <a
           className="inline-flex w-max shrink-0 items-center gap-2.5 font-display text-[23px] font-bold tracking-tight text-slate-800 no-underline dark:text-slate-100"
           href="/"
           aria-label={`${t("home")} toolmd`}
         >
-          <span className="grid size-9 place-items-center rounded-xl bg-[#fff0eb] text-[25px] leading-none text-[#f2633d]">
-            ⌁
+          <span className="grid size-9 place-items-center rounded-xl bg-[#fff0eb] text-[#f2633d] dark:bg-orange-950/50 dark:text-orange-300">
+            <Icon name="brand" className="size-5" />
           </span>
           <span>
             tool<span className="text-[#f2633d]">md</span>
           </span>
         </a>
         <nav
-          className="order-3 flex w-full min-w-0 flex-wrap items-center gap-1 overflow-visible border-t border-slate-100 pt-2 dark:border-slate-800 lg:order-none lg:w-auto lg:flex-1 lg:flex-nowrap lg:border-0 lg:pt-0"
+          className="order-3 flex w-full min-w-0 flex-wrap items-center gap-1 overflow-visible border-t border-slate-100 pt-2 dark:border-slate-800 2xl:order-none 2xl:w-auto 2xl:flex-1 2xl:flex-nowrap 2xl:border-0 2xl:pt-0"
           aria-label={t("toolCategories")}
         >
           <a
@@ -62,7 +63,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
                     ⌄
                   </span>
                 </summary>
-                <div className="absolute left-0 top-[calc(100%+10px)] z-20 hidden w-[min(320px,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_60px_rgba(24,38,61,.14)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_60px_rgba(0,0,0,.35)] group-open:block lg:left-1/2 lg:-translate-x-1/2">
+                <div className="absolute left-0 top-[calc(100%+10px)] z-20 hidden w-[min(320px,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_60px_rgba(24,38,61,.14)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_60px_rgba(0,0,0,.35)] group-open:block 2xl:left-1/2 2xl:-translate-x-1/2">
                   <a
                     className="mb-1 flex flex-row items-center justify-between rounded-xl border-b border-slate-100 px-3.5 py-3 pb-3 text-sm font-semibold text-[#d95132] no-underline hover:bg-orange-50 dark:border-slate-800 dark:text-orange-300 dark:hover:bg-slate-800"
                     href={`/?category=${encodeURIComponent(category)}`}
@@ -92,7 +93,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
         </nav>
         <ToolSearch />
         {rightSlot || (
-          <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-5">
+          <div className="ml-auto flex w-full flex-wrap items-center justify-end gap-3 sm:gap-5 2xl:w-auto">
             <LanguageToggle />
             <ThemeToggle />
             <div className="hidden items-center gap-2 font-mono text-[11px] font-medium text-slate-400 xl:flex">
