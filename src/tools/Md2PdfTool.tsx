@@ -91,6 +91,16 @@ export default function Md2PdfTool() {
     downloadFile(`${safeName}.md`, markdown, "text/markdown;charset=utf-8");
     notify(t("downloadMarkdown"));
   }
+  function handlePrint(): void {
+    notify(t("processing"));
+    window.setTimeout(() => window.print(), 50);
+  }
+  function handleImport(text: string, fileName: string): void {
+    setMarkdown(text);
+    const base = fileName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-");
+    if (base) setOutputName(base);
+    notify(t("downloadMarkdown"));
+  }
   async function handleExport(): Promise<void> {
     const safeName = safePdfName(fileBaseName);
     notify(t("processing"));
@@ -148,7 +158,7 @@ export default function Md2PdfTool() {
 
   return (
     <>
-      <div className="mx-auto min-h-screen max-w-[1600px] bg-background px-4 font-sans text-[#152031] dark:bg-[#0f1724]  sm:px-8 lg:px-12">
+      <div className="mx-auto min-h-screen max-w-[1600px] bg-background px-4 font-sans text-foreground sm:px-8 lg:px-12">
         <TopBar onReset={resetDocument} />
         <main className="py-10 sm:py-14">
           <section className="mb-10 flex flex-col items-start justify-between gap-7 sm:mb-12 sm:flex-row sm:items-end">
@@ -188,6 +198,8 @@ export default function Md2PdfTool() {
               onShare={handleShare}
               onDownload={handleDownloadMarkdown}
               onExport={handleExport}
+              onPrint={handlePrint}
+              onImport={(text, name) => handleImport(text, name)}
               onRename={handleRename}
             />
             <div className="grid min-h-[520px] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

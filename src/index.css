@@ -98,3 +98,22 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  header,
+  nav,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  main,
+  article,
+  section {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
