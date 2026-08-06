@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { useI18n, type Language } from "@/i18n";
 import { SEO_SITE, homeSeo, toolSeo, type SeoMeta } from "@/lib/seo";
+import {
+  homeStructuredData,
+  toolStructuredData,
+} from "@/lib/structuredData";
 
 function setMeta(name: string, content: string, attr: "name" | "property" = "name"): void {
   if (typeof document === "undefined") return;
@@ -43,6 +47,24 @@ function setAlternate(hreflang: string, href: string): void {
   document.head.appendChild(link);
 }
 
+function clearStructuredData(): void {
+  if (typeof document === "undefined") return;
+  const nodes = document.head.querySelectorAll('script[data-seo="jsonld"]');
+  nodes.forEach((node) => node.remove());
+}
+
+function setStructuredData(schemas: Record<string, unknown>[]): void {
+  if (typeof document === "undefined") return;
+  clearStructuredData();
+  for (const schema of schemas) {
+    const script = document.createElement("script");
+    script.setAttribute("type", "application/ld+json");
+    script.setAttribute("data-seo", "jsonld");
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+  }
+}
+
 function applySeo(meta: SeoMeta, language: Language, slug?: string): void {
   document.title = meta.title;
   setMeta("description", meta.description);
@@ -70,6 +92,11 @@ function applySeo(meta: SeoMeta, language: Language, slug?: string): void {
   setAlternate("vi", `${SEO_SITE.base}/vi${pathSlug}`);
   setAlternate("en", `${SEO_SITE.base}/en${pathSlug}`);
   setAlternate("x-default", `${SEO_SITE.base}${pathSlug}`);
+
+  const structured = slug
+    ? toolStructuredData(slug, language)
+    : homeStructuredData(language);
+  setStructuredData(structured.schemas);
 }
 
 export function useSeoMeta(slug?: string): void {
