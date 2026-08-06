@@ -18,7 +18,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
   {
     slug: "md2pdf",
     title: "Markdown → PDF",
-    description: "Soạn Markdown, xem preview và in thành PDF sạch đẹp.",
+    description: "Soạn Markdown, xem preview và xuất PDF trực tiếp từ trình duyệt.",
     category: "Document",
     featured: true,
   },

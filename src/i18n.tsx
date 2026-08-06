@@ -371,7 +371,7 @@ const toolTranslations: Record<
 > = {
   md2pdf: {
     title: { vi: "Markdown → PDF", en: "Markdown → PDF" },
-    description: { vi: "Soạn Markdown, xem preview và xuất PDF sạch đẹp.", en: "Write Markdown, preview it and export a clean PDF." },
+    description: { vi: "Soạn Markdown, xem preview và xuất PDF trực tiếp từ trình duyệt.", en: "Write Markdown, preview it, and download a clean PDF directly from the browser." },
   },
   md2word: {
     title: { vi: "Markdown → Word", en: "Markdown → Word" },

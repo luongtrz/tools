@@ -156,7 +156,7 @@ export default function Md2PdfTool() {
               <p className="mb-4 flex items-center gap-2 font-mono text-xs font-medium tracking-[1.5px] text-primary">
                 <span className="h-px w-6 bg-primary" /> {t("markdownWorkspace")}
               </p>
-              <h1 className="mb-4 font-display text-[clamp(40px,5vw,68px)] font-bold leading-[.98] tracking-[-3px] text-[#111b2c] ">
+              <h1 className="mb-4 font-display text-[clamp(40px,5vw,68px)] font-bold leading-[.98] tracking-[-3px] text-foreground">
                 {t("markdownReady")} <em className="not-italic text-primary">{t("readyToPrint")}</em>
               </h1>
               <p className="m-0 max-w-[620px] text-base leading-7 text-muted-foreground  sm:text-lg">
