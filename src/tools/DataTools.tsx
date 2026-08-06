@@ -1,65 +1,214 @@
 import { useMemo, useState } from "react";
 import YAML from "yaml";
-import { useI18n } from "../i18n";
-import { diffLines } from "../lib/diff";
+import { useI18n } from "@/i18n";
+import { downloadFile } from "@/lib/download";
+import { tryParseJson, formatJson } from "@/lib/json";
+import { csvToObjects, objectsToCsv, parseCsv } from "@/lib/csv";
+import { diffJsonValues, type JsonDiffEntry } from "@/lib/jsonDiff";
+import { detectFormat } from "@/lib/format";
 import {
   CopyButton,
-  ToolButton,
   ToolNotice,
   ToolPage,
   ToolPanel,
   ToolTextArea,
-} from "../components/ToolUI";
-import { toolStyles } from "../components/toolStyles";
+} from "@/components/ToolUI";
+import { OutputActions } from "@/components/OutputActions";
+import {
+  ErrorLine,
+  FileDropZone,
+  ToolExamples,
+  ToolStats,
+} from "@/components/ToolSupport";
+import { toolStyles } from "@/components/toolStyles";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 const SAMPLE_JSON =
-  '{"name":"toolmd","tools":["md2pdf","md2word"],"private":true}';
-const SAMPLE_JSON_COMPARE =
-  '{"name":"toolmd","tools":["md2pdf","md2word","md2pptx"],"private":true}';
+  '{"name":"toolmd","tools":["md2pdf","md2word","md2pptx"],"version":"1.0","settings":{"theme":"auto","limit":50}}';
+const SAMPLE_JSON_B =
+  '{"name":"toolmd","tools":["md2pdf","md2word","md2pptx","json-diff"],"version":"1.1","settings":{"theme":"auto","limit":100}}';
+
+const JSON_SAMPLES = [
+  { label: "Compact", description: "Single line, no spaces", value: '{"name":"toolmd","ok":true}' },
+  { label: "Nested", description: "Config-like with array", value: SAMPLE_JSON },
+  { label: "Array", description: "Top-level array", value: '[1,2,3,"four",{"five":5}]' },
+  { label: "Unicode", description: "Vietnamese and emoji", value: '{"name":"toolmd","motto":"Đơn giản 🚀"}' },
+];
+
+const JSON_DIFF_SAMPLES = [
+  {
+    label: "v1 → v1.1",
+    description: "Add field, change value",
+    value: SAMPLE_JSON_B,
+    left: SAMPLE_JSON,
+    right: SAMPLE_JSON_B,
+  },
+  {
+    label: "Reordered",
+    description: "Same data, different key order",
+    value: '{"c":3,"b":2,"a":1}',
+    left: '{"a":1,"b":2,"c":3}',
+    right: '{"c":3,"b":2,"a":1}',
+  },
+];
 
 type JsonMode = "format" | "validate" | "diff";
 
 export function JsonTool({ mode }: { mode: JsonMode }) {
   const { t } = useI18n();
   const [value, setValue] = useState(SAMPLE_JSON);
-  const [compare, setCompare] = useState(SAMPLE_JSON_COMPARE);
+  const [compare, setCompare] = useState(SAMPLE_JSON_B);
+  const [indent, setIndent] = useState<number | "\t">(2);
+  const [ignoreOrder, setIgnoreOrder] = useState(false);
+  const isFormat = mode === "format";
+  const isValidate = mode === "validate";
+  const isDiff = mode === "diff";
+
+  const parsed = useMemo(() => tryParseJson(value), [value]);
+  const output = useMemo(() => {
+    if (!parsed.ok) return "";
+    if (isFormat) return formatJson(parsed.value, indent);
+    if (isValidate) return JSON.stringify(parsed.value, null, 2);
+    return "";
+  }, [indent, isFormat, isValidate, parsed]);
+
+  const parsedCompare = useMemo(() => tryParseJson(compare), [compare]);
+  const diffEntries = useMemo<JsonDiffEntry[]>(() => {
+    if (!isDiff) return [];
+    if (!parsed.ok || !parsedCompare.ok) return [];
+    return diffJsonValues(parsed.value, parsedCompare.value, {
+      ignoreArrayOrder: ignoreOrder,
+    });
+  }, [ignoreOrder, isDiff, parsed, parsedCompare]);
+
+  const stats = useMemo(() => {
+    if (!parsed.ok) return null;
+    const serialized = JSON.stringify(parsed.value);
+    return {
+      bytes: serialized.length,
+      lines: serialized.split("\n").length,
+      keys: countKeys(parsed.value),
+    };
+  }, [parsed]);
+
   function reset(): void {
     setValue(SAMPLE_JSON);
-    setCompare(SAMPLE_JSON_COMPARE);
+    setCompare(SAMPLE_JSON_B);
+    setIndent(2);
+    setIgnoreOrder(false);
   }
-  const computed = useMemo((): { output: string; error: string } => {
-    if (mode === "diff") {
-      try {
-        return { output: diffJson(value, compare), error: "" };
-      } catch {
-        return { output: "", error: t("invalidJsonPair") };
-      }
-    }
-    if (!value.trim()) return { output: "", error: t("emptyInput") };
-    try {
-      const parsed: unknown = JSON.parse(value);
-      return {
-        output: mode === "format" ? JSON.stringify(parsed, null, 2) : t("validJson"),
-        error: "",
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "parse error";
-      return { output: "", error: t("invalidJson", { message }) };
-    }
-  }, [compare, mode, t, value]);
-  const output = computed.output || computed.error;
-  const error = computed.error;
-  const slug =
-    mode === "format"
-      ? "json-formatter"
-      : mode === "validate"
-        ? "json-validator"
-        : "json-diff";
+
   return (
-    <ToolPage slug={slug}>
-      <div className={mode === "diff" ? toolStyles.splitLayout : ""}>
-        {mode === "diff" && (
-          <ToolPanel title="JSON A" actions={<ToolButton variant="quiet" onClick={reset}>{t("reset")}</ToolButton>}>
+    <ToolPage
+      slug={
+        isFormat ? "json-formatter" : isValidate ? "json-validator" : "json-diff"
+      }
+    >
+      {!isDiff && (
+        <ToolPanel
+          title={isFormat ? "JSON input" : "Validate JSON"}
+          actions={
+            <OutputActions
+              onReset={reset}
+              onClear={() => setValue("")}
+              onCopy={async () => {
+                await navigator.clipboard.writeText(value);
+              }}
+              onDownload={() =>
+                downloadFile(
+                  "input.json",
+                  value,
+                  "application/json;charset=utf-8",
+                )
+              }
+            />
+          }
+        >
+          <ToolTextArea
+            value={value}
+            onChange={setValue}
+            ariaLabel="JSON input"
+            rows={18}
+          />
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {isFormat && (
+              <Field label="Indent">
+                <Select
+                  value={String(indent)}
+                  onValueChange={(v: string) =>
+                    setIndent(v === "tab" ? "\t" : Number(v))
+                  }
+                >
+                  <SelectTrigger className="h-9 w-full font-mono text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">2 spaces</SelectItem>
+                    <SelectItem value="4">4 spaces</SelectItem>
+                    <SelectItem value="tab">Tab</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+            <FileDropZone
+              accept=".json,application/json"
+              label="Drop a .json file"
+              description="or click to browse"
+              onFiles={async (files) => {
+                const file = files[0];
+                if (!file) return;
+                const text = await file.text();
+                setValue(text);
+              }}
+            />
+          </div>
+          <ToolExamples
+            className="mt-3"
+            examples={JSON_SAMPLES}
+            onSelect={setValue}
+          />
+          {stats && (
+            <ToolStats
+              className="mt-3"
+              items={[
+                { label: "Bytes", value: stats.bytes.toLocaleString() },
+                { label: "Lines", value: stats.lines.toLocaleString() },
+                { label: "Keys", value: stats.keys.toLocaleString() },
+                {
+                  label: isFormat ? "Indent" : "Status",
+                  value: isFormat ? String(indent === "\t" ? "tab" : indent) : "Valid",
+                },
+              ]}
+            />
+          )}
+        </ToolPanel>
+      )}
+      {isDiff && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ToolPanel
+            title="JSON A"
+            actions={
+              <OutputActions
+                onReset={reset}
+                onClear={() => setValue("")}
+                onCopy={async () => {
+                  await navigator.clipboard.writeText(value);
+                }}
+              />
+            }
+          >
             <ToolTextArea
               value={value}
               onChange={setValue}
@@ -67,97 +216,182 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
               rows={18}
             />
           </ToolPanel>
-        )}
-        {mode === "diff" && (
-          <ToolPanel title="JSON B">
+          <ToolPanel
+            title="JSON B"
+            actions={
+              <OutputActions
+                onSwap={() => {
+                  const a = value;
+                  setValue(compare);
+                  setCompare(a);
+                }}
+                onClear={() => setCompare("")}
+                onCopy={async () => {
+                  await navigator.clipboard.writeText(compare);
+                }}
+              />
+            }
+          >
             <ToolTextArea
               value={compare}
               onChange={setCompare}
               ariaLabel="Second JSON"
               rows={18}
             />
-          </ToolPanel>
-        )}
-        {mode !== "diff" && (
-          <ToolPanel
-            title={mode === "format" ? "JSON input" : "Validate JSON"}
-            description="Paste JSON and run it locally in your browser."
-            actions={<ToolButton variant="quiet" onClick={reset}>{t("reset")}</ToolButton>}
-          >
-            <ToolTextArea
-              value={value}
-              onChange={setValue}
-              ariaLabel="JSON input"
-              rows={18}
+            <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <Checkbox
+                checked={ignoreOrder}
+                onCheckedChange={(value) => setIgnoreOrder(Boolean(value))}
+              />
+              Ignore array element order
+            </label>
+            <ToolExamples
+              className="mt-3"
+              examples={JSON_DIFF_SAMPLES}
+              onSelect={(next) => {
+                const sample = JSON_DIFF_SAMPLES.find((entry) => entry.right === next);
+                if (sample) {
+                  setValue(sample.left);
+                  setCompare(sample.right);
+                } else {
+                  setCompare(next);
+                }
+              }}
             />
-            <div className={toolStyles.panelActions}>
-              {mode === "format" && (
-                <>
-                  <ToolButton disabled={Boolean(error)} onClick={() => setValue(computed.output)}>
-                    Format JSON
-                  </ToolButton>
-                  <ToolButton
-                    variant="quiet"
-                    disabled={Boolean(error)}
-                    onClick={() => {
-                      try {
-                        setValue(JSON.stringify(JSON.parse(value)));
-                      } catch {
-                        // The computed error state already explains why the action is disabled.
-                      }
-                    }}
-                  >
-                    Minify JSON
-                  </ToolButton>
-                </>
-              )}
-              <CopyButton value={output} />
-            </div>
           </ToolPanel>
-        )}
-      </div>
+        </div>
+      )}
       <ToolPanel
-        title={mode === "diff" ? "JSON changes" : "Result"}
-        actions={<CopyButton value={output} />}
+        title={isDiff ? "Changes" : "Result"}
+        actions={
+          <OutputActions
+            onCopy={async () => {
+              if (isDiff) {
+                await navigator.clipboard.writeText(
+                  diffEntries
+                    .filter((entry) => entry.type !== "unchanged")
+                    .map((entry) => `${entry.type === "added" ? "+" : entry.type === "removed" ? "-" : "~"} ${entry.path}`)
+                    .join("\n"),
+                );
+              } else {
+                await navigator.clipboard.writeText(output);
+              }
+            }}
+            onDownload={
+              isDiff || !output
+                ? undefined
+                : () =>
+                    downloadFile(
+                      isFormat ? "formatted.json" : "validated.json",
+                      output,
+                      "application/json;charset=utf-8",
+                    )
+            }
+          />
+        }
       >
-        {error ? (
-          <ToolNotice variant="error">{error}</ToolNotice>
-        ) : (
-          <pre className={toolStyles.codeOutput}>{output}</pre>
+        {!parsed.ok && !isDiff && (
+          <ErrorLine text={value} error={parsed.error} />
+        )}
+        {!parsedCompare.ok && isDiff && (
+          <ErrorLine text={compare} error={parsedCompare.error} />
+        )}
+        {((isDiff && parsed.ok && parsedCompare.ok) ||
+          (!isDiff && parsed.ok)) && (
+          <>
+            {isDiff ? (
+              <div className="space-y-1">
+                {diffEntries.length === 0 ? (
+                  <ToolNotice>No changes detected.</ToolNotice>
+                ) : (
+                  diffEntries.map((entry, index) => (
+                    <DiffEntryRow
+                      key={`${entry.path}-${index}`}
+                      entry={entry}
+                    />
+                  ))
+                )}
+              </div>
+            ) : (
+              <pre className={cn(toolStyles.codeOutput, "min-h-[300px]")}>
+                {output}
+              </pre>
+            )}
+          </>
         )}
       </ToolPanel>
     </ToolPage>
   );
 }
 
-function diffJson(first: string, second: string): string {
-  const rows = diffLines(
-    JSON.stringify(JSON.parse(first), null, 2),
-    JSON.stringify(JSON.parse(second), null, 2),
-  );
+function DiffEntryRow({ entry }: { entry: JsonDiffEntry }) {
+  const styles = {
+    added: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200",
+    removed: "border-destructive/40 bg-destructive/10 text-destructive",
+    changed: "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200",
+    unchanged: "border-border bg-muted/30 text-foreground",
+  } as const;
   return (
-    rows
-      .map((row) => `${row.type === "added" ? "+" : row.type === "removed" ? "-" : " "} ${row.text}`)
-      .join("\n") || "  (no changes)"
+    <div className={cn("rounded-md border px-3 py-2 font-mono text-xs", styles[entry.type])}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-semibold">{entry.path}</span>
+        <span className="rounded-full bg-background/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+          {entry.type}
+        </span>
+      </div>
+      <div className="mt-1 grid gap-1 sm:grid-cols-2">
+        {entry.before !== undefined && (
+          <code className="break-all rounded bg-background/60 p-1.5 text-[11px]">
+            − {formatJson(entry.before, 2)}
+          </code>
+        )}
+        {entry.after !== undefined && (
+          <code className="break-all rounded bg-background/60 p-1.5 text-[11px]">
+            + {formatJson(entry.after, 2)}
+          </code>
+        )}
+      </div>
+    </div>
   );
 }
 
+function countKeys(value: unknown): number {
+  if (Array.isArray(value)) {
+    return value.reduce<number>((sum, item) => sum + countKeys(item), 0);
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).reduce<number>(
+      (sum, item) => sum + 1 + countKeys(item),
+      0,
+    );
+  }
+  return 0;
+}
+
+const SAMPLE_YAML = "name: toolmd\ntools:\n  - md2pdf\n  - md2word\n  - md2pptx\nversion: 1.0\n";
+const SAMPLE_YAML_JSON = `{\n  "name": "toolmd",\n  "tools": ["md2pdf", "md2word"],\n  "private": true\n}`;
+
+const YAML_SAMPLES = [
+  { label: "YAML", description: "Mapping + list", value: SAMPLE_YAML },
+  { label: "JSON", description: "Same content in JSON", value: SAMPLE_YAML_JSON },
+];
+
 export function YamlJsonTool() {
   const { t } = useI18n();
-  const initialValue = "name: toolmd\ntools:\n  - md2pdf\n  - md2word\nprivate: true";
   const [direction, setDirection] = useState<"yaml-to-json" | "json-to-yaml">(
     "yaml-to-json",
   );
-  const [value, setValue] = useState(initialValue);
-  const result = useMemo((): { output: string; error: string } => {
+  const [value, setValue] = useState(SAMPLE_YAML);
+  const [indent, setIndent] = useState(2);
+  const result = useMemo<{ output: string; error: string }>(() => {
     if (!value.trim()) return { output: "", error: t("emptyInput") };
     try {
       const parsed = YAML.parse(value);
       return {
         output:
           direction === "yaml-to-json"
-            ? JSON.stringify(parsed, null, 2)
-            : YAML.stringify(parsed),
+            ? JSON.stringify(parsed, null, indent)
+            : YAML.stringify(parsed, { indent }),
         error: "",
       };
     } catch (error) {
@@ -168,128 +402,197 @@ export function YamlJsonTool() {
         }),
       };
     }
-  }, [direction, t, value]);
+  }, [direction, indent, t, value]);
+  const detected = useMemo(() => detectFormat("input", value), [value]);
   return (
     <ToolPage slug="yaml-json">
-      <ToolPanel title="Convert YAML and JSON" actions={<ToolButton variant="quiet" onClick={() => { setValue(initialValue); setDirection("yaml-to-json"); }}>{t("reset")}</ToolButton>}>
-        <div className={toolStyles.segmented}>
-          <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "yaml-to-json" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
-            onClick={() => setDirection("yaml-to-json")}
-          >
-            YAML → JSON
-          </button>
-          <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-yaml" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
-            onClick={() => setDirection("json-to-yaml")}
-          >
-            JSON → YAML
-          </button>
-        </div>
-        <div className={toolStyles.splitLayout}>
-          <ToolTextArea
-            value={value}
-            onChange={setValue}
-            ariaLabel="YAML or JSON input"
-            rows={18}
+      <ToolPanel
+        title="Convert YAML and JSON"
+        actions={
+          <OutputActions
+            onReset={() => {
+              setValue(SAMPLE_YAML);
+              setDirection("yaml-to-json");
+              setIndent(2);
+            }}
+            onSwap={() => {
+              if (!result.output) return;
+              setDirection((d) => (d === "yaml-to-json" ? "json-to-yaml" : "yaml-to-json"));
+              setValue(result.output);
+            }}
+            onClear={() => setValue("")}
+            onCopy={async () => {
+              await navigator.clipboard.writeText(result.output);
+            }}
+            onDownload={() =>
+              downloadFile(
+                direction === "yaml-to-json" ? "out.json" : "out.yaml",
+                result.output,
+                direction === "yaml-to-json"
+                  ? "application/json;charset=utf-8"
+                  : "application/x-yaml;charset=utf-8",
+              )
+            }
           />
-          {result.error ? <ToolNotice variant="error">{result.error}</ToolNotice> : <pre className={toolStyles.codeOutput}>{result.output}</pre>}
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Direction">
+            <div className="inline-flex h-9 w-full overflow-hidden rounded-md border border-input">
+              <button
+                type="button"
+                onClick={() => setDirection("yaml-to-json")}
+                className={cn(
+                  "flex-1 text-sm transition-colors",
+                  direction === "yaml-to-json"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-accent",
+                )}
+              >
+                YAML → JSON
+              </button>
+              <button
+                type="button"
+                onClick={() => setDirection("json-to-yaml")}
+                className={cn(
+                  "flex-1 text-sm transition-colors",
+                  direction === "json-to-yaml"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-accent",
+                )}
+              >
+                JSON → YAML
+              </button>
+            </div>
+          </Field>
+          <Field label="Indent">
+            <Select
+              value={String(indent)}
+              onValueChange={(v: string) => setIndent(Number(v))}
+            >
+              <SelectTrigger className="h-9 w-full font-mono text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2">2 spaces</SelectItem>
+                <SelectItem value="4">4 spaces</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
         </div>
-        <CopyButton value={result.output} />
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+          <span>
+            Detected input: <code className="font-mono">{detected}</code>
+          </span>
+          <FileDropZone
+            accept=".yaml,.yml,.json,application/json,application/x-yaml"
+            className="flex-1 max-w-md"
+            label="Drop a .yaml/.yml/.json file"
+            description="or click to browse"
+            onFiles={async (files) => {
+              const file = files[0];
+              if (!file) return;
+              const text = await file.text();
+              const format = detectFormat(file.name, text);
+              if (format === "json") setDirection("json-to-yaml");
+              else if (format === "yaml") setDirection("yaml-to-json");
+              setValue(text);
+            }}
+          />
+        </div>
+        <ToolExamples
+          className="mt-3"
+          examples={YAML_SAMPLES}
+          onSelect={setValue}
+        />
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div>
+            <Label className="text-xs font-medium text-muted-foreground">
+              Input
+            </Label>
+            <ToolTextArea
+              className="mt-1"
+              value={value}
+              onChange={setValue}
+              ariaLabel="YAML or JSON input"
+              rows={16}
+            />
+          </div>
+          <div>
+            <Label className="text-xs font-medium text-muted-foreground">
+              Output
+            </Label>
+            {result.error ? (
+              <ToolNotice variant="error" className="mt-1">
+                {result.error}
+              </ToolNotice>
+            ) : (
+              <pre className={cn(toolStyles.codeOutput, "mt-1 min-h-[320px]")}>
+                {result.output}
+              </pre>
+            )}
+          </div>
+        </div>
       </ToolPanel>
     </ToolPage>
   );
 }
 
-function parseCsv(value: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let quoted = false;
-  for (let index = 0; index < value.length; index += 1) {
-    const character = value[index];
-    if (character === '"') {
-      if (quoted && value[index + 1] === '"') {
-        field += '"';
-        index += 1;
-      } else quoted = !quoted;
-    } else if (character === "," && !quoted) {
-      row.push(field);
-      field = "";
-    } else if ((character === "\n" || character === "\r") && !quoted) {
-      if (character === "\r" && value[index + 1] === "\n") index += 1;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
-    } else field += character;
-  }
-  if (quoted) throw new Error("Unclosed quoted field.");
-  if (field || row.length) {
-    row.push(field);
-    rows.push(row);
-  }
-  return rows.filter((item) => item.some((cell) => cell.length));
-}
-
-function stringifyCsv(rows: string[][]): string {
-  return rows
-    .map((row) =>
-      row
-        .map((cell) =>
-          /[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell,
-        )
-        .join(","),
-    )
-    .join("\n");
-}
+const CSV_SAMPLES = [
+  {
+    label: "Inventory",
+    description: "3 columns, 4 rows",
+    value: "name,category,status\nmd2pdf,Document,ready\nmd2word,Document,next\nmd2pptx,Document,planned\nmd2pdf v2,Document,shipped",
+  },
+  {
+    label: "TSV",
+    description: "Tab-separated values",
+    value: "id\tname\tqty\n1\tmd2pdf\t42\n2\tmd2word\t7",
+  },
+  {
+    label: "Quoted",
+    description: "Comma inside a quoted field",
+    value: 'name,description\n"tool, md2pdf","Markdown, ready to print"\n"tool, md2word","Convert to Word"',
+  },
+];
 
 export function CsvJsonTool() {
   const { t } = useI18n();
-  const initialValue = "name,category,status\nmd2pdf,Document,ready\nmd2word,Document,next";
   const [direction, setDirection] = useState<"csv-to-json" | "json-to-csv">(
     "csv-to-json",
   );
-  const [value, setValue] = useState(initialValue);
-  const result = useMemo((): { output: string; error: string } => {
+  const [value, setValue] = useState(CSV_SAMPLES[0].value);
+  const [delimiter, setDelimiter] = useState<"" | "," | "\t" | ";">("");
+  const result = useMemo<{
+    output: string;
+    error: string;
+    headers?: string[];
+    detected?: string;
+    rows?: Record<string, string>[];
+  }>(() => {
     if (!value.trim()) return { output: "", error: t("emptyInput") };
-    try {
-      if (direction === "csv-to-json") {
-        const rows = parseCsv(value);
-        const headers = rows[0] || [];
-        if (!headers.length) return { output: "", error: t("emptyInput") };
-        return {
-          output: JSON.stringify(
-            rows
-              .slice(1)
-              .map((row) =>
-                Object.fromEntries(
-                  headers.map((header, index) => [header, row[index] || ""]),
-                ),
-              ),
-            null,
-            2,
-          ),
-          error: "",
-        };
+    if (direction === "csv-to-json") {
+      const parsed = parseCsv(value, delimiter || undefined);
+      if ("message" in parsed) {
+        return { output: "", error: parsed.message };
       }
-      const parsed: unknown = JSON.parse(value);
-      if (
-        !Array.isArray(parsed) ||
-        !parsed.every((item) => typeof item === "object" && item !== null)
-      )
-        return { output: "", error: t("jsonArrayRequired") };
-      const objects = parsed as Record<string, unknown>[];
-      const headers = Array.from(
-        new Set(objects.flatMap((item) => Object.keys(item))),
-      );
+      const out = csvToObjects(value, delimiter || undefined);
+      if (!out.ok) return { output: "", error: out.error };
       return {
-        output: stringifyCsv([
-          headers,
-          ...objects.map((item) =>
-            headers.map((header) => String(item[header] ?? "")),
-          ),
-        ]),
+        output: JSON.stringify(out.data, null, 2),
+        error: "",
+        headers: out.headers,
+        detected: parsed.delimiter,
+        rows: out.data,
+      };
+    }
+    try {
+      const parsed: unknown = JSON.parse(value);
+      if (!Array.isArray(parsed) || !parsed.every(isPlainObject)) {
+        return { output: "", error: t("jsonArrayRequired") };
+      }
+      return {
+        output: objectsToCsv(parsed as Record<string, unknown>[]),
         error: "",
       };
     } catch (error) {
@@ -300,35 +603,184 @@ export function CsvJsonTool() {
         }),
       };
     }
-  }, [direction, t, value]);
+  }, [delimiter, direction, t, value]);
   return (
     <ToolPage slug="csv-json">
-      <ToolPanel title="Convert CSV and JSON" actions={<ToolButton variant="quiet" onClick={() => { setValue(initialValue); setDirection("csv-to-json"); }}>{t("reset")}</ToolButton>}>
-        <div className={toolStyles.segmented}>
-          <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "csv-to-json" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
-            onClick={() => setDirection("csv-to-json")}
+      <ToolPanel
+        title="Convert CSV and JSON"
+        actions={
+          <OutputActions
+            onReset={() => {
+              setValue(CSV_SAMPLES[0].value);
+              setDirection("csv-to-json");
+              setDelimiter("");
+            }}
+            onSwap={() => {
+              if (!result.output) return;
+              setDirection((d) => (d === "csv-to-json" ? "json-to-csv" : "csv-to-json"));
+              setValue(result.output);
+            }}
+            onClear={() => setValue("")}
+            onCopy={async () => {
+              await navigator.clipboard.writeText(result.output);
+            }}
+            onDownload={() =>
+              downloadFile(
+                direction === "csv-to-json" ? "out.json" : "out.csv",
+                result.output,
+                direction === "csv-to-json"
+                  ? "application/json;charset=utf-8"
+                  : "text/csv;charset=utf-8",
+              )
+            }
+          />
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Direction">
+            <div className="inline-flex h-9 w-full overflow-hidden rounded-md border border-input">
+              <button
+                type="button"
+                onClick={() => setDirection("csv-to-json")}
+                className={cn(
+                  "flex-1 text-sm transition-colors",
+                  direction === "csv-to-json"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-accent",
+                )}
+              >
+                CSV → JSON
+              </button>
+              <button
+                type="button"
+                onClick={() => setDirection("json-to-csv")}
+                className={cn(
+                  "flex-1 text-sm transition-colors",
+                  direction === "json-to-csv"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-accent",
+                )}
+              >
+                JSON → CSV
+              </button>
+            </div>
+          </Field>
+          <Field
+            label="Delimiter (CSV input)"
+            hint="Auto-detects when set to Auto."
           >
-            CSV → JSON
-          </button>
-          <button
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${direction === "json-to-csv" ? "bg-background text-primary shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground  dark:hover:text-foreground"}`}
-            onClick={() => setDirection("json-to-csv")}
-          >
-            JSON → CSV
-          </button>
+            <Select
+              value={delimiter || "auto"}
+              onValueChange={(v: string) =>
+                setDelimiter(v === "auto" ? "" : (v as "," | "\t" | ";"))
+              }
+            >
+              <SelectTrigger className="h-9 w-full font-mono text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Auto</SelectItem>
+                <SelectItem value=",">Comma ,</SelectItem>
+                <SelectItem value="\t">Tab</SelectItem>
+                <SelectItem value=";">Semicolon ;</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
         </div>
-        <ToolTextArea
-          value={value}
-          onChange={setValue}
-          ariaLabel="CSV or JSON input"
-          rows={16}
+        <FileDropZone
+          accept=".csv,.tsv,text/csv"
+          className="mt-3"
+          label="Drop a .csv or .tsv file"
+          description="or click to browse"
+          onFiles={async (files) => {
+            const file = files[0];
+            if (!file) return;
+            const text = await file.text();
+            setValue(text);
+            setDirection("csv-to-json");
+          }}
         />
-        <div className="mt-5 flex items-start gap-3">
-          {result.error ? <ToolNotice variant="error">{result.error}</ToolNotice> : <pre className={`${toolStyles.codeOutput} min-w-0 flex-1`}>{result.output}</pre>}
-          <CopyButton value={result.output} />
+        <ToolExamples
+          className="mt-3"
+          examples={CSV_SAMPLES}
+          onSelect={setValue}
+        />
+        {result.detected && direction === "csv-to-json" && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Detected delimiter: <code className="font-mono">{result.detected === "\t" ? "tab" : result.detected}</code>
+          </p>
+        )}
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <ToolTextArea
+            value={value}
+            onChange={setValue}
+            ariaLabel="CSV or JSON input"
+            rows={16}
+          />
+          {result.error ? (
+            <ToolNotice variant="error">{result.error}</ToolNotice>
+          ) : (
+            <pre className={cn(toolStyles.codeOutput, "min-h-[320px]")}>
+              {result.output}
+            </pre>
+          )}
         </div>
+        {result.rows && result.headers && result.rows.length > 0 && (
+          <div className="mt-4 overflow-auto rounded-md border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
+                <tr>
+                  {result.headers.map((header) => (
+                    <th key={header} className="px-3 py-2">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {result.rows.slice(0, 8).map((row, index) => (
+                  <tr key={index} className="even:bg-muted/20">
+                    {result.headers!.map((header) => (
+                      <td key={header} className="px-3 py-1.5 font-mono text-xs">
+                        {row[header] || "—"}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {result.rows.length > 8 && (
+              <p className="border-t border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                Showing 8 of {result.rows.length} rows.
+              </p>
+            )}
+          </div>
+        )}
       </ToolPanel>
     </ToolPage>
+  );
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">
+        {label}
+      </Label>
+      {children}
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
   );
 }
