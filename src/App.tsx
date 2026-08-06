@@ -138,5 +138,12 @@ export default function App() {
 
 function LoadingFallback() {
   const { t } = useI18n();
-  return <div className="grid min-h-screen place-items-center bg-slate-50 font-mono text-sm text-slate-500 dark:bg-[#0f1724] dark:text-slate-400">{t("loading")}</div>;
+  return (
+    <div className="grid min-h-screen place-items-center bg-background font-mono text-sm text-muted-foreground">
+      <div className="flex items-center gap-3">
+        <span className="size-2 animate-pulse rounded-full bg-primary" />
+        {t("loading")}
+      </div>
+    </div>
+  );
 }

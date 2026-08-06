@@ -13,12 +13,14 @@ interface ToolShellProps {
 export function ToolShell({ activeSlug, children }: ToolShellProps) {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen bg-[#f7f8fa] font-sans text-slate-800 dark:bg-[#0f1724] dark:text-slate-100">
+    <div className="min-h-screen bg-background font-sans text-foreground antialiased">
       <ToolNavbar activeSlug={activeSlug} />
-      <main className="mx-auto min-w-0 w-full max-w-[1600px] px-4 pb-24 pt-10 sm:px-8 sm:pt-14 lg:px-12">{children}</main>
-      <footer className="mx-auto flex max-w-[1600px] justify-between px-4 pb-8 pt-6 font-mono text-xs text-slate-400 dark:text-slate-500 sm:px-8 lg:px-12">
+      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-8 sm:px-8 sm:pt-10 lg:px-12">
+        {children}
+      </main>
+      <footer className="mx-auto flex max-w-[1600px] flex-col gap-2 px-4 pb-8 pt-6 font-mono text-xs text-muted-foreground sm:flex-row sm:justify-between sm:px-8 lg:px-12">
         <span>
-          toolmd <i>/</i> {t("footerDescription")}
+          toolmd <span className="mx-2 text-border">/</span> {t("footerDescription")}
         </span>
         <span>{t("footerBuilt")}</span>
       </footer>
