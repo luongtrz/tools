@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { literal, useI18n } from "@/i18n";
 import { SAMPLE_MARKDOWN } from "@/constants/sampleMarkdown";
 import { renderMarkdown } from "@/lib/markdown";
@@ -13,10 +13,19 @@ import {
   ToolTextArea,
 } from "@/components/ToolUI";
 import { OutputActions } from "@/components/OutputActions";
+import { FileDropZone } from "@/components/ToolSupport";
 import { toolStyles } from "@/components/toolStyles";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 function FilePicker({
@@ -137,8 +146,14 @@ export function Md2WordTool() {
   const [name, setName] = useState("document");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState<string | null>(null);
   const safeName = () => safeDocumentName(name, "document");
+  const isEmpty = !markdown.trim();
   function exportWord(): void {
+    if (isEmpty) {
+      setError(t("emptyMarkdown"));
+      return;
+    }
     try {
       setError("");
       const html = wordDocumentHtml(markdown, safeName());
@@ -148,15 +163,29 @@ export function Md2WordTool() {
     }
   }
   async function exportDocx(): Promise<void> {
+    if (isEmpty) {
+      setError(t("emptyMarkdown"));
+      return;
+    }
     setBusy(true);
     setError("");
     try {
-      downloadBlob(`${safeName()}.docx`, await markdownToDocxBlob(markdown, safeName()));
+      downloadBlob(
+        `${safeName()}.docx`,
+        await markdownToDocxBlob(markdown, safeName()),
+      );
     } catch {
       setError(t("exportFailed"));
     } finally {
       setBusy(false);
     }
+  }
+  async function importFile(text: string, fileName: string): Promise<void> {
+    setMarkdown(text);
+    const base = fileName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-");
+    if (base) setName(base);
+    setError("");
+    setWarning(null);
   }
   return (
     <ToolPage slug="md2word">
@@ -164,23 +193,51 @@ export function Md2WordTool() {
         <ToolPanel
           title="Markdown input"
           description="Paste or write the content you want to export."
-          actions={<ToolButton variant="quiet" onClick={() => { setMarkdown(SAMPLE_MARKDOWN); setError(""); }}>{t("reset")}</ToolButton>}
+          actions={
+            <OutputActions
+              onReset={() => {
+                setMarkdown(SAMPLE_MARKDOWN);
+                setName("document");
+                setError("");
+                setWarning(null);
+              }}
+              onClear={() => setMarkdown("")}
+            />
+          }
         >
           <ToolTextArea
             value={markdown}
             onChange={setMarkdown}
             ariaLabel="Markdown input"
           />
+          <FileDropZone
+            accept=".md,.markdown,.txt,text/markdown,text/plain"
+            className="mt-3"
+            label="Drop a .md or .txt file"
+            description="or click to browse"
+            onFiles={async (files) => {
+              const file = files[0];
+              if (file) await importFile(await file.text(), file.name);
+            }}
+          />
+          {warning && <p className="mt-2 text-xs text-amber-600">{warning}</p>}
         </ToolPanel>
         <ToolPanel
           title="Word preview"
           description="Export a legacy .doc file or a standard .docx document."
           actions={
             <div className="flex flex-wrap gap-2">
-              <ToolButton variant="quiet" onClick={exportWord}>Download .doc</ToolButton>
-              <ToolButton onClick={() => void exportDocx()} busy={busy}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportWord}
+                disabled={isEmpty}
+              >
+                Download .doc
+              </Button>
+              <Button onClick={() => void exportDocx()} busy={busy} disabled={isEmpty}>
                 {busy ? t("processing") : "Download .docx"}
-              </ToolButton>
+              </Button>
             </div>
           }
         >
@@ -194,30 +251,43 @@ export function Md2WordTool() {
           )}
         </ToolPanel>
       </div>
-      <ToolPanel title="File name" actions={<ToolButton variant="quiet" onClick={() => setName("document")}>{t("reset")}</ToolButton>}>
-        <input
-          className={toolStyles.input}
+      <ToolPanel
+        title="File name"
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => setName("document")}>
+            {t("reset")}
+          </Button>
+        }
+      >
+        <Input
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="document"
+          className="h-9 font-mono"
         />
-        {error && <ToolNotice variant="error">{error}</ToolNotice>}
+        {error && <ToolNotice variant="error" className="mt-3">{error}</ToolNotice>}
       </ToolPanel>
     </ToolPage>
   );
 }
 
+const SLIDE_OVERFLOW_CHARS = 700;
+
 export function Md2PptxTool() {
   const { t } = useI18n();
-  const [markdown, setMarkdown] = useState(
-    `# Project brief\n\nA focused presentation from Markdown.\n\n---\n\n## Next steps\n\n- Choose a clear story\n- Keep each slide focused`,
-  );
+  const initialMarkdown = `# Project brief\n\nA focused presentation from Markdown.\n\n---\n\n## Next steps\n\n- Choose a clear story\n- Keep each slide focused`;
+  const [markdown, setMarkdown] = useState(initialMarkdown);
   const [name, setName] = useState("presentation");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [aspect, setAspect] = useState<"16:9" | "4:3">("16:9");
   const slides = useMemo(
     () => markdown.split(/\n\s*---+\s*\n/g).map((slide) => slide.trim()).filter(Boolean),
     [markdown],
+  );
+  const overflow = useMemo(
+    () => slides.map((slide) => slide.length > SLIDE_OVERFLOW_CHARS),
+    [slides],
   );
   async function exportPptx(): Promise<void> {
     if (!slides.length) {
@@ -229,7 +299,7 @@ export function Md2PptxTool() {
     try {
       const { default: PptxGenJS } = await import("pptxgenjs");
       const pptx = new PptxGenJS();
-      pptx.layout = "LAYOUT_WIDE";
+      pptx.layout = aspect === "16:9" ? "LAYOUT_WIDE" : "LAYOUT_STANDARD";
       pptx.author = "toolmd";
       pptx.subject = "Markdown presentation";
       slides.forEach((content, index) => {
@@ -247,10 +317,11 @@ export function Md2PptxTool() {
             return plainSlideText(bullet ? `• ${bullet[1]}` : line);
           })
           .join("\n");
+        const w = aspect === "16:9" ? 12 : 10;
         slide.addText(title, {
           x: 0.7,
           y: 0.7,
-          w: 12,
+          w,
           h: 0.8,
           fontFace: "Aptos Display",
           fontSize: 30,
@@ -261,8 +332,8 @@ export function Md2PptxTool() {
         slide.addText(body, {
           x: 0.85,
           y: 1.8,
-          w: 11.4,
-          h: 4.6,
+          w: w - 0.3,
+          h: aspect === "16:9" ? 4.6 : 5.2,
           fontFace: "Aptos",
           fontSize: 18,
           color: "556274",
@@ -272,8 +343,8 @@ export function Md2PptxTool() {
           fit: "shrink",
         });
         slide.addText(`${index + 1} / ${slides.length}`, {
-          x: 11.3,
-          y: 7,
+          x: aspect === "16:9" ? 11.3 : 9.3,
+          y: aspect === "16:9" ? 7 : 7,
           w: 1.1,
           h: 0.25,
           fontSize: 9,
@@ -293,36 +364,122 @@ export function Md2PptxTool() {
   }
   return (
     <ToolPage slug="md2pptx">
-      <ToolPanel
-        title="Markdown slides"
-        description="Separate slides with a line containing three dashes."
-      >
-        <ToolTextArea
-          value={markdown}
-          onChange={setMarkdown}
-          ariaLabel="Markdown slides input"
-          rows={18}
-        />
-        <div className={toolStyles.panelActions}>
-          <ToolButton variant="quiet" onClick={() => { setMarkdown("# Project brief\n\nA focused presentation from Markdown.\n\n---\n\n## Next steps\n\n- Choose a clear story\n- Keep each slide focused"); setName("presentation"); setError(""); }}>{t("reset")}</ToolButton>
-          <input
-            className={toolStyles.input}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="presentation"
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <ToolPanel
+          title="Markdown slides"
+          description="Separate slides with a line containing three dashes."
+          actions={
+            <OutputActions
+              onReset={() => {
+                setMarkdown(initialMarkdown);
+                setName("presentation");
+                setError("");
+                setAspect("16:9");
+              }}
+              onClear={() => setMarkdown("")}
+            />
+          }
+        >
+          <ToolTextArea
+            value={markdown}
+            onChange={setMarkdown}
+            ariaLabel="Markdown slides input"
+            rows={18}
           />
-          <ToolButton onClick={() => void exportPptx()} busy={busy}>
-            {busy ? t("processing") : "Download .pptx"}
-          </ToolButton>
-        </div>
-        <p className="mt-4 font-mono text-xs text-muted-foreground">
-          {t("slidesCount", { count: slides.length })}
-        </p>
-        {error && <div className="mt-4"><ToolNotice variant="error">{error}</ToolNotice></div>}
-      </ToolPanel>
-      <div className={toolStyles.hint}>
-        {t("pptxTip")}
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <Field label="Aspect ratio">
+              <Select
+                value={aspect}
+                onValueChange={(v: string) => setAspect(v as "16:9" | "4:3")}
+              >
+                <SelectTrigger className="h-9 w-full font-mono text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="16:9">16:9 (Widescreen)</SelectItem>
+                  <SelectItem value="4:3">4:3 (Standard)</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Filename">
+              <Input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="presentation"
+                className="h-9 font-mono"
+              />
+            </Field>
+          </div>
+          <FileDropZone
+            accept=".md,.markdown,.txt,text/markdown"
+            className="mt-3"
+            label="Drop a .md file"
+            description="or click to browse"
+            onFiles={async (files) => {
+              const file = files[0];
+              if (!file) return;
+              setMarkdown(await file.text());
+            }}
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span>{t("slidesCount", { count: slides.length })}</span>
+            {overflow.some(Boolean) && (
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[10px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                {overflow.filter(Boolean).length} slide(s) over {SLIDE_OVERFLOW_CHARS} chars
+              </span>
+            )}
+            <Button onClick={() => void exportPptx()} busy={busy} disabled={!slides.length} className="ml-auto">
+              {busy ? t("processing") : "Download .pptx"}
+            </Button>
+          </div>
+          {error && <ToolNotice variant="error" className="mt-3">{error}</ToolNotice>}
+        </ToolPanel>
+        <ToolPanel title={`Slide previews (${slides.length})`}>
+          {slides.length ? (
+            <ol className="grid gap-3">
+              {slides.map((slide, index) => {
+                const lines = slide.split("\n").filter((line) => line.trim());
+                const titleLine = lines.find((line) => /^#{1,3}\s/.test(line));
+                const title = titleLine
+                  ? plainSlideText(titleLine.replace(/^#{1,3}\s+/, ""))
+                  : `Slide ${index + 1}`;
+                const body = lines
+                  .filter((line) => line !== titleLine)
+                  .map((line) => plainSlideText(line))
+                  .join(" • ");
+                return (
+                  <li
+                    key={index}
+                    className={cn(
+                      "rounded-md border border-border bg-card p-3 text-xs",
+                      overflow[index] &&
+                        "border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/20",
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2 font-mono text-[10px] uppercase text-muted-foreground">
+                      <span>Slide {index + 1}</span>
+                      <span>{slide.length} chars</span>
+                    </div>
+                    <p className="mt-1 font-display text-sm font-semibold text-foreground">
+                      {title}
+                    </p>
+                    {body && (
+                      <p className="mt-1 line-clamp-3 text-muted-foreground">
+                        {body}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <ToolNotice>{t("emptyMarkdown")}</ToolNotice>
+          )}
+        </ToolPanel>
       </div>
+      <p className="mt-3 font-mono text-xs text-muted-foreground">
+        {t("pptxTip")}
+      </p>
     </ToolPage>
   );
 }
@@ -915,4 +1072,24 @@ function formatBytes(value: number): string {
   if (value < 1024) return `${value} B`;
   if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">
+        {label}
+      </Label>
+      {children}
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  );
 }
