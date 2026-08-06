@@ -1,6 +1,5 @@
 import Icon from "./Icon";
-import LanguageToggle from "./LanguageToggle";
-import ThemeToggle from "./ThemeToggle";
+import SettingsMenu from "./SettingsMenu";
 import ToolNavbar from "./ToolNavbar";
 import { useI18n } from "../i18n";
 
@@ -19,8 +18,7 @@ export default function TopBar({ onReset }: TopBarProps) {
             <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(96,188,135,.14)]" />
             {t("browserPrint")}
           </div>
-          <LanguageToggle />
-          <ThemeToggle />
+          <SettingsMenu />
           <button
             className="grid size-10 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted/50 hover:text-foreground  dark:hover:bg-muted dark:hover:text-foreground"
             type="button"
