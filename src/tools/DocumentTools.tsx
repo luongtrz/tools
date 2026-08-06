@@ -83,6 +83,49 @@ function plainSlideText(value: string): string {
     .trim();
 }
 
+function wordDocumentHtml(markdown: string, title: string): string {
+  const content = markdown.trim() ? renderMarkdown(markdown) : "";
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>${title}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        max-width: 760px;
+        margin: 40px auto;
+        overflow-wrap: anywhere;
+      }
+      h1, h2, h3 { color: #172235; }
+      code {
+        background: #f1f3f5;
+        padding: 2px 4px;
+        font-family: "Courier New", monospace;
+      }
+      pre {
+        background: #f4f6f8;
+        border: 1px solid #dbe3ed;
+        border-radius: 6px;
+        padding: 12px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-wrap: break-word;
+        word-break: break-word;
+        font-family: "Courier New", monospace;
+      }
+      pre code {
+        background: transparent;
+        padding: 0;
+        white-space: inherit;
+      }
+    </style>
+  </head>
+  <body>${content}</body>
+</html>`;
+}
+
 export function Md2WordTool() {
   const { t } = useI18n();
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
@@ -93,7 +136,7 @@ export function Md2WordTool() {
   function exportWord(): void {
     try {
       setError("");
-      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${safeName()}</title><style>body{font-family:Arial,sans-serif;line-height:1.6;max-width:760px;margin:40px auto}h1,h2,h3{color:#172235}code{background:#f1f3f5;padding:2px 4px}</style></head><body>${markdown.trim() ? renderMarkdown(markdown) : ""}</body></html>`;
+      const html = wordDocumentHtml(markdown, safeName());
       downloadFile(`${safeName()}.doc`, html, "application/msword;charset=utf-8");
     } catch {
       setError(t("exportFailed"));

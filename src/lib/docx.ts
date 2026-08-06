@@ -70,6 +70,26 @@ function contentParagraph(
   });
 }
 
+function codeParagraph(lines: string[], api: DocxApi): DocxParagraph {
+  const children: ParagraphChild[] = lines.map((line, index) =>
+    new api.TextRun({
+      text: line,
+      break: index ? 1 : undefined,
+      font: "Courier New",
+      size: 20,
+      color: "334155",
+    }),
+  );
+
+  return new api.Paragraph({
+    children: children.length ? children : [new api.TextRun("")],
+    indent: { left: 360, right: 360 },
+    shading: { fill: "F4F6F8" },
+    spacing: { after: 120 },
+    wordWrap: true,
+  });
+}
+
 export async function markdownToDocxBlob(
   markdown: string,
   title: string,
@@ -92,19 +112,7 @@ export async function markdownToDocxBlob(
     if (trimmed.startsWith("```")) {
       flushParagraph();
       if (inCode) {
-        children.push(
-          new api.Paragraph({
-            children: [
-              new api.TextRun({
-                text: codeLines.join("\n"),
-                font: "Courier New",
-                size: 20,
-                color: "334155",
-              }),
-            ],
-            indent: { left: 360, right: 360 },
-          }),
-        );
+        children.push(codeParagraph(codeLines, api));
         codeLines = [];
       }
       inCode = !inCode;
@@ -177,18 +185,7 @@ export async function markdownToDocxBlob(
   });
 
   if (inCode && codeLines.length) {
-    children.push(
-      new api.Paragraph({
-        children: [
-          new api.TextRun({
-            text: codeLines.join("\n"),
-            font: "Courier New",
-            size: 20,
-          }),
-        ],
-        indent: { left: 360, right: 360 },
-      }),
-    );
+    children.push(codeParagraph(codeLines, api));
   }
   flushParagraph();
 
