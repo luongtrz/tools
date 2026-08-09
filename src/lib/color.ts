@@ -106,7 +106,7 @@ export function parseColor(input: string): {
     const r = Number(parts[0]);
     const g = Number(parts[1]);
     const b = Number(parts[2]);
-    const a = parts[3] !== undefined ? Number(parts[3]) / 100 : 1;
+    const a = parts[3] !== undefined ? parseAlpha(parts[3]) : 1;
     if ([r, g, b].some((n) => Number.isNaN(n))) return null;
     return { r, g, b, a: Number.isNaN(a) ? 1 : a };
   }
@@ -117,12 +117,18 @@ export function parseColor(input: string): {
     const h = Number(parts[0]);
     const s = Number(parts[1].replace("%", ""));
     const l = Number(parts[2].replace("%", ""));
-    const a = parts[3] !== undefined ? Number(parts[3]) / 100 : 1;
+    const a = parts[3] !== undefined ? parseAlpha(parts[3]) : 1;
     if ([h, s, l].some((n) => Number.isNaN(n))) return null;
     const { r, g, b } = hslToRgb(h, s, l);
     return { r, g, b, a: Number.isNaN(a) ? 1 : a };
   }
   return null;
+}
+
+function parseAlpha(value: string): number {
+  const parsed = Number(value.replace(/%$/, ""));
+  if (Number.isNaN(parsed)) return 1;
+  return value.trim().endsWith("%") ? parsed / 100 : parsed;
 }
 
 export function relativeLuminance(r: number, g: number, b: number): number {

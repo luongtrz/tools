@@ -1,11 +1,10 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { literal, useI18n } from "@/i18n";
 import { SAMPLE_MARKDOWN } from "@/constants/sampleMarkdown";
 import { renderMarkdown } from "@/lib/markdown";
 import { markdownToDocxBlob } from "@/lib/docx";
 import { downloadBlob, downloadFile } from "@/lib/download";
 import {
-  ToolButton,
   ToolLabel,
   ToolNotice,
   ToolPage,
@@ -419,6 +418,10 @@ export function Md2PptxTool() {
               const file = files[0];
               if (!file) return;
               setMarkdown(await file.text());
+              const base = file.name
+                .replace(/\.[^.]+$/, "")
+                .replace(/[^a-zA-Z0-9_-]/g, "-");
+              if (base) setName(base);
             }}
           />
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -487,14 +490,23 @@ export function Md2PptxTool() {
 export function MergePdfTool() {
   const { t } = useI18n();
   const [files, setFiles] = useState<File[]>([]);
-  const [pageCounts, setPageCounts] = useState<Record<string, number>>({});
+  const [pageCounts, setPageCounts] = useState<Map<File, number>>(
+    () => new Map(),
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState("merged.pdf");
 
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
+
   function appendFiles(next: File[]): void {
     if (!next.length) return;
+    setDownloadUrl(null);
     setFiles((current) => {
       const seen = new Set(current.map((file) => `${file.name}-${file.size}`));
       const merged = current.slice();
@@ -514,12 +526,17 @@ export function MergePdfTool() {
           const doc = await PDFDocument.load(await file.arrayBuffer(), {
             ignoreEncryption: true,
           });
-          setPageCounts((counts) => ({
-            ...counts,
-            [file.name]: doc.getPageCount(),
-          }));
+          setPageCounts((counts) => {
+            const next = new Map(counts);
+            next.set(file, doc.getPageCount());
+            return next;
+          });
         } catch {
-          setPageCounts((counts) => ({ ...counts, [file.name]: 0 }));
+          setPageCounts((counts) => {
+            const next = new Map(counts);
+            next.set(file, 0);
+            return next;
+          });
         }
       }),
     );
@@ -558,7 +575,6 @@ export function MergePdfTool() {
         pages.forEach((page) => output.addPage(page));
       }
       const blob = pdfBlob(await output.save());
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName("merged.pdf");
@@ -570,7 +586,7 @@ export function MergePdfTool() {
   }
 
   const totalPages = files.reduce(
-    (sum, file) => sum + (pageCounts[file.name] ?? 0),
+    (sum, file) => sum + (pageCounts.get(file) ?? 0),
     0,
   );
 
@@ -583,14 +599,14 @@ export function MergePdfTool() {
           <OutputActions
             onReset={() => {
               setFiles([]);
-              setPageCounts({});
+              setPageCounts(new Map());
               setError("");
-              if (downloadUrl) URL.revokeObjectURL(downloadUrl);
               setDownloadUrl(null);
             }}
             onClear={() => {
               setFiles([]);
-              setPageCounts({});
+              setPageCounts(new Map());
+              setDownloadUrl(null);
             }}
           />
         }
@@ -623,8 +639,8 @@ export function MergePdfTool() {
                 <p className="truncate font-medium">{file.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatBytes(file.size)} ·{" "}
-                  {pageCounts[file.name]
-                    ? `${pageCounts[file.name]} page${pageCounts[file.name] === 1 ? "" : "s"}`
+                  {pageCounts.get(file)
+                    ? `${pageCounts.get(file)} page${pageCounts.get(file) === 1 ? "" : "s"}`
                     : "Reading…"}
                 </p>
               </div>
@@ -937,12 +953,20 @@ export function CompressPdfTool() {
     after: number;
     blob: Blob;
   } | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
 
   async function compress(): Promise<void> {
     if (!file) return;
     setBusy(true);
     setError("");
     setSizeResult(null);
+    setDownloadUrl(null);
     try {
       const { PDFDocument } = await import("pdf-lib");
       const source = await PDFDocument.load(await file.arrayBuffer(), {
@@ -960,11 +984,13 @@ export function CompressPdfTool() {
         useObjectStreams: true,
         addDefaultPage: false,
       });
-      setSizeResult({
+      const result = {
         before: file.size,
         after: bytes.byteLength,
         blob: pdfBlob(bytes),
-      });
+      };
+      setSizeResult(result);
+      setDownloadUrl(URL.createObjectURL(result.blob));
     } catch {
       setError(t("pdfLoadFailed"));
     } finally {
@@ -987,11 +1013,13 @@ export function CompressPdfTool() {
             onReset={() => {
               setFile(null);
               setSizeResult(null);
+              setDownloadUrl(null);
               setError("");
             }}
             onClear={() => {
               setFile(null);
               setSizeResult(null);
+              setDownloadUrl(null);
             }}
           />
         }
@@ -1023,16 +1051,11 @@ export function CompressPdfTool() {
           <Button onClick={() => void compress()} busy={busy} disabled={!file}>
             {busy ? t("processing") : t("optimizePdf")}
           </Button>
-          {sizeResult && (
+          {sizeResult && downloadUrl && (
             <a
-              href={URL.createObjectURL(sizeResult.blob)}
+              href={downloadUrl}
               download={`${outputStem(file?.name ?? "document", "document")}-optimized.pdf`}
               className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground"
-              onClick={(event) => {
-                event.currentTarget.addEventListener("click", () => {
-                  setTimeout(() => URL.revokeObjectURL(event.currentTarget.href), 1000);
-                }, { once: true });
-              }}
             >
               Download optimized PDF
             </a>
@@ -1083,13 +1106,14 @@ function Field({
   hint?: string;
   children: ReactNode;
 }) {
+  const { language } = useI18n();
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
-        {label}
+        {literal(label, language)}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[11px] text-muted-foreground">{literal(hint, language)}</p>}
     </div>
   );
 }

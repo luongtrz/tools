@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { ChevronRight, Sparkles } from "lucide-react";
+import { literal, useI18n } from "@/i18n";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export function ToolExamples({
   onSelect,
   className,
 }: ToolExamplesProps) {
+  const { language } = useI18n();
   const [open, setOpen] = useState(false);
   if (!examples.length) return null;
   return (
@@ -31,7 +33,9 @@ export function ToolExamples({
         aria-expanded={open}
       >
         <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-        <span>{open ? "Hide examples" : "Show examples"}</span>
+        <span>
+          {literal(open ? "Hide examples" : "Show examples", language)}
+        </span>
         <ChevronRight
           className={cn(
             "size-3 transition-transform",
@@ -140,6 +144,7 @@ export function FileDropZone({
   description,
   maxSizeBytes = 20 * 1024 * 1024,
 }: FileDropZoneProps) {
+  const { language, t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -147,12 +152,20 @@ export function FileDropZone({
     if (!list || !list.length) return;
     const files = Array.from(list);
     if (!multiple && files.length > 1) {
-      setError("Please drop only one file at a time.");
+      setError(t("dropOneFile"));
+      return;
+    }
+    const invalidType = files.find((file) => !matchesAccept(file, accept));
+    if (invalidType) {
+      setError(t("invalidFileType"));
       return;
     }
     const tooLarge = files.find((file) => file.size > maxSizeBytes);
     if (tooLarge) {
-      setError(`File ${tooLarge.name} is too large (max ${formatBytes(maxSizeBytes)}).`);
+      setError(t("fileTooLarge", {
+        name: tooLarge.name,
+        max: formatBytes(maxSizeBytes),
+      }));
       return;
     }
     setError(null);
@@ -187,11 +200,15 @@ export function FileDropZone({
         }}
       >
         {label ?? (
-          <span className="text-foreground">Drop a file or click to browse</span>
+          <span className="text-foreground">
+            {literal("Drop a file or click to browse", language)}
+          </span>
         )}
         {description && (
           <span className="font-normal text-xs text-muted-foreground">
-            {description}
+            {typeof description === "string"
+              ? literal(description, language)
+              : description}
           </span>
         )}
         <input
@@ -212,6 +229,17 @@ export function FileDropZone({
       )}
     </div>
   );
+}
+
+function matchesAccept(file: File, accept?: string): boolean {
+  if (!accept) return true;
+  return accept.split(",").some((entry) => {
+    const token = entry.trim().toLowerCase();
+    if (!token) return false;
+    if (token.startsWith(".")) return file.name.toLowerCase().endsWith(token);
+    if (token.endsWith("/*")) return file.type.toLowerCase().startsWith(token.slice(0, -1));
+    return file.type.toLowerCase() === token;
+  });
 }
 
 interface ErrorLineProps {

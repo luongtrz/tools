@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { useI18n } from "@/i18n";
+import { literal, useI18n } from "@/i18n";
 import { downloadFile } from "@/lib/download";
 import { decodeJwt, type JwtClaimSummary } from "@/lib/jwt";
 import {
@@ -196,13 +196,14 @@ function Field({
   hint?: string;
   children: ReactNode;
 }) {
+  const { language } = useI18n();
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
-        {label}
+        {literal(label, language)}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[11px] text-muted-foreground">{literal(hint, language)}</p>}
     </div>
   );
 }

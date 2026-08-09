@@ -19,7 +19,6 @@ import {
 } from "@/lib/password";
 import {
   contrastRatio,
-  hexToRgb,
   parseColor,
   rgbToHex,
   rgbToHsl,
@@ -353,19 +352,21 @@ const DEFAULT_PASSWORD: PasswordOptions = {
 export function PasswordGeneratorTool() {
   const { t } = useI18n();
   const [options, setOptions] = useState<PasswordOptions>(DEFAULT_PASSWORD);
+  const [generated, setGenerated] = useState(() => generatePassword(DEFAULT_PASSWORD));
   const [history, setHistory] = useState<string[]>([]);
-  const generated = useMemo(() => generatePassword(options), [options]);
   const strength = passwordStrengthLabel(generated.entropy);
   const charset = buildCharset(options);
   const noCharset = charset.length === 0;
 
+  useEffect(() => {
+    if (!noCharset) setGenerated(generatePassword(options));
+  }, [noCharset, options]);
+
   function generate(): void {
     if (noCharset) return;
-    setOptions((prev) => {
-      const result = generatePassword(prev);
-      setHistory((existing) => [result.password, ...existing].slice(0, 5));
-      return prev;
-    });
+    const result = generatePassword(options);
+    setGenerated(result);
+    setHistory((existing) => [result.password, ...existing].slice(0, 5));
   }
 
   function update<K extends keyof PasswordOptions>(
@@ -381,7 +382,11 @@ export function PasswordGeneratorTool() {
         title="Secure password"
         actions={
           <OutputActions
-            onReset={() => setOptions(DEFAULT_PASSWORD)}
+            onReset={() => {
+              setOptions(DEFAULT_PASSWORD);
+              setGenerated(generatePassword(DEFAULT_PASSWORD));
+              setHistory([]);
+            }}
             onCopy={async () => {
               await navigator.clipboard.writeText(generated.password);
             }}
@@ -518,7 +523,7 @@ export function ColorPickerTool() {
   const [backgroundDark, setBackgroundDark] = useState("#0F1724");
 
   const rgb = useMemo(() => {
-    const parsed = parseColor(hex) ?? hexToRgb(`#${hex.replace("#", "").padEnd(6, "0").slice(0, 6)}`);
+    const parsed = parseColor(hex);
     if (!parsed) return null;
     return { ...parsed, a: alpha };
   }, [alpha, hex]);
@@ -548,13 +553,21 @@ export function ColorPickerTool() {
   const contrast = useMemo(() => {
     if (!rgb) return null;
     return {
-      light: contrastRatio(rgb, parseColor(background) ?? { r: 255, g: 255, b: 255 }),
-      dark: contrastRatio(rgb, parseColor(backgroundDark) ?? { r: 15, g: 23, b: 36 }),
+      light: contrastRatio(
+        compositeColor(rgb, parseColor(background) ?? { r: 255, g: 255, b: 255 }),
+        parseColor(background) ?? { r: 255, g: 255, b: 255 },
+      ),
+      dark: contrastRatio(
+        compositeColor(rgb, parseColor(backgroundDark) ?? { r: 15, g: 23, b: 36 }),
+        parseColor(backgroundDark) ?? { r: 15, g: 23, b: 36 },
+      ),
     };
   }, [background, backgroundDark, rgb]);
 
   function setFromHex(value: string): void {
     setHex(value);
+    const parsed = parseColor(value);
+    if (parsed) setAlpha(parsed.a);
   }
 
   function setFromRgb(red: number, green: number, blue: number, a = 1): void {
@@ -579,19 +592,19 @@ export function ColorPickerTool() {
           <div className="flex flex-wrap items-center gap-3">
             <input
               type="color"
-              value={hex.slice(0, 7)}
+              value={rgb ? rgbToHex(rgb.r, rgb.g, rgb.b) : "#F2633D"}
               onChange={(event) => setFromHex(event.target.value)}
               className="h-12 w-12 cursor-pointer rounded-md border border-input"
               aria-label="Color picker"
             />
             <div
               className="size-16 rounded-md border border-border"
-              style={{ background: hex }}
+              style={{ background: values?.rgba ?? hex }}
               aria-hidden="true"
             />
             <Input
               value={hex}
-              onChange={(event) => setHex(event.target.value)}
+              onChange={(event) => setFromHex(event.target.value)}
               className="h-9 max-w-[180px] font-mono"
               aria-label="Color value"
               spellCheck={false}
@@ -674,6 +687,17 @@ export function ColorPickerTool() {
       </div>
     </ToolPage>
   );
+}
+
+function compositeColor(
+  foreground: { r: number; g: number; b: number; a: number },
+  background: { r: number; g: number; b: number },
+): { r: number; g: number; b: number } {
+  return {
+    r: foreground.r * foreground.a + background.r * (1 - foreground.a),
+    g: foreground.g * foreground.a + background.g * (1 - foreground.a),
+    b: foreground.b * foreground.a + background.b * (1 - foreground.a),
+  };
 }
 
 function ColorRow({
@@ -768,14 +792,15 @@ function Field({
   hint?: string;
   children: ReactNode;
 }) {
+  const { language } = useI18n();
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
-        {label}
+        {literal(label, language)}
       </Label>
       {children}
       {hint && (
-        <p className="text-[11px] text-muted-foreground">{hint}</p>
+        <p className="text-[11px] text-muted-foreground">{literal(hint, language)}</p>
       )}
     </div>
   );
@@ -822,6 +847,7 @@ function ToggleField({
   checked: boolean;
   onChange: (value: boolean) => void;
 }) {
+  const { language } = useI18n();
   return (
     <button
       type="button"
@@ -835,7 +861,7 @@ function ToggleField({
       role="switch"
       aria-checked={checked}
     >
-      <span className="truncate text-left text-sm">{label}</span>
+      <span className="truncate text-left text-sm">{literal(label, language)}</span>
       <span
         className={cn(
           "size-4 rounded-full border-2 transition-colors",

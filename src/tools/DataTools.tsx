@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import YAML from "yaml";
-import { useI18n } from "@/i18n";
+import { literal, useI18n } from "@/i18n";
 import { downloadFile } from "@/lib/download";
 import { tryParseJson, formatJson } from "@/lib/json";
 import { csvToObjects, objectsToCsv, parseCsv } from "@/lib/csv";
@@ -71,6 +71,7 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
   const [value, setValue] = useState(SAMPLE_JSON);
   const [compare, setCompare] = useState(SAMPLE_JSON_B);
   const [indent, setIndent] = useState<number | "\t">(2);
+  const [minify, setMinify] = useState(false);
   const [ignoreOrder, setIgnoreOrder] = useState(false);
   const isFormat = mode === "format";
   const isValidate = mode === "validate";
@@ -79,10 +80,10 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
   const parsed = useMemo(() => tryParseJson(value), [value]);
   const output = useMemo(() => {
     if (!parsed.ok) return "";
-    if (isFormat) return formatJson(parsed.value, indent);
+    if (isFormat) return formatJson(parsed.value, minify ? 0 : indent);
     if (isValidate) return JSON.stringify(parsed.value, null, 2);
     return "";
-  }, [indent, isFormat, isValidate, parsed]);
+  }, [indent, isFormat, isValidate, minify, parsed]);
 
   const parsedCompare = useMemo(() => tryParseJson(compare), [compare]);
   const diffEntries = useMemo<JsonDiffEntry[]>(() => {
@@ -107,6 +108,7 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
     setValue(SAMPLE_JSON);
     setCompare(SAMPLE_JSON_B);
     setIndent(2);
+    setMinify(false);
     setIgnoreOrder(false);
   }
 
@@ -144,23 +146,40 @@ export function JsonTool({ mode }: { mode: JsonMode }) {
           />
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {isFormat && (
-              <Field label="Indent">
-                <Select
-                  value={String(indent)}
-                  onValueChange={(v: string) =>
-                    setIndent(v === "tab" ? "\t" : Number(v))
-                  }
-                >
-                  <SelectTrigger className="h-9 w-full font-mono text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2">2 spaces</SelectItem>
-                    <SelectItem value="4">4 spaces</SelectItem>
-                    <SelectItem value="tab">Tab</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
+              <>
+                <Field label="Output">
+                  <Select
+                    value={minify ? "minified" : "pretty"}
+                    onValueChange={(v: string) => setMinify(v === "minified")}
+                  >
+                    <SelectTrigger className="h-9 w-full font-mono text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pretty">Pretty print</SelectItem>
+                      <SelectItem value="minified">Minified</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Indent">
+                  <Select
+                    value={String(indent)}
+                    onValueChange={(v: string) =>
+                      setIndent(v === "tab" ? "\t" : Number(v))
+                    }
+                    disabled={minify}
+                  >
+                    <SelectTrigger className="h-9 w-full font-mono text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2">2 spaces</SelectItem>
+                      <SelectItem value="4">4 spaces</SelectItem>
+                      <SelectItem value="tab">Tab</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </>
             )}
             <FileDropZone
               accept=".json,application/json"
@@ -774,13 +793,14 @@ function Field({
   hint?: string;
   children: ReactNode;
 }) {
+  const { language } = useI18n();
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
-        {label}
+        {literal(label, language)}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[11px] text-muted-foreground">{literal(hint, language)}</p>}
     </div>
   );
 }

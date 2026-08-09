@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SAMPLE_MARKDOWN } from "@/constants/sampleMarkdown";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { useI18n } from "@/i18n";
+import { literal, useI18n } from "@/i18n";
 import { renderMarkdown } from "@/lib/markdown";
 import { downloadFile } from "@/lib/download";
 import { countWords, type WordCountMode } from "@/lib/wordCount";
@@ -10,8 +10,6 @@ import { htmlToMarkdownAdvanced } from "@/lib/htmlToMarkdown";
 import { detectFormat } from "@/lib/format";
 import {
   CopyButton,
-  ToolButton,
-  ToolLabel,
   ToolNotice,
   ToolPage,
   ToolPanel,
@@ -160,7 +158,7 @@ export function MarkdownTableGeneratorTool() {
     setGrid((current) => buildGrid(headers, rowCount, current));
   }, [headers, rowCount]);
 
-  const markdown = useMemo(() => gridToMarkdown(grid), [grid]);
+  const markdown = useMemo(() => gridToMarkdown(headers, grid), [grid, headers]);
 
   function updateCell(row: number, col: number, value: string): void {
     setGrid((current) => {
@@ -200,7 +198,7 @@ export function MarkdownTableGeneratorTool() {
             />
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Rows">
+            <Field label="Data rows" hint="The header is counted separately. Up to 50 data rows.">
               <Input
                 type="number"
                 min={1}
@@ -283,12 +281,11 @@ function buildGrid(
   );
 }
 
-function gridToMarkdown(grid: string[][]): string {
-  if (!grid.length) return "";
-  const headerRow = grid[0].map((header) => escapeCell(header));
-  const separator = grid[0].map(() => "---");
+function gridToMarkdown(headers: string[], grid: string[][]): string {
+  if (!headers.length) return "";
+  const headerRow = headers.map((header) => escapeCell(header));
+  const separator = headers.map(() => "---");
   const body = grid
-    .slice(1)
     .map((row) => row.map((cell) => escapeCell(cell)).join(" | "));
   return [
     `| ${headerRow.join(" | ")} |`,
@@ -330,10 +327,10 @@ export function MarkdownTableFormatterTool() {
           <OutputActions
             onReset={() => setValue(sample)}
             onCopy={async () => {
-              if (parsed.ok) await navigator.clipboard.writeText(formatted);
+              if (parsed.ok) await navigator.clipboard.writeText(formattedView);
             }}
             onDownload={() =>
-              downloadFile("table.md", formatted, "text/markdown;charset=utf-8")
+              downloadFile("table.md", formattedView, "text/markdown;charset=utf-8")
             }
           />
         }
@@ -611,13 +608,14 @@ function Field({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const { language } = useI18n();
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
-        {label}
+        {literal(label, language)}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[11px] text-muted-foreground">{literal(hint, language)}</p>}
     </div>
   );
 }

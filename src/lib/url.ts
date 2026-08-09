@@ -40,7 +40,8 @@ export function decodeUrl(value: string, mode: UrlMode): UrlDecodeResult {
 }
 
 export function parseQueryString(query: string): UrlQueryRow[] {
-  const trimmed = query.replace(/^\?/, "");
+  const queryPart = query.includes("?") ? query.split("?")[1] ?? "" : query;
+  const trimmed = queryPart.split("#", 1)[0].replace(/^\?/, "");
   if (!trimmed) return [];
   return trimmed.split("&").filter(Boolean).map((pair) => {
     const [rawKey, ...rest] = pair.split("=");

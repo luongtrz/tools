@@ -39,7 +39,6 @@ export function generatePassword(options: PasswordOptions): {
   if (!charset) {
     return { password: "", entropy: 0, classes: 0 };
   }
-  const classes = countEnabledClasses(options);
   const length = Math.max(1, Math.min(128, Math.floor(options.length)));
   const out: string[] = [];
   const random = getCryptoRandom();
@@ -53,26 +52,21 @@ export function generatePassword(options: PasswordOptions): {
   }
   const password = shuffle(out, random).join("");
   const entropy = Math.log2(charset.length) * length;
-  return { password, entropy, classes };
-}
-
-function countEnabledClasses(options: PasswordOptions): number {
-  let n = 0;
-  if (options.uppercase) n += 1;
-  if (options.lowercase) n += 1;
-  if (options.numbers) n += 1;
-  if (options.symbols) n += 1;
-  return n;
+  return { password, entropy, classes: classesList.length };
 }
 
 function classesListFor(options: PasswordOptions, charset: string): string[] {
   const out: string[] = [];
-  if (options.uppercase) out.push(filterCharset(UPPER, charset));
-  if (options.lowercase) out.push(filterCharset(LOWER, charset));
-  if (options.numbers) out.push(filterCharset(DIGITS, charset));
+  const add = (source: string) => {
+    const filtered = filterCharset(source, charset);
+    if (filtered) out.push(filtered);
+  };
+  if (options.uppercase) add(UPPER);
+  if (options.lowercase) add(LOWER);
+  if (options.numbers) add(DIGITS);
   if (options.symbols) {
     const custom = options.customSymbols.replace(/\s/g, "") || SYMBOLS;
-    out.push(filterCharset(custom, charset));
+    add(custom);
   }
   return out;
 }

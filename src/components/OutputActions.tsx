@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { ArrowLeftRight, Copy, Download, RotateCcw, Trash2 } from "lucide-react";
+import { literal, useI18n } from "@/i18n";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ export function OutputActions({
   className,
   children,
 }: OutputActionsProps) {
+  const { language } = useI18n();
   return (
     <div
       className={cn(
@@ -37,31 +39,31 @@ export function OutputActions({
       {onClear && (
         <Button type="button" variant="ghost" size="sm" onClick={onClear}>
           <Trash2 className="size-3.5" />
-          Clear
+          {literal("Clear", language)}
         </Button>
       )}
       {onReset && (
         <Button type="button" variant="ghost" size="sm" onClick={onReset}>
           <RotateCcw className="size-3.5" />
-          Reset
+          {literal("Reset", language)}
         </Button>
       )}
       {onSwap && (
         <Button type="button" variant="outline" size="sm" onClick={onSwap}>
           <ArrowLeftRight className="size-3.5" />
-          Swap
+          {literal("Swap", language)}
         </Button>
       )}
       {onCopy && (
         <Button type="button" variant="outline" size="sm" onClick={onCopy}>
           <Copy className="size-3.5" />
-          {copyLabel}
+          {literal(copyLabel, language)}
         </Button>
       )}
       {onDownload && (
         <Button type="button" size="sm" onClick={onDownload}>
           <Download className="size-3.5" />
-          {downloadLabel}
+          {literal(downloadLabel, language)}
         </Button>
       )}
     </div>

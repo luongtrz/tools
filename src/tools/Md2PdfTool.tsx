@@ -92,10 +92,10 @@ export default function Md2PdfTool() {
     notify(t("downloadMarkdown"));
   }
   function handleImport(text: string, fileName: string): void {
-    setMarkdown(text);
+    handleMarkdownChange(text);
     const base = fileName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-");
     if (base) setOutputName(base);
-    notify(t("downloadMarkdown"));
+    notify(t("fileImported"));
   }
   async function handleExport(): Promise<void> {
     const safeName = safePdfName(fileBaseName);
@@ -229,9 +229,9 @@ export default function Md2PdfTool() {
               onCopyCommand={async () => {
                 try {
                   await navigator.clipboard.writeText(command);
-            notify(t("copy"));
-          } catch {
-            notify(t("connectionFailed"));
+                  notify(t("copy"));
+                } catch {
+                  notify(t("connectionFailed"));
                 }
               }}
             />

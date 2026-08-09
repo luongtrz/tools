@@ -19,8 +19,6 @@ import { computeDiff, type DiffMode } from "@/lib/textDiff";
 import { evaluateRegex, REGEX_FLAGS } from "@/lib/regex";
 import {
   CopyButton,
-  ToolButton,
-  ToolLabel,
   ToolNotice,
   ToolPage,
   ToolPanel,
@@ -795,13 +793,14 @@ function Field({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const { language } = useI18n();
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
-        {label}
+        {literal(label, language)}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[11px] text-muted-foreground">{literal(hint, language)}</p>}
     </div>
   );
 }
