@@ -199,8 +199,8 @@ function SectionHeader({
   note?: string;
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-3">
-      <div>
+    <div className="mb-5 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
         <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-primary">
           {eyebrow}
         </p>
@@ -209,7 +209,7 @@ function SectionHeader({
         </h2>
       </div>
       {note && (
-        <span className="text-sm text-muted-foreground">{note}</span>
+        <span className="text-sm text-muted-foreground sm:shrink-0">{note}</span>
       )}
     </div>
   );
@@ -237,14 +237,14 @@ function ToolCard({
         )}
       >
         <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
-          <div>
+          <div className="min-w-0">
             <Badge
               variant="secondary"
               className="mb-2 font-mono text-[10px] font-medium uppercase tracking-wider"
             >
               {categoryLabel(category, language)}
             </Badge>
-            <CardTitle className="text-base leading-snug">
+            <CardTitle className="break-words text-base leading-snug">
               {localized.title}
             </CardTitle>
           </div>

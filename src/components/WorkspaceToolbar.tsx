@@ -38,7 +38,7 @@ export default function WorkspaceToolbar({
             : t("localDraft");
   return (
     <div className="flex min-h-[88px] flex-col items-start justify-between gap-4 border-b border-border px-5 py-4 dark:border-border lg:flex-row lg:items-center lg:px-6">
-      <div className="flex min-w-0 flex-1 items-center gap-3 lg:flex-none">
+      <div className="flex min-w-0 w-full flex-1 flex-wrap items-center gap-x-3 gap-y-2 lg:w-auto lg:flex-nowrap lg:flex-none">
         <span
           className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"
           aria-hidden="true"
@@ -67,12 +67,12 @@ export default function WorkspaceToolbar({
           ⌁
         </button>
         {onImport && (
-          <div className="ml-2 max-w-[180px]">
+          <div className="ml-2 w-[108px] shrink-0">
             <FileDropZone
               accept=".md,.markdown,.txt,text/markdown,text/plain"
               label="Import .md"
               description="Drop or click"
-              className="[&>label]:min-h-0 [&>label]:py-2 [&>label]:text-[10px]"
+              className="[&>label]:min-h-0 [&>label]:gap-1 [&>label]:px-2 [&>label]:py-2 [&>label]:text-[10px]"
               onFiles={async (files) => {
                 const file = files[0];
                 if (!file) return;

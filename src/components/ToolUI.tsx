@@ -101,9 +101,9 @@ export function ToolPanel({
   const { language } = useI18n();
   return (
     <Card className={cn("mb-4", className)}>
-      <CardHeader className="flex flex-col items-start justify-between gap-3 space-y-0 sm:flex-row sm:items-center">
-        <div className="space-y-1">
-          <CardTitle className="text-lg">{literal(title, language)}</CardTitle>
+      <CardHeader className="flex flex-col items-start justify-between gap-3 space-y-0 lg:flex-row lg:items-center">
+        <div className="min-w-0 space-y-1">
+          <CardTitle className="break-words text-lg">{literal(title, language)}</CardTitle>
           {description && (
             <CardDescription className="max-w-2xl">
               {literal(description, language)}
@@ -111,7 +111,9 @@ export function ToolPanel({
           )}
         </div>
         {actions && (
-          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+            {actions}
+          </div>
         )}
       </CardHeader>
       <Separator />

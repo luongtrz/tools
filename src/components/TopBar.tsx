@@ -13,10 +13,10 @@ export default function TopBar({ onReset }: TopBarProps) {
     <ToolNavbar
       activeSlug="md2pdf"
       rightSlot={
-        <div className="ml-auto flex w-full flex-wrap items-center justify-end gap-3 sm:gap-5 2xl:w-auto">
+        <div className="flex items-center gap-2">
           <SettingsMenu />
           <button
-            className="grid size-10 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted/50 hover:text-foreground  dark:hover:bg-muted dark:hover:text-foreground"
+            className="grid size-9 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted/50 hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground sm:size-10"
             type="button"
             title={t("restoreSample")}
             aria-label={t("restoreSample")}
@@ -25,7 +25,7 @@ export default function TopBar({ onReset }: TopBarProps) {
             <Icon name="reset" />
           </button>
           <span
-            className="hidden size-10 place-items-center rounded-xl bg-foreground text-sm font-semibold text-primary-foreground dark:bg-primary dark:text-primary-foreground sm:grid"
+            className="hidden size-9 place-items-center rounded-xl bg-foreground text-sm font-semibold text-primary-foreground dark:bg-primary dark:text-primary-foreground sm:grid sm:size-10"
             title={t("workspace")}
             aria-label={t("workspace")}
           >

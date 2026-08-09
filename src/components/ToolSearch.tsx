@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Search } from "lucide-react";
 import { categoryLabel, localizedTool, useI18n } from "@/i18n";
 import { TOOL_REGISTRY, type ToolDefinition } from "@/toolRegistry";
 import {
@@ -77,9 +78,7 @@ export default function ToolSearch({ className = "" }: ToolSearchProps) {
         aria-expanded={open}
         aria-label={t("searchToolsLabel")}
       >
-        <span className="text-base" aria-hidden="true">
-          ⌕
-        </span>
+        <Search className="size-3.5" aria-hidden="true" />
         <span className="hidden sm:inline">{t("searchToolsShort")}</span>
         <kbd className="hidden rounded border border-border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
           Ctrl K

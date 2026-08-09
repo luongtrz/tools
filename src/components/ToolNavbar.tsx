@@ -42,11 +42,11 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
 
         <Separator
           orientation="vertical"
-          className="hidden h-6 md:block"
+          className="hidden h-6 xl:block"
         />
 
         <nav
-          className="hidden min-w-0 flex-1 items-center gap-1 md:flex"
+          className="hidden min-w-0 flex-1 items-center gap-1 xl:flex"
           aria-label={t("toolCategories")}
         >
           <NavLink href="/" active={!activeSlug}>
@@ -151,7 +151,7 @@ function MobileMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring md:hidden"
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring xl:hidden"
         aria-label={t("toolCategories")}
       >
         <svg
@@ -167,7 +167,7 @@ function MobileMenu({
           <path d="M4 7h16M4 12h16M4 17h16" />
         </svg>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[280px] p-1 md:hidden">
+      <DropdownMenuContent align="start" className="w-[280px] p-1 xl:hidden">
         <DropdownMenuItem asChild>
           <a
             href="/"
