@@ -525,13 +525,15 @@ export function CaseConverterTool() {
           {variants.map((variant) => (
             <div
               key={variant.id}
-              className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm"
+              className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm"
             >
-              <span className="flex flex-col">
+              <span className="flex min-w-0 flex-1 flex-col">
                 <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
                   {variant.label}
                 </span>
-                <code className="truncate text-foreground">{variant.value || "—"}</code>
+                <code className="block break-all whitespace-normal text-foreground">
+                  {variant.value || "—"}
+                </code>
               </span>
               <CopyButton value={variant.value} label="Copy" />
             </div>

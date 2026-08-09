@@ -333,9 +333,9 @@ export default function McpTool() {
           {MCP_TOOLS.map((tool) => (
             <div
               key={tool.name}
-              className="flex items-center justify-between gap-2 rounded-md border border-border bg-background p-3"
+              className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-border bg-background p-3"
             >
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 overflow-hidden">
                 <code className="block truncate font-mono text-xs text-primary">
                   {tool.name}
                 </code>

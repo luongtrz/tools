@@ -710,15 +710,22 @@ function ColorRow({
   onPick: (value: string) => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={() => onPick(value)}
-      className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/30 px-3 py-2 text-left font-mono text-sm hover:border-primary/40"
-    >
-      <span className="text-xs uppercase text-muted-foreground">{label}</span>
-      <span className="flex-1 truncate text-foreground">{value}</span>
-      <CopyButton value={value} label="Copy" />
-    </button>
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+      <span className="col-start-1 row-start-1 text-xs uppercase text-muted-foreground">
+        {label}
+      </span>
+      <button
+        type="button"
+        onClick={() => onPick(value)}
+        className="col-span-2 row-start-2 min-w-0 break-all rounded-sm text-left text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:col-span-1 sm:col-start-2 sm:row-start-1"
+        title={value}
+      >
+        {value}
+      </button>
+      <div className="col-start-2 row-start-1 sm:col-start-3">
+        <CopyButton value={value} label="Copy" />
+      </div>
+    </div>
   );
 }
 
