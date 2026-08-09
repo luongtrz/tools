@@ -5,7 +5,7 @@
 >
   <url>
     <loc>https://toolmd.pages.dev/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/" />
@@ -14,7 +14,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/md2pdf/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/md2pdf/" />
@@ -23,7 +23,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/md2word/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/md2word/" />
@@ -32,7 +32,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/md2pptx/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/md2pptx/" />
@@ -41,7 +41,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/merge-pdf/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/merge-pdf/" />
@@ -50,7 +50,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/split-pdf/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/split-pdf/" />
@@ -59,7 +59,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/compress-pdf/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/compress-pdf/" />
@@ -68,7 +68,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/markdown-editor/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/markdown-editor/" />
@@ -77,7 +77,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/markdown-table-generator/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/markdown-table-generator/" />
@@ -86,7 +86,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/markdown-table-formatter/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/markdown-table-formatter/" />
@@ -95,7 +95,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/markdown-word-counter/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/markdown-word-counter/" />
@@ -104,7 +104,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/html-to-markdown/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/html-to-markdown/" />
@@ -113,7 +113,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/jwt-decoder/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/jwt-decoder/" />
@@ -122,7 +122,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/json-formatter/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/json-formatter/" />
@@ -131,7 +131,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/json-validator/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/json-validator/" />
@@ -140,7 +140,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/json-diff/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/json-diff/" />
@@ -149,7 +149,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/yaml-json/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/yaml-json/" />
@@ -158,7 +158,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/csv-json/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/csv-json/" />
@@ -167,7 +167,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/text-diff/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/text-diff/" />
@@ -176,7 +176,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/regex-tester/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/regex-tester/" />
@@ -185,7 +185,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/base64/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/base64/" />
@@ -194,7 +194,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/case-converter/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/case-converter/" />
@@ -203,7 +203,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/slug-generator/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/slug-generator/" />
@@ -212,7 +212,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/url-codec/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/url-codec/" />
@@ -221,7 +221,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/qr-generator/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/qr-generator/" />
@@ -230,7 +230,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/uuid-generator/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/uuid-generator/" />
@@ -239,7 +239,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/password-generator/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/password-generator/" />
@@ -248,7 +248,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/color-picker/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/color-picker/" />
@@ -257,7 +257,7 @@
   </url>
   <url>
     <loc>https://toolmd.pages.dev/mcp/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="vi" href="https://toolmd.pages.dev/vi/mcp/" />
