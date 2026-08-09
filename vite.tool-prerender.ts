@@ -52,8 +52,6 @@ function renderToolHtml(
 ): string {
   const ogImage = `${SITE}/og-default.svg`;
   const canonical = `${SITE}/${slug}/`;
-  const pathSlug = `/${slug}/`;
-  const base = SITE;
   const safeTitle = title.replace(/</g, "&lt;");
   const safeDescription = description.replace(/</g, "&lt;");
   const jsonLd = [
@@ -112,9 +110,6 @@ function renderToolHtml(
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="${canonical}" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate" hreflang="vi" href="${base}/vi${pathSlug}" />
-    <link rel="alternate" hreflang="en" href="${base}/en${pathSlug}" />
-    <link rel="alternate" hreflang="x-default" href="${canonical}" />
     <meta property="og:title" content="${safeTitle}" />
     <meta property="og:description" content="${safeDescription}" />
     <meta property="og:type" content="article" />
@@ -132,6 +127,18 @@ ${assetTags.map((tag) => `    ${tag}`).join("\n")}
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main>
+        <article>
+          <h1>${safeTitle}</h1>
+          <p>${safeDescription}</p>
+          <p>Free browser-based tool from <a href="${SITE}/">toolmd</a>. No upload and no sign-up required.</p>
+          <nav aria-label="Other toolmd tools">
+            <a href="${SITE}/">View all toolmd tools</a>
+          </nav>
+        </article>
+      </main>
+    </noscript>
   </body>
 </html>
 `;

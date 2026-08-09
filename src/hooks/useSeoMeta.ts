@@ -30,23 +30,6 @@ function setCanonical(href: string): void {
   element.setAttribute("href", href);
 }
 
-function clearAlternate(): void {
-  if (typeof document === "undefined") return;
-  const links = document.head.querySelectorAll<HTMLLinkElement>(
-    'link[rel="alternate"][hreflang]',
-  );
-  links.forEach((link) => link.remove());
-}
-
-function setAlternate(hreflang: string, href: string): void {
-  if (typeof document === "undefined") return;
-  const link = document.createElement("link");
-  link.setAttribute("rel", "alternate");
-  link.setAttribute("hreflang", hreflang);
-  link.setAttribute("href", href);
-  document.head.appendChild(link);
-}
-
 function clearStructuredData(): void {
   if (typeof document === "undefined") return;
   const nodes = document.head.querySelectorAll('script[data-seo="jsonld"]');
@@ -86,12 +69,6 @@ function applySeo(meta: SeoMeta, language: Language, slug?: string): void {
     setMeta("twitter:image", meta.ogImage);
   }
   setMeta("twitter:site", SEO_SITE.twitter);
-
-  clearAlternate();
-  const pathSlug = slug ? `/${slug}/` : "/";
-  setAlternate("vi", `${SEO_SITE.base}/vi${pathSlug}`);
-  setAlternate("en", `${SEO_SITE.base}/en${pathSlug}`);
-  setAlternate("x-default", `${SEO_SITE.base}${pathSlug}`);
 
   const structured = slug
     ? toolStructuredData(slug, language)
