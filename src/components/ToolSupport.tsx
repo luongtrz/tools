@@ -52,9 +52,9 @@ export function ToolExamples({
               type="button"
               variant="outline"
               onClick={() => onSelect(example.value)}
-              className="h-auto justify-between whitespace-normal px-3 py-2 text-left text-xs"
+              className="h-auto min-w-0 max-w-full justify-between whitespace-normal px-3 py-2 text-left text-xs"
             >
-              <span className="flex flex-col items-start gap-0.5">
+              <span className="flex min-w-0 flex-col items-start gap-0.5 break-words">
                 <span className="text-sm font-medium text-foreground">
                   {example.label}
                 </span>

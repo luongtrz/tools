@@ -31,7 +31,7 @@ export function OutputActions({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-end gap-2",
+        "flex w-full max-w-full flex-wrap items-center justify-end gap-2 lg:w-auto",
         className,
       )}
     >

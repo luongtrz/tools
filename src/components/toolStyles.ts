@@ -1,5 +1,5 @@
 export const toolStyles = {
-  splitLayout: "grid gap-4 lg:grid-cols-2",
+  splitLayout: "grid min-w-0 gap-4 lg:grid-cols-2 [&>*]:min-w-0",
   panelActions: "mt-4 flex flex-wrap items-center justify-end gap-2",
   textarea:
     "min-h-[340px] w-full resize-y rounded-md border border-input bg-muted/30 px-4 py-3 font-mono text-sm leading-7 text-foreground outline-none transition placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring",

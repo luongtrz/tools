@@ -100,7 +100,7 @@ export function ToolPanel({
 }: PanelProps) {
   const { language } = useI18n();
   return (
-    <Card className={cn("mb-4", className)}>
+    <Card className={cn("mb-4 min-w-0", className)}>
       <CardHeader className="flex flex-col items-start justify-between gap-3 space-y-0 lg:flex-row lg:items-center">
         <div className="min-w-0 space-y-1">
           <CardTitle className="break-words text-lg">{literal(title, language)}</CardTitle>
@@ -111,13 +111,13 @@ export function ToolPanel({
           )}
         </div>
         {actions && (
-          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+          <div className="flex w-full min-w-0 max-w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end [&>*]:min-w-0 [&>*]:max-w-full">
             {actions}
           </div>
         )}
       </CardHeader>
       <Separator />
-      <CardContent className="pt-6">{children}</CardContent>
+      <CardContent className="min-w-0 pt-6">{children}</CardContent>
     </Card>
   );
 }
