@@ -18,6 +18,8 @@ const TOOLS: ToolSeo[] = [
   { slug: "merge-pdf", category: "Document", title: "Merge PDF files — free online tool | toolmd", description: "Combine multiple PDF files into a single document, in the order you choose. Free, no upload." },
   { slug: "split-pdf", category: "Document", title: "Split PDF by pages — free online tool | toolmd", description: "Pick the pages you need (1, 3-5, all, odd, even) and download a new PDF in your browser." },
   { slug: "compress-pdf", category: "Document", title: "Compress a PDF — free online tool | toolmd", description: "Optimize a PDF by re-saving it with object streams. See the before/after size before downloading." },
+  { slug: "pdf-to-image", category: "Document", title: "PDF to Image — export each page as PNG or JPG | toolmd", description: "Render each PDF page as a separate PNG or JPG image directly in your browser." },
+  { slug: "images-to-pdf", category: "Document", title: "Images to PDF — one image per page | toolmd", description: "Combine PNG, JPG and other images into a PDF with one image per page, directly in your browser." },
   { slug: "markdown-editor", category: "Markdown", title: "Markdown editor with live preview — toolmd", description: "A focused Markdown editor with a side-by-side live preview, local autosave and a .md import/export." },
   { slug: "markdown-table-generator", category: "Markdown", title: "Markdown table generator — toolmd", description: "Generate a clean Markdown table from a list of headers and a row count. Editable grid, copy-paste ready." },
   { slug: "markdown-table-formatter", category: "Markdown", title: "Markdown table formatter — toolmd", description: "Format and align pipe tables in your clipboard, fix escaped pipes and pick left/center/right per column." },

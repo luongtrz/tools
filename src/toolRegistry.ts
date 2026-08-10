@@ -55,6 +55,18 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     category: "Document",
   },
   {
+    slug: "pdf-to-image",
+    title: "PDF → Image",
+    description: "Tách từng trang PDF thành ảnh PNG hoặc JPG.",
+    category: "Document",
+  },
+  {
+    slug: "images-to-pdf",
+    title: "Images → PDF",
+    description: "Gộp nhiều ảnh thành PDF, mỗi ảnh là một trang.",
+    category: "Document",
+  },
+  {
     slug: "markdown-editor",
     title: "Markdown Editor",
     description: "Editor Markdown tập trung với preview realtime.",

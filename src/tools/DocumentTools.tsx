@@ -26,7 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import {
+  renderPdfPagePreviews,
+  type PdfPagePreview,
+} from "@/lib/pdfRender";
 
 function FilePicker({
   multiple = false,
@@ -738,11 +741,6 @@ function parseRanges(value: string, total: number): {
 
 type SplitPreset = "custom" | "all" | "odd" | "even" | "first" | "last";
 
-interface PdfPagePreview {
-  pageNumber: number;
-  src: string | null;
-}
-
 type PreviewState = "idle" | "loading" | "ready" | "error";
 
 function pageRangeFromPages(pages: number[]): string {
@@ -762,44 +760,6 @@ function pageRangeFromPages(pages: number[]): string {
   }
   ranges.push(start === end ? `${start}` : `${start}-${end}`);
   return ranges.join(", ");
-}
-
-async function renderPdfPagePreviews(
-  bytes: Uint8Array,
-  onProgress: (pageNumber: number) => void,
-): Promise<PdfPagePreview[]> {
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
-  const pdf = await pdfjs.getDocument({ data: bytes.slice() }).promise;
-  const previews: PdfPagePreview[] = [];
-  try {
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-      try {
-        const page = await pdf.getPage(pageNumber);
-        const baseViewport = page.getViewport({ scale: 1 });
-        const scale = Math.min(1, 220 / baseViewport.width);
-        const viewport = page.getViewport({ scale });
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.ceil(viewport.width);
-        canvas.height = Math.ceil(viewport.height);
-        const context = canvas.getContext("2d");
-        if (!context) throw new Error("Canvas is unavailable");
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvas, canvasContext: context, viewport }).promise;
-        previews.push({
-          pageNumber,
-          src: canvas.toDataURL("image/jpeg", 0.82),
-        });
-      } catch {
-        previews.push({ pageNumber, src: null });
-      }
-      onProgress(pageNumber);
-    }
-  } finally {
-    await pdf.cleanup();
-  }
-  return previews;
 }
 
 function PdfPageGrid({

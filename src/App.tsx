@@ -20,6 +20,12 @@ const SplitPdfTool = lazy(async () => ({
 const CompressPdfTool = lazy(async () => ({
   default: (await import("./tools/DocumentTools")).CompressPdfTool,
 }));
+const PdfToImageTool = lazy(async () => ({
+  default: (await import("./tools/ImageTools")).PdfToImageTool,
+}));
+const ImagesToPdfTool = lazy(async () => ({
+  default: (await import("./tools/ImageTools")).ImagesToPdfTool,
+}));
 const MarkdownEditorTool = lazy(async () => ({
   default: (await import("./tools/MarkdownTools")).MarkdownEditorTool,
 }));
@@ -95,6 +101,8 @@ const routeComponents: Record<string, () => ReactElement> = {
   "merge-pdf": () => <MergePdfTool />,
   "split-pdf": () => <SplitPdfTool />,
   "compress-pdf": () => <CompressPdfTool />,
+  "pdf-to-image": () => <PdfToImageTool />,
+  "images-to-pdf": () => <ImagesToPdfTool />,
   "markdown-editor": () => <MarkdownEditorTool />,
   "markdown-table-generator": () => <MarkdownTableGeneratorTool />,
   "markdown-table-formatter": () => <MarkdownTableFormatterTool />,
