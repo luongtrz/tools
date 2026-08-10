@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0d1220" />
     <meta name="theme-color" content="#F2633D" media="(prefers-color-scheme: light)" />
-    <meta name="description" content="toolmd — bộ công cụ Markdown, PDF và developer chạy riêng tư trong trình duyệt: Markdown sang PDF / Word / PPTX, JSON, YAML, CSV, regex, Base64, JWT, slug, UUID, mật khẩu, QR code, MCP cho AI." />
+    <meta name="description" content="toolmd — 31 công cụ online miễn phí cho Markdown, PDF, JSON, YAML, CSV, regex, Base64, JWT, slug, UUID, mật khẩu, QR code và MCP. Chạy riêng tư trong trình duyệt, không cần đăng ký." />
     <meta name="keywords" content="markdown to pdf, json formatter, base64 encoder, regex tester, qr code generator, uuid generator, password generator, color picker, jwt decoder, slug generator, yaml to json, csv to json, merge pdf, split pdf, mcp, browser tools, online tools" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="author" content="toolmd" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -15,15 +15,17 @@
     <link rel="canonical" href="https://toolmd.pages.dev/" />
     <meta property="og:site_name" content="toolmd" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="toolmd — Markdown, PDF and developer tools that run in your browser" />
-    <meta property="og:description" content="31 free browser-only tools: Markdown to PDF / Word / PPTX, PDF to image / Word, images to PDF, JSON / YAML / CSV, regex, Base64, JWT, slug, UUID, password, QR, color picker, MCP for AI." />
+    <meta property="og:title" content="toolmd — free online Markdown, PDF and developer tools" />
+    <meta property="og:description" content="31 free browser tools for Markdown, PDF, JSON, YAML, CSV, regex, Base64, JWT, slug, UUID, passwords, QR codes and MCP for AI agents." />
     <meta property="og:url" content="https://toolmd.pages.dev/" />
     <meta property="og:locale" content="vi_VN" />
     <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:image" content="https://toolmd.pages.dev/og-default.svg" />
+    <meta property="og:image:alt" content="toolmd free online browser tools" />
+    <meta property="og:image:type" content="image/svg+xml" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="toolmd — focused browser tools" />
-    <meta name="twitter:description" content="Markdown, PDF, JSON, regex, Base64, JWT, UUID, QR, color picker, MCP — all in your browser." />
+    <meta name="twitter:title" content="toolmd — free online Markdown, PDF and developer tools" />
+    <meta name="twitter:description" content="31 free browser tools for Markdown, PDF, JSON, YAML, CSV, regex, Base64, JWT, UUID, QR and MCP." />
     <meta name="twitter:image" content="https://toolmd.pages.dev/og-default.svg" />
     <meta name="twitter:site" content="@toolmd" />
     <script>
@@ -39,7 +41,7 @@
       "name": "toolmd",
       "url": "https://toolmd.pages.dev/",
       "inLanguage": ["vi-VN", "en-US"],
-      "description": "31 free browser-only tools for Markdown to PDF / Word / PPTX, PDF to image / Word, images to PDF, JSON / YAML / CSV, regex, Base64, JWT, slug / UUID / password, QR codes, color picking and an MCP server for AI agents.",
+      "description": "31 free browser tools for Markdown, PDF, JSON, YAML, CSV, regex, Base64, JWT, slug, UUID, passwords, QR codes and MCP for AI agents.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": "https://toolmd.pages.dev/?q={search_term_string}",
@@ -59,21 +61,35 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
-    <noscript>
+    <div id="root">
       <main>
-        <h1>toolmd — Markdown, PDF and developer tools</h1>
-        <p>Free browser-based tools for Markdown to PDF, Word and PowerPoint, JSON, YAML, CSV, regex, Base64, JWT, UUID, QR codes and more.</p>
-        <p>No sign-up and no upload for browser tools.</p>
-        <nav aria-label="Featured toolmd tools">
+        <h1>Free online Markdown, PDF and developer tools</h1>
+        <p>toolmd offers 31 free browser tools for documents, data, text and AI integrations. Files stay on your device and browser tools need no sign-up.</p>
+        <nav aria-label="Toolmd tools">
           <a href="/md2pdf/">Markdown to PDF</a>
+          <a href="/md2word/">Markdown to Word</a>
+          <a href="/md2pptx/">Markdown to PowerPoint</a>
+          <a href="/pdf-to-word/">Convert PDF to Word</a>
+          <a href="/pdf-to-image/">PDF to Image</a>
+          <a href="/merge-pdf/">Merge PDF</a>
+          <a href="/split-pdf/">Split PDF</a>
+          <a href="/compress-pdf/">Compress PDF</a>
+          <a href="/images-to-pdf/">Images to PDF</a>
           <a href="/markdown-editor/">Markdown editor</a>
+          <a href="/markdown-table-generator/">Markdown table generator</a>
           <a href="/json-formatter/">JSON formatter</a>
+          <a href="/json-validator/">JSON validator</a>
+          <a href="/yaml-json/">YAML to JSON</a>
+          <a href="/csv-json/">CSV to JSON</a>
+          <a href="/base64/">Base64 encoder</a>
           <a href="/regex-tester/">Regex tester</a>
+          <a href="/qr-generator/">QR code generator</a>
+          <a href="/uuid-generator/">UUID generator</a>
+          <a href="/password-generator/">Password generator</a>
           <a href="/mcp/">MCP for AI agents</a>
         </nav>
       </main>
-    </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

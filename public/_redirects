@@ -41,4 +41,3 @@
 /password-generator /password-generator/ 301
 /color-picker /color-picker/ 301
 /assets/* /assets/:splat 200
-/* /index.html 200

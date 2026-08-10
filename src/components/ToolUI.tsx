@@ -2,8 +2,10 @@ import { useState, type ReactNode } from "react";
 import { categoryLabel, literal, localizedTool, useI18n } from "@/i18n";
 import { getTool } from "@/toolRegistry";
 import { copyText } from "@/lib/clipboard";
+import { getToolSeoContent } from "@/lib/seoContent";
 import { cn } from "@/lib/utils";
 import ToolNavbar from "./ToolNavbar";
+import ToolSeoContent from "./ToolSeoContent";
 import { toolStyles } from "./toolStyles";
 import { Badge } from "./ui/badge";
 import { Button, type ButtonProps } from "./ui/button";
@@ -61,7 +63,7 @@ export function ToolPage({ slug, eyebrow, children }: ToolPageProps) {
   const { language, t } = useI18n();
   const tool = getTool(slug);
   if (!tool) return null;
-  const localized = localizedTool(tool, language);
+  const seoContent = getToolSeoContent(tool, language);
   return (
     <ToolShell activeSlug={slug}>
       <div className="mb-10 flex flex-col items-start justify-between gap-6 sm:mb-12 sm:flex-row">
@@ -78,10 +80,10 @@ export function ToolPage({ slug, eyebrow, children }: ToolPageProps) {
               : categoryLabel(tool.category, language).toUpperCase()}
           </p>
           <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">
-            {localized.title}
+            {seoContent.h1}
           </h1>
           <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
-            {localized.description}
+            {seoContent.description}
           </p>
         </div>
         <Badge variant="secondary" className="font-mono text-xs">
@@ -89,6 +91,7 @@ export function ToolPage({ slug, eyebrow, children }: ToolPageProps) {
         </Badge>
       </div>
       {children}
+      <ToolSeoContent slug={slug} />
     </ToolShell>
   );
 }

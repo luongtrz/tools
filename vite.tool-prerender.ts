@@ -1,92 +1,57 @@
 import type { Plugin } from "vite";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { TOOL_REGISTRY, getTool } from "./src/toolRegistry.ts";
+import { getToolSeoContent } from "./src/lib/seoContent.ts";
 
 const SITE = "https://toolmd.pages.dev";
 
-interface ToolSeo {
-  title: string;
-  description: string;
-  slug: string;
-  category: string;
-}
-
-const TOOLS: ToolSeo[] = [
-  { slug: "md2pdf", category: "Document", title: "Markdown to PDF — free online converter | toolmd", description: "Write Markdown, preview it and download a clean PDF directly from the browser. No upload, no sign-up." },
-  { slug: "md2word", category: "Document", title: "Markdown to Word (DOC/DOCX) — free online converter | toolmd", description: "Convert Markdown to editable DOC or DOCX. Runs in the browser, free, no sign-up required." },
-  { slug: "md2pptx", category: "Document", title: "Markdown to PowerPoint (PPTX) — free online converter | toolmd", description: "Turn Markdown sections into a PPTX slide deck. Pick the aspect ratio and download in one click." },
-  { slug: "merge-pdf", category: "Document", title: "Merge PDF files — free online tool | toolmd", description: "Combine multiple PDF files into a single document, in the order you choose. Free, no upload." },
-  { slug: "split-pdf", category: "Document", title: "Split PDF by pages — free online tool | toolmd", description: "Pick the pages you need (1, 3-5, all, odd, even) and download a new PDF in your browser." },
-  { slug: "compress-pdf", category: "Document", title: "Compress a PDF — free online tool | toolmd", description: "Optimize a PDF by re-saving it with object streams. See the before/after size before downloading." },
-  { slug: "pdf-to-image", category: "Document", title: "PDF to Image — export each page as PNG or JPG | toolmd", description: "Render each PDF page as a separate PNG or JPG image directly in your browser." },
-  { slug: "images-to-pdf", category: "Document", title: "Images to PDF — one image per page | toolmd", description: "Combine PNG, JPG and other images into a PDF with one image per page, directly in your browser." },
-  {
-    slug: "pdf-to-word",
-    category: "Document",
-    title: "PDF to Word — preserve fonts and formulas | toolmd",
-    description:
-      "Create a visual DOCX that preserves each PDF page in the browser.",
-  },
-  { slug: "markdown-editor", category: "Markdown", title: "Markdown editor with live preview — toolmd", description: "A focused Markdown editor with a side-by-side live preview, local autosave and a .md import/export." },
-  { slug: "markdown-table-generator", category: "Markdown", title: "Markdown table generator — toolmd", description: "Generate a clean Markdown table from a list of headers and a row count. Editable grid, copy-paste ready." },
-  { slug: "markdown-table-formatter", category: "Markdown", title: "Markdown table formatter — toolmd", description: "Format and align pipe tables in your clipboard, fix escaped pipes and pick left/center/right per column." },
-  { slug: "markdown-word-counter", category: "Markdown", title: "Markdown word and reading-time counter — toolmd", description: "Count words, characters, paragraphs, headings and code blocks in your Markdown. Pick a reading speed in WPM." },
-  { slug: "html-to-markdown", category: "Markdown", title: "HTML to Markdown converter — toolmd", description: "Convert HTML (including tables, images, h4-h6, ordered lists) to clean Markdown. Surfaces a warning for unsupported tags." },
-  { slug: "jwt-decoder", category: "Developer data", title: "JWT decoder — toolmd", description: "Decode a JWT header, payload and signature locally. Surfaces iat / nbf / exp / iss / aud / sub / jti and clock skew." },
-  { slug: "json-formatter", category: "Developer data", title: "JSON formatter / beautifier — toolmd", description: "Format, minify and validate JSON in your browser. Line/column error highlight, 2/4/tab indent, file import." },
-  { slug: "json-validator", category: "Developer data", title: "JSON validator — toolmd", description: "Validate JSON syntax locally. Real-time line/column error and copy/download the normalized result." },
-  { slug: "json-diff", category: "Developer data", title: "JSON diff — toolmd", description: "Semantic JSON diff with JSONPath-style changed paths, ignore-order option and swap A/B." },
-  { slug: "yaml-json", category: "Developer data", title: "YAML ↔ JSON converter — toolmd", description: "Convert between YAML and JSON in either direction. Auto-detects the input format and supports file import." },
-  { slug: "csv-json", category: "Developer data", title: "CSV ↔ JSON converter — toolmd", description: "Convert between CSV and JSON. Auto-detects comma/tab/semicolon delimiters, shows a table preview and warns on duplicate headers." },
-  { slug: "text-diff", category: "Text utility", title: "Text diff — toolmd", description: "Compare two texts by line, word or character. Ignore case or whitespace, swap, clear and download the diff." },
-  { slug: "regex-tester", category: "Text utility", title: "Regex tester — toolmd", description: "Test a regular expression with flag checkboxes (g/i/m/s/u/y), match indices, numbered and named capture groups." },
-  { slug: "base64", category: "Text utility", title: "Base64 encoder / decoder — toolmd", description: "Encode or decode Base64 in standard, Base64URL padded or unpadded variants. Unicode safe." },
-  { slug: "case-converter", category: "Text utility", title: "Case converter — toolmd", description: "Convert text between lower, UPPER, Title, Sentence, camel, Pascal, snake, CONSTANT, kebab and dot.case in one click." },
-  { slug: "slug-generator", category: "Text utility", title: "Slug generator — toolmd", description: "Turn any title into a clean URL slug. Choose separator, max length and Unicode-preserve mode." },
-  { slug: "url-codec", category: "Text utility", title: "URL encode / decode — toolmd", description: "Encode or decode URL components, full URLs or application/x-www-form-urlencoded. Query-parameter table builder." },
-  { slug: "qr-generator", category: "Quick tools", title: "QR code generator — toolmd", description: "Generate a QR code from text or a URL. Wi-Fi, vCard, Email, SMS and Phone presets, PNG and SVG export." },
-  { slug: "uuid-generator", category: "Quick tools", title: "UUID v4 generator — toolmd", description: "Generate up to 200 UUID v4 values. Output as lines, JSON array, CSV or SQL IN list, copy or download." },
-  { slug: "password-generator", category: "Quick tools", title: "Secure password generator — toolmd", description: "Generate a strong random password (4-128 chars). Toggle upper/lower/numbers/symbols, set a custom symbol set, see entropy bits." },
-  { slug: "color-picker", category: "Quick tools", title: "Color picker (HEX / RGB / HSL / alpha) — toolmd", description: "Pick a color, see HEX / RGB / HSL / alpha, check WCAG contrast against light and dark backgrounds." },
-  { slug: "mcp", category: "Integration", title: "toolmd MCP for AI agents — toolmd", description: "Connect an AI host to toolmd's MCP server (Streamable HTTP, 18 tools) for Markdown, JSON, regex, Base64, JWT, UUID and more." },
-];
-
 function renderToolHtml(
-  title: string,
-  description: string,
   slug: string,
   language: "vi" | "en",
   category: string,
   assetTags: string[],
 ): string {
+  const tool = getTool(slug);
+  if (!tool) throw new Error(`tool-prerender: unknown tool ${slug}`);
+  const seo = getToolSeoContent(tool, language);
   const ogImage = `${SITE}/og-default.svg`;
   const canonical = `${SITE}/${slug}/`;
-  const safeTitle = title.replace(/</g, "&lt;");
-  const safeDescription = description.replace(/</g, "&lt;");
+  const safe = (value: string) =>
+    value.replace(/[&<>"']/g, (character) => {
+      const entities: Record<string, string> = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      };
+      return entities[character];
+    });
+  const safeTitle = safe(seo.pageTitle);
+  const safeDescription = safe(seo.description);
+  const safeH1 = safe(seo.h1);
+  const safeIntro = safe(seo.intro);
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      name: title.split(" — ")[0] ?? title,
+      name: seo.h1,
       url: canonical,
       applicationCategory:
         category === "Developer data" || category === "Integration"
           ? "DeveloperApplication"
           : "UtilitiesApplication",
       operatingSystem: "Any (browser-based)",
-      description: safeDescription,
+      description: seo.description,
       inLanguage: language === "vi" ? "vi-VN" : "en-US",
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       applicationSuite: "toolmd",
       browserRequirements:
         "Requires a modern browser with JavaScript enabled. No installation.",
-      featureList: [
-        "Runs entirely in the browser",
-        "No file upload, no sign-up",
-        "Free to use",
-        "Vietnamese and English support",
-      ],
+      image: ogImage,
+      featureList: seo.benefits,
     },
     {
       "@context": "https://schema.org",
@@ -102,7 +67,7 @@ function renderToolHtml(
         {
           "@type": "ListItem",
           position: 3,
-          name: title.split(" — ")[0] ?? title,
+          name: seo.h1,
           item: canonical,
         },
       ],
@@ -116,38 +81,55 @@ function renderToolHtml(
     <meta name="theme-color" content="#F2633D" />
     <title>${safeTitle}</title>
     <meta name="description" content="${safeDescription}" />
-    <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="${safe(seo.keywords.join(", "))}" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="toolmd" />
     <link rel="canonical" href="${canonical}" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta property="og:title" content="${safeTitle}" />
     <meta property="og:description" content="${safeDescription}" />
-    <meta property="og:type" content="article" />
+    <meta property="og:type" content="website" />
     <meta property="og:url" content="${canonical}" />
     <meta property="og:image" content="${ogImage}" />
+    <meta property="og:image:alt" content="${safe(seo.h1)}" />
+    <meta property="og:image:type" content="image/svg+xml" />
     <meta property="og:site_name" content="toolmd" />
     <meta property="og:locale" content="${language === "vi" ? "vi_VN" : "en_US"}" />
+    <meta property="og:locale:alternate" content="${language === "vi" ? "en_US" : "vi_VN"}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
     <meta name="twitter:description" content="${safeDescription}" />
     <meta name="twitter:image" content="${ogImage}" />
+    <meta name="twitter:site" content="@toolmd" />
     <script type="application/ld+json" data-seo="jsonld">${JSON.stringify(jsonLd[0])}</script>
     <script type="application/ld+json" data-seo="jsonld">${JSON.stringify(jsonLd[1])}</script>
 ${assetTags.map((tag) => `    ${tag}`).join("\n")}
   </head>
   <body>
-    <div id="root"></div>
-    <noscript>
+    <div id="root">
       <main>
         <article>
-          <h1>${safeTitle}</h1>
+          <p>${safe(category)}</p>
+          <h1>${safeH1}</h1>
           <p>${safeDescription}</p>
-          <p>Free browser-based tool from <a href="${SITE}/">toolmd</a>. No upload and no sign-up required.</p>
-          <nav aria-label="Other toolmd tools">
-            <a href="${SITE}/">View all toolmd tools</a>
+          <p>${safeIntro}</p>
+          <h2>${language === "vi" ? `Cách dùng ${safeH1}` : `How to use ${safeH1}`}</h2>
+          <ol>
+${seo.steps.map((step) => `            <li>${safe(step)}</li>`).join("\n")}
+          </ol>
+          <h2>${language === "vi" ? "Điểm nổi bật" : "Key features"}</h2>
+          <ul>
+${seo.benefits.map((benefit) => `            <li>${safe(benefit)}</li>`).join("\n")}
+          </ul>
+          <h2>${language === "vi" ? "Lưu ý" : "Good to know"}</h2>
+          <p>${safe(seo.limitation)}</p>
+          <nav aria-label="${language === "vi" ? "Công cụ liên quan" : "Related tools"}">
+            <a href="${SITE}/">${language === "vi" ? "Xem tất cả công cụ" : "View all toolmd tools"}</a>
+${seo.relatedSlugs.map((relatedSlug) => `            <a href="${SITE}/${relatedSlug}/">${safe(getTool(relatedSlug)?.title ?? relatedSlug)}</a>`).join("\n")}
           </nav>
         </article>
       </main>
-    </noscript>
+    </div>
   </body>
 </html>
 `;
@@ -176,10 +158,8 @@ function toolPrerenderPlugin(): Plugin {
         throw new Error("tool-prerender: found no asset tags in index.html");
       }
 
-      for (const tool of TOOLS) {
+      for (const tool of TOOL_REGISTRY) {
         const html = renderToolHtml(
-          tool.title,
-          tool.description,
           tool.slug,
           "en",
           tool.category,

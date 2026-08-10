@@ -1,5 +1,6 @@
 import { TOOL_REGISTRY, getTool, type ToolDefinition } from "@/toolRegistry";
-import { categoryLabel, localizedTool, type Language } from "@/i18n";
+import { type Language } from "@/i18n";
+import { getToolSeoContent } from "@/lib/seoContent";
 
 const SITE_NAME = "toolmd";
 const SITE_BASE = "https://toolmd.pages.dev";
@@ -84,11 +85,11 @@ export function homeSeo(language: Language): SeoMeta {
   const isVi = language === "vi";
   return {
     title: isVi
-      ? "toolmd — bộ công cụ Markdown, PDF và developer chạy trong trình duyệt"
+      ? "toolmd — công cụ Markdown, PDF và developer miễn phí online"
       : "toolmd — focused Markdown, PDF and developer tools that run in your browser",
     description: isVi
-      ? "toolmd là bộ sưu tập 31 công cụ miễn phí chạy hoàn toàn trong trình duyệt: Markdown sang PDF / Word / PPTX, PDF sang ảnh / Word, ảnh sang PDF, JSON, YAML, CSV, regex, Base64, mã hóa URL, JWT, slug, UUID, mật khẩu, QR code và MCP cho AI. Không cần đăng ký, không upload file."
-      : "toolmd is a collection of 31 free, browser-only tools for Markdown to PDF / Word / PPTX, PDF to image / Word, images to PDF, JSON / YAML / CSV formatting, regex testing, Base64, URL encoding, JWT decoding, slug / UUID / password generation, QR codes, color picking and an MCP server for AI agents. No sign-up, no uploads.",
+      ? `toolmd là bộ sưu tập ${TOOL_REGISTRY.length} công cụ miễn phí chạy hoàn toàn trong trình duyệt: Markdown, PDF, JSON, YAML, CSV, regex, Base64, JWT, slug, UUID, mật khẩu, QR code và MCP cho AI. Không cần đăng ký, không upload file.`
+      : `toolmd is a collection of ${TOOL_REGISTRY.length} free browser tools for Markdown, PDF, JSON, YAML, CSV, regex, Base64, JWT, slug, UUID, passwords, QR codes and MCP for AI agents. No sign-up or uploads.`,
     canonical: `${SITE_BASE}/`,
     ogType: "website",
     keywords: keywordsFor(),
@@ -99,22 +100,15 @@ export function homeSeo(language: Language): SeoMeta {
 export function toolSeo(slug: string, language: Language): SeoMeta {
   const tool = getTool(slug);
   if (!tool) return homeSeo(language);
-  const localized = localizedTool(tool, language);
-  const isVi = language === "vi";
-  const base = homeSeo(language);
+  const content = getToolSeoContent(tool, language);
   return {
-    title: isVi
-      ? `${localized.title} — toolmd`
-      : `${localized.title} — free online ${localized.title.toLowerCase()} | toolmd`,
-    description: isVi
-      ? `${localized.description} Chạy trực tiếp trong trình duyệt, miễn phí, không cần đăng ký.`
-      : `${localized.description} Runs entirely in your browser, free, no sign-up required.`,
+    title: content.pageTitle,
+    description: content.description,
     canonical: `${SITE_BASE}/${slug}/`,
-    ogType: "article",
-    keywords: keywordsFor(slug),
+    ogType: "website",
+    keywords: Array.from(new Set([...content.keywords, ...keywordsFor(slug)])),
     ogImage: DEFAULT_OG_IMAGE,
   };
-  void base;
 }
 
 export function listAllSlugs(): string[] {

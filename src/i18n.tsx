@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { ToolDefinition, ToolCategory } from "./toolRegistry";
+import type { ToolDefinition, ToolCategory } from "./toolRegistry.ts";
 
 export type Language = "vi" | "en";
 export type Theme = "light" | "dark";

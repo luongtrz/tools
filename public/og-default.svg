@@ -16,7 +16,7 @@
   </g>
   <text x="96" y="340" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="700" fill="#FFFFFF" letter-spacing="-2">toolmd</text>
   <text x="96" y="400" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="36" font-weight="500" fill="#F2633D">Markdown, PDF and developer tools</text>
-  <text x="96" y="450" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="400" fill="#cbd5e1">28 free browser-only tools. No sign-up, no uploads.</text>
+  <text x="96" y="450" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="400" fill="#cbd5e1">31 free browser tools. No sign-up, no uploads.</text>
   <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" fill="#94a3b8" transform="translate(96 510)">
     <text>md2pdf  ·  md2word  ·  md2pptx  ·  json formatter  ·  base64  ·  regex  ·  qr  ·  uuid  ·  mcp</text>
   </g>

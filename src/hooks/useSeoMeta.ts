@@ -61,6 +61,7 @@ function applySeo(meta: SeoMeta, language: Language, slug?: string): void {
   setMeta("og:locale", language === "vi" ? "vi_VN" : "en_US", "property");
   if (meta.ogImage) {
     setMeta("og:image", meta.ogImage, "property");
+    setMeta("og:image:alt", meta.title, "property");
   }
   setMeta("twitter:card", "summary_large_image");
   setMeta("twitter:title", meta.title);
