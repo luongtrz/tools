@@ -1,3 +1,14 @@
+# These language-prefixed URLs were emitted by an older hreflang setup. The
+# app now keeps the selected language in localStorage, so they are not separate
+# indexable pages. Redirect them before the SPA fallback to avoid duplicate
+# canonical pages in Search Console.
+/en / 301
+/en/ / 301
+/vi / 301
+/vi/ / 301
+/en/* /:splat 301
+/vi/* /:splat 301
+
 / /index.html 200
 /introduction.md /introduction.md 200
 /google45daf2f9337fad3c.html /google45daf2f9337fad3c.html 200
