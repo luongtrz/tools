@@ -136,7 +136,7 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
             href="https://github.com/luongtrz/tools"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-accent-foreground sm:px-3"
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md border border-border bg-card px-2 text-sm font-semibold text-foreground shadow-sm no-underline transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-3"
             aria-label={t("viewSourceCode")}
             title={t("viewSourceCode")}
           >
