@@ -57,6 +57,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://toolmd.pages.dev/pdf-to-word/</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://toolmd.pages.dev/markdown-editor/</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>monthly</changefreq>

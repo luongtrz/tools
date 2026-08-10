@@ -67,6 +67,12 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     category: "Document",
   },
   {
+    slug: "pdf-to-word",
+    title: "PDF → Word",
+    description: "Tạo DOCX giữ nguyên hiển thị của từng trang PDF.",
+    category: "Document",
+  },
+  {
     slug: "markdown-editor",
     title: "Markdown Editor",
     description: "Editor Markdown tập trung với preview realtime.",

@@ -65,8 +65,8 @@ function websiteSchema(language: Language): Record<string, unknown> {
     inLanguage: language === "vi" ? "vi-VN" : "en-US",
     description:
       language === "vi"
-        ? "Bộ sưu tập 30 công cụ miễn phí chạy trong trình duyệt: Markdown sang PDF / Word / PPTX, PDF sang ảnh, ảnh sang PDF, JSON, YAML, CSV, regex, Base64, JWT, mã hóa URL, slug, UUID, mật khẩu, QR code và MCP cho AI."
-        : "30 free browser-only tools for Markdown to PDF / Word / PPTX, PDF to image, images to PDF, JSON / YAML / CSV formatting, regex, Base64, JWT, slug / UUID / password, QR codes, color picking and an MCP server for AI agents.",
+        ? "Bộ sưu tập 31 công cụ miễn phí chạy trong trình duyệt: Markdown sang PDF / Word / PPTX, PDF sang ảnh / Word, ảnh sang PDF, JSON, YAML, CSV, regex, Base64, JWT, mã hóa URL, slug, UUID, mật khẩu, QR code và MCP cho AI."
+        : "31 free browser-only tools for Markdown to PDF / Word / PPTX, PDF to image / Word, images to PDF, JSON / YAML / CSV formatting, regex, Base64, JWT, slug / UUID / password, QR codes, color picking and an MCP server for AI agents.",
     potentialAction: {
       "@type": "SearchAction",
       target: `${SITE}/?q={search_term_string}`,

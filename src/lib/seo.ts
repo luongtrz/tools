@@ -20,6 +20,7 @@ const KEYWORDS_BY_CATEGORY: Record<string, string[]> = {
     "markdown to pdf",
     "markdown to word",
     "markdown to pptx",
+    "pdf to word",
     "merge pdf",
     "split pdf",
     "compress pdf",
@@ -86,8 +87,8 @@ export function homeSeo(language: Language): SeoMeta {
       ? "toolmd — bộ công cụ Markdown, PDF và developer chạy trong trình duyệt"
       : "toolmd — focused Markdown, PDF and developer tools that run in your browser",
     description: isVi
-      ? "toolmd là bộ sưu tập 30 công cụ miễn phí chạy hoàn toàn trong trình duyệt: Markdown sang PDF / Word / PPTX, PDF sang ảnh, ảnh sang PDF, JSON, YAML, CSV, regex, Base64, mã hóa URL, JWT, slug, UUID, mật khẩu, QR code và MCP cho AI. Không cần đăng ký, không upload file."
-      : "toolmd is a collection of 30 free, browser-only tools for Markdown to PDF / Word / PPTX, PDF to image, images to PDF, JSON / YAML / CSV formatting, regex testing, Base64, URL encoding, JWT decoding, slug / UUID / password generation, QR codes, color picking and an MCP server for AI agents. No sign-up, no uploads.",
+      ? "toolmd là bộ sưu tập 31 công cụ miễn phí chạy hoàn toàn trong trình duyệt: Markdown sang PDF / Word / PPTX, PDF sang ảnh / Word, ảnh sang PDF, JSON, YAML, CSV, regex, Base64, mã hóa URL, JWT, slug, UUID, mật khẩu, QR code và MCP cho AI. Không cần đăng ký, không upload file."
+      : "toolmd is a collection of 31 free, browser-only tools for Markdown to PDF / Word / PPTX, PDF to image / Word, images to PDF, JSON / YAML / CSV formatting, regex testing, Base64, URL encoding, JWT decoding, slug / UUID / password generation, QR codes, color picking and an MCP server for AI agents. No sign-up, no uploads.",
     canonical: `${SITE_BASE}/`,
     ogType: "website",
     keywords: keywordsFor(),

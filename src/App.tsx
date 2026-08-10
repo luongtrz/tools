@@ -26,6 +26,9 @@ const PdfToImageTool = lazy(async () => ({
 const ImagesToPdfTool = lazy(async () => ({
   default: (await import("./tools/ImageTools")).ImagesToPdfTool,
 }));
+const PdfToWordTool = lazy(async () => ({
+  default: (await import("./tools/PdfToWordTool")).PdfToWordTool,
+}));
 const MarkdownEditorTool = lazy(async () => ({
   default: (await import("./tools/MarkdownTools")).MarkdownEditorTool,
 }));
@@ -103,6 +106,7 @@ const routeComponents: Record<string, () => ReactElement> = {
   "compress-pdf": () => <CompressPdfTool />,
   "pdf-to-image": () => <PdfToImageTool />,
   "images-to-pdf": () => <ImagesToPdfTool />,
+  "pdf-to-word": () => <PdfToWordTool />,
   "markdown-editor": () => <MarkdownEditorTool />,
   "markdown-table-generator": () => <MarkdownTableGeneratorTool />,
   "markdown-table-formatter": () => <MarkdownTableFormatterTool />,
