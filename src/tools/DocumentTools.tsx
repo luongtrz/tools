@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { literal, useI18n } from "@/i18n";
 import { SAMPLE_MARKDOWN } from "@/constants/sampleMarkdown";
 import { renderMarkdown } from "@/lib/markdown";
@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 function FilePicker({
   multiple = false,
@@ -737,46 +738,235 @@ function parseRanges(value: string, total: number): {
 
 type SplitPreset = "custom" | "all" | "odd" | "even" | "first" | "last";
 
+interface PdfPagePreview {
+  pageNumber: number;
+  src: string | null;
+}
+
+type PreviewState = "idle" | "loading" | "ready" | "error";
+
+function pageRangeFromPages(pages: number[]): string {
+  const sorted = Array.from(new Set(pages)).sort((a, b) => a - b);
+  if (!sorted.length) return "";
+  const ranges: string[] = [];
+  let start = sorted[0];
+  let end = sorted[0];
+  for (const page of sorted.slice(1)) {
+    if (page === end + 1) {
+      end = page;
+      continue;
+    }
+    ranges.push(start === end ? `${start}` : `${start}-${end}`);
+    start = page;
+    end = page;
+  }
+  ranges.push(start === end ? `${start}` : `${start}-${end}`);
+  return ranges.join(", ");
+}
+
+async function renderPdfPagePreviews(
+  bytes: Uint8Array,
+  onProgress: (pageNumber: number) => void,
+): Promise<PdfPagePreview[]> {
+  const pdfjs = await import("pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  const pdf = await pdfjs.getDocument({ data: bytes.slice() }).promise;
+  const previews: PdfPagePreview[] = [];
+  try {
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      try {
+        const page = await pdf.getPage(pageNumber);
+        const baseViewport = page.getViewport({ scale: 1 });
+        const scale = Math.min(1, 220 / baseViewport.width);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Canvas is unavailable");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvas, canvasContext: context, viewport }).promise;
+        previews.push({
+          pageNumber,
+          src: canvas.toDataURL("image/jpeg", 0.82),
+        });
+      } catch {
+        previews.push({ pageNumber, src: null });
+      }
+      onProgress(pageNumber);
+    }
+  } finally {
+    await pdf.cleanup();
+  }
+  return previews;
+}
+
+function PdfPageGrid({
+  previews,
+  selectedPages,
+  onToggle,
+}: {
+  previews: PdfPagePreview[];
+  selectedPages: Set<number>;
+  onToggle: (pageNumber: number) => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      {previews.map((preview) => {
+        const selected = selectedPages.has(preview.pageNumber);
+        const checkboxId = `split-pdf-page-${preview.pageNumber}`;
+        return (
+          <div
+            className={cn(
+              "min-w-0 overflow-hidden rounded-lg border bg-card transition",
+              selected
+                ? "border-primary ring-2 ring-primary/20"
+                : "border-border",
+            )}
+            key={preview.pageNumber}
+          >
+            <button
+              type="button"
+              className="relative flex min-h-[180px] w-full items-center justify-center bg-muted/30 p-2 text-left transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              onClick={() => onToggle(preview.pageNumber)}
+              aria-pressed={selected}
+              aria-label={t("pagePreview", { page: preview.pageNumber })}
+            >
+              {preview.src ? (
+                <img
+                  src={preview.src}
+                  alt={t("pagePreview", { page: preview.pageNumber })}
+                  className="max-h-64 w-full object-contain shadow-sm"
+                />
+              ) : (
+                <span className="px-3 text-center text-xs text-muted-foreground">
+                  {t("pagePreviewUnavailable")}
+                </span>
+              )}
+              {selected && (
+                <span className="absolute right-3 top-3 grid size-6 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-sm">
+                  ✓
+                </span>
+              )}
+            </button>
+            <div className="flex items-center gap-2 border-t border-border px-3 py-2">
+              <Checkbox
+                id={checkboxId}
+                checked={selected}
+                onCheckedChange={() => onToggle(preview.pageNumber)}
+                aria-label={t("pagePreview", { page: preview.pageNumber })}
+              />
+              <label
+                htmlFor={checkboxId}
+                className="min-w-0 cursor-pointer truncate text-xs font-medium text-foreground"
+              >
+                {t("pageLabel", { page: preview.pageNumber })}
+              </label>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function SplitPdfTool() {
   const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [ranges, setRanges] = useState("1");
   const [preset, setPreset] = useState<SplitPreset>("custom");
+  const [selectedPages, setSelectedPages] = useState<number[]>([]);
+  const [pagePreviews, setPagePreviews] = useState<PdfPagePreview[]>([]);
+  const [previewState, setPreviewState] = useState<PreviewState>("idle");
+  const [previewProgress, setPreviewProgress] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [splitEach, setSplitEach] = useState(false);
+  const loadId = useRef(0);
+  const selectedPageSet = useMemo(() => new Set(selectedPages), [selectedPages]);
 
   async function loadFile(next: File | null): Promise<void> {
+    const requestId = ++loadId.current;
     setFile(next);
     setError("");
     setTotalPages(0);
+    setSelectedPages([]);
+    setPagePreviews([]);
+    setPreviewState("idle");
+    setPreviewProgress(0);
     if (!next) return;
     try {
+      const bytes = new Uint8Array(await next.arrayBuffer());
       const { PDFDocument } = await import("pdf-lib");
-      const doc = await PDFDocument.load(await next.arrayBuffer(), {
+      const doc = await PDFDocument.load(bytes, {
         ignoreEncryption: true,
       });
-      setTotalPages(doc.getPageCount());
+      const pageCount = doc.getPageCount();
+      if (requestId !== loadId.current) return;
+      const allPages = Array.from({ length: pageCount }, (_, index) => index + 1);
+      setTotalPages(pageCount);
+      setSelectedPages(allPages);
+      setRanges(pageRangeFromPages(allPages));
+      setPreset("all");
+      setPreviewState("loading");
+      setPreviewProgress(0);
+      const previews = await renderPdfPagePreviews(bytes, setPreviewProgress);
+      if (requestId !== loadId.current) return;
+      setPagePreviews(previews);
+      setPreviewState("ready");
     } catch {
+      if (requestId !== loadId.current) return;
+      setPreviewState("error");
       setError(t("pdfLoadFailed"));
     }
   }
 
+  function updateSelection(pages: number[], nextPreset: SplitPreset = "custom"): void {
+    const normalized = Array.from(new Set(pages))
+      .filter((page) => page >= 1 && page <= totalPages)
+      .sort((a, b) => a - b);
+    setSelectedPages(normalized);
+    setRanges(pageRangeFromPages(normalized));
+    setPreset(nextPreset);
+  }
+
   function applyPreset(value: SplitPreset): void {
-    setPreset(value);
     if (!totalPages) return;
     if (value === "all") {
-      setRanges(`1-${totalPages}`);
+      updateSelection(
+        Array.from({ length: totalPages }, (_, index) => index + 1),
+        value,
+      );
     } else if (value === "odd") {
-      setRanges(rangeForPredicate(totalPages, (p) => p % 2 === 1));
+      updateSelection(
+        Array.from({ length: totalPages }, (_, index) => index + 1).filter(
+          (page) => page % 2 === 1,
+        ),
+        value,
+      );
     } else if (value === "even") {
-      setRanges(rangeForPredicate(totalPages, (p) => p % 2 === 0));
+      updateSelection(
+        Array.from({ length: totalPages }, (_, index) => index + 1).filter(
+          (page) => page % 2 === 0,
+        ),
+        value,
+      );
     } else if (value === "first") {
-      setRanges("1");
+      updateSelection([1], value);
     } else if (value === "last") {
-      setRanges(`${totalPages}`);
+      updateSelection([totalPages], value);
     }
+  }
+
+  function togglePage(pageNumber: number): void {
+    updateSelection(
+      selectedPageSet.has(pageNumber)
+        ? selectedPages.filter((page) => page !== pageNumber)
+        : [...selectedPages, pageNumber],
+    );
   }
 
   const rangeResult = useMemo(
@@ -786,7 +976,7 @@ export function SplitPdfTool() {
 
   async function split(): Promise<void> {
     if (!file) return;
-    if (!rangeResult.pages.length) {
+    if (rangeResult.error || !selectedPages.length) {
       setError(rangeResult.error || t("invalidRange"));
       return;
     }
@@ -798,7 +988,7 @@ export function SplitPdfTool() {
         ignoreEncryption: true,
       });
       if (splitEach) {
-        for (const page of rangeResult.pages) {
+        for (const page of selectedPages) {
           const output = await PDFDocument.create();
           const [copied] = await output.copyPages(source, [page - 1]);
           output.addPage(copied);
@@ -811,7 +1001,7 @@ export function SplitPdfTool() {
         const output = await PDFDocument.create();
         const copied = await output.copyPages(
           source,
-          rangeResult.pages.map((page) => page - 1),
+          selectedPages.map((page) => page - 1),
         );
         copied.forEach((page) => output.addPage(page));
         downloadBlob(
@@ -860,59 +1050,119 @@ export function SplitPdfTool() {
             <ToolLabel>No file selected</ToolLabel>
           </p>
         )}
-        <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          {(["custom", "all", "odd", "even", "first", "last"] as SplitPreset[]).map(
-            (value) => (
-              <Button
-                key={value}
-                size="sm"
-                variant={preset === value ? "default" : "outline"}
-                onClick={() => applyPreset(value)}
-                disabled={!totalPages}
-              >
-                {value}
-              </Button>
-            ),
-          )}
-        </div>
-        <label className={toolStyles.label}>
-          <ToolLabel>Pages</ToolLabel>
-          <Input
-            value={ranges}
-            onChange={(event) => {
-              setRanges(event.target.value);
-              setPreset("custom");
-            }}
-            placeholder="1, 3-5"
-            className="h-9 font-mono"
-          />
-        </label>
         {totalPages > 0 && (
-          <p
-            className={cn(
-              "text-xs",
-              rangeResult.error ? "text-destructive" : "text-muted-foreground",
+          <section className="mt-6 overflow-hidden rounded-lg border border-border bg-muted/20" aria-label={t("selectPages")}>
+            <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="font-display text-base font-semibold text-foreground">
+                  {t("selectPages")}
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t("selectedPagesCount", {
+                    selected: selectedPages.length,
+                    total: totalPages,
+                  })}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => applyPreset("all")}>
+                  {t("selectAllPages")}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => updateSelection([])}>
+                  {t("clearPageSelection")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    updateSelection(
+                      Array.from({ length: totalPages }, (_, index) => index + 1).filter(
+                        (page) => !selectedPageSet.has(page),
+                      ),
+                    )
+                  }
+                >
+                  {t("invertPageSelection")}
+                </Button>
+              </div>
+            </div>
+            {previewState === "loading" && (
+              <div className="border-b border-border px-4 py-3 text-xs text-muted-foreground" role="status">
+                {t("renderingPagePreviews", {
+                  current: previewProgress,
+                  total: totalPages,
+                })}
+              </div>
             )}
-          >
-            {rangeResult.error
-              ? rangeResult.error
-              : `${rangeResult.pages.length} page${rangeResult.pages.length === 1 ? "" : "s"} selected`}
-          </p>
+            {previewState === "error" && (
+              <div className="p-4">
+                <ToolNotice variant="error">{t("pagePreviewUnavailable")}</ToolNotice>
+              </div>
+            )}
+            {pagePreviews.length > 0 && (
+              <PdfPageGrid
+                previews={pagePreviews}
+                selectedPages={selectedPageSet}
+                onToggle={togglePage}
+              />
+            )}
+          </section>
+        )}
+        {totalPages > 0 && (
+          <details className="mt-4 rounded-md border border-border bg-muted/20 px-4 py-3">
+            <summary className="cursor-pointer text-sm font-medium text-foreground">
+              {t("advancedPageRange")}
+            </summary>
+            <div className="mt-4">
+              <label className={toolStyles.label}>
+                {t("pageRange")}
+                <Input
+                  value={ranges}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setRanges(value);
+                    setPreset("custom");
+                    const result = parseRanges(value, totalPages);
+                    if (!result.error) setSelectedPages(result.pages);
+                  }}
+                  placeholder={t("pageRangePlaceholder")}
+                  className="h-9 font-mono"
+                />
+              </label>
+              {rangeResult.error && (
+                <p className="text-xs text-destructive">{rangeResult.error}</p>
+              )}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button size="sm" variant={preset === "odd" ? "default" : "outline"} onClick={() => applyPreset("odd")}>
+                  {t("oddPages")}
+                </Button>
+                <Button size="sm" variant={preset === "even" ? "default" : "outline"} onClick={() => applyPreset("even")}>
+                  {t("evenPages")}
+                </Button>
+                <Button size="sm" variant={preset === "first" ? "default" : "outline"} onClick={() => applyPreset("first")}>
+                  {t("firstPage")}
+                </Button>
+                <Button size="sm" variant={preset === "last" ? "default" : "outline"} onClick={() => applyPreset("last")}>
+                  {t("lastPage")}
+                </Button>
+              </div>
+            </div>
+          </details>
         )}
         <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
           <Checkbox
             checked={splitEach}
             onCheckedChange={(value) => setSplitEach(Boolean(value))}
           />
-          Save each selected page as a separate PDF
+          {t("saveEachSelectedPage")}
         </label>
         <div className="mt-3">
           <Button
             onClick={() => void split()}
             busy={busy}
-            disabled={!file || !rangeResult.pages.length}
+            disabled={!file || !selectedPages.length || previewState === "loading"}
           >
-            {busy ? t("processing") : t("splitPdf")}
+            {busy ? t("processing") : t("splitSelectedPages", { count: selectedPages.length })}
           </Button>
         </div>
         {error && (
@@ -923,23 +1173,6 @@ export function SplitPdfTool() {
       </ToolPanel>
     </ToolPage>
   );
-}
-
-function rangeForPredicate(total: number, predicate: (page: number) => boolean): string {
-  const pages: string[] = [];
-  let start: number | null = null;
-  for (let p = 1; p <= total; p += 1) {
-    if (predicate(p)) {
-      if (start === null) start = p;
-    } else if (start !== null) {
-      pages.push(start === p - 1 ? `${start}` : `${start}-${p - 1}`);
-      start = null;
-    }
-  }
-  if (start !== null) {
-    pages.push(start === total ? `${start}` : `${start}-${total}`);
-  }
-  return pages.join(",");
 }
 
 export function CompressPdfTool() {

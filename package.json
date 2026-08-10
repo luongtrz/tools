@@ -40,6 +40,7 @@
     "lucide-react": "^1.28.0",
     "markdown-it": "^15.0.0",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.2.108",
     "pptxgenjs": "^4.0.1",
     "qrcode": "^1.5.4",
     "react": "19.2.8",
