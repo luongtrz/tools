@@ -33,6 +33,10 @@ Set the frontend endpoint before building toolmd:
 VITE_PDF_TO_WORD_URL=http://localhost:8080/v1/pdf-to-word npm run dev
 ```
 
+Without this endpoint, the frontend still creates an editable DOCX from a PDF
+text layer in the browser. This service is needed for scanned PDFs and OCR
+formulas; visual image export remains available as an explicit fidelity mode.
+
 For a public deployment, set `CORS_ORIGINS` to the exact frontend origins and
 put the service behind HTTPS. Do not expose a development service directly to
 the internet.

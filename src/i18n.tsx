@@ -136,7 +136,7 @@ const messages = {
     dropPdfToImageDescription: "Mỗi trang sẽ được render thành một ảnh riêng ngay trong trình duyệt.",
     dropPdfToWord: "Thả PDF vào đây hoặc bấm để chọn",
     dropPdfToWordDescription:
-      "Chữ và công thức được nhận dạng bằng service local; có fallback ảnh để giữ hiển thị.",
+      "Tạo DOCX có chữ chỉnh sửa được từ text layer của PDF; PDF scan có chế độ giữ nguyên dạng ảnh.",
     selectImagePages: "Chọn trang cần xuất ảnh",
     selectedImagesCount: "Đã chọn {selected}/{total} trang",
     imageFormat: "Định dạng ảnh",
@@ -177,10 +177,10 @@ const messages = {
     pdfToWordPreviewCount: "Đang hiển thị {visible}/{total} trang",
     pdfToWordChoosePdf: "Chọn PDF",
     pdfToWordToolDescription:
-      "Chuyển chữ và công thức PDF bằng service local, có fallback giữ nguyên hiển thị.",
+      "Tạo DOCX có chữ chỉnh sửa được từ text layer của PDF, không biến toàn bộ trang thành ảnh.",
     pdfToWordWordOutput: "Đầu ra Word",
     pdfToWordSemanticDescription:
-      "Nhận dạng chữ và công thức thành DOCX có thể chỉnh sửa.",
+      "Tạo DOCX có text thật để chỉnh sửa; công thức tốt nhất khi có service OCR semantic.",
     pdfToWordVisualDescription:
       "Chọn chất lượng render; mỗi trang PDF vẫn là một ảnh.",
     pdfToWordFormat: "Định dạng ảnh trong DOCX",
@@ -188,7 +188,7 @@ const messages = {
     pdfToWordJpeg: "JPG · file nhẹ hơn",
     pdfToWordResolution: "Độ phân giải render",
     pdfToWordMode: "Cách chuyển đổi",
-    pdfToWordSemanticMode: "Chữ + công thức chỉnh sửa được",
+    pdfToWordSemanticMode: "Text chỉnh sửa được",
     pdfToWordVisualMode: "Giữ nguyên hiển thị dạng ảnh",
     pdfToWordDownload: "Tải DOCX",
     pdfToWordEditableDownload: "Tải DOCX chỉnh sửa được",
@@ -197,12 +197,20 @@ const messages = {
     renderingPdfToWord: "Đang render PDF: {current}/{total} trang…",
     pdfToWordSemanticNotice:
       "Đang dùng Pix2Text local + Pandoc để đưa chữ và công thức LaTeX vào DOCX/OMML.",
+    pdfToWordBrowserEditableNotice:
+      "Đang trích xuất text layer ngay trong trình duyệt và tạo paragraph/chữ thật để bạn chỉnh sửa trong Word.",
+    pdfToWordEditableLimitNotice:
+      "PDF scan, chữ nằm trong ảnh và công thức dạng đồ họa cần Pix2Text service; bố cục bảng/phức tạp có thể cần chỉnh lại.",
+    pdfToWordBrowserEditableHint:
+      "Text được lấy trực tiếp từ PDF và không upload lên server; bố cục phức tạp, bảng và công thức có thể cần chỉnh lại trong Word.",
     pdfToWordChemistryNotice:
       "Công thức hóa học và hình vẽ không có biểu diễn văn bản an toàn sẽ được giữ dưới dạng ảnh.",
     pdfToWordSemanticHint:
       "Lần chạy đầu có thể lâu vì service phải tải model miễn phí; file không rời khỏi service bạn tự host.",
     pdfToWordSemanticExportFailed:
       "Không thể tạo DOCX semantic từ service local. Hãy kiểm tra service hoặc chọn giữ nguyên hiển thị.",
+    pdfToWordEditableExportFailed:
+      "Không thể tạo DOCX chỉnh sửa được từ PDF này.",
     pdfToWordServiceUnavailable:
       "Chưa cấu hình service Pix2Text + Pandoc. Đang dùng đường xuất ảnh cục bộ làm fallback.",
     pdfToWordFidelityNotice: "Mỗi trang PDF là ảnh để tránh thay font và phá công thức.",
@@ -441,7 +449,7 @@ const messages = {
       "Convert PDF text and formulas with a local service, with a visual fallback.",
     pdfToWordWordOutput: "Word output",
     pdfToWordSemanticDescription:
-      "Recognize text and formulas into an editable DOCX.",
+      "Create an editable DOCX from real PDF text; formulas work best with the semantic OCR service.",
     pdfToWordVisualDescription:
       "Choose render quality; each PDF page remains one image.",
     pdfToWordFormat: "DOCX image format",
@@ -449,7 +457,7 @@ const messages = {
     pdfToWordJpeg: "JPG · smaller file",
     pdfToWordResolution: "Render resolution",
     pdfToWordMode: "Conversion mode",
-    pdfToWordSemanticMode: "Editable text + formulas",
+    pdfToWordSemanticMode: "Editable text",
     pdfToWordVisualMode: "Preserve page appearance as images",
     pdfToWordDownload: "Download DOCX",
     pdfToWordEditableDownload: "Download editable DOCX",
@@ -462,8 +470,16 @@ const messages = {
       "Chemical formulas and diagrams without a safe text representation remain as images.",
     pdfToWordSemanticHint:
       "The first run may take longer while the service downloads free models; files stay inside your self-hosted service.",
+    pdfToWordBrowserEditableNotice:
+      "The browser extracts the PDF text layer and creates real editable Word paragraphs instead of turning every page into an image.",
+    pdfToWordEditableLimitNotice:
+      "Scanned PDFs, text inside images, and graphic formulas require the Pix2Text service; complex tables may need cleanup.",
+    pdfToWordBrowserEditableHint:
+      "Text is extracted directly from the PDF without uploading it; complex layouts, tables and formulas may need cleanup in Word.",
     pdfToWordSemanticExportFailed:
       "The local service could not create the semantic DOCX. Check the service or choose visual export.",
+    pdfToWordEditableExportFailed:
+      "This PDF could not be converted into an editable DOCX.",
     pdfToWordServiceUnavailable:
       "The Pix2Text + Pandoc service is not configured. The local visual-image export is available as a fallback.",
     pdfToWordFidelityNotice: "Each page is an image to avoid font substitution and broken formulas.",
@@ -588,8 +604,8 @@ const toolTranslations: Record<
   "pdf-to-word": {
     title: { vi: "PDF → Word", en: "PDF → Word" },
     description: {
-      vi: "Tạo DOCX giữ nguyên hiển thị của từng trang PDF.",
-      en: "Create a visual DOCX that preserves PDF page appearance.",
+      vi: "Tạo DOCX có chữ chỉnh sửa được từ PDF có text layer.",
+      en: "Create an editable DOCX from PDFs with a text layer.",
     },
   },
   "markdown-editor": {

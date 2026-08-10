@@ -19,6 +19,7 @@ import {
   type PdfPagePreview,
 } from "@/lib/pdfRender";
 import { pdfPagesToDocxBlob } from "@/lib/pdfToDocx";
+import { pdfTextPagesToDocxBlob } from "@/lib/pdfTextToDocx";
 import {
   convertPdfToEditableDocx,
   hasSemanticPdfToWordEndpoint,
@@ -76,7 +77,7 @@ export function PdfToWordTool() {
   const [format, setFormat] = useState<PdfDocxImageFormat>("png");
   const [scale, setScale] = useState("2");
   const [mode, setMode] = useState<PdfToWordMode>(
-    semanticConversionAvailable ? "semantic" : "visual",
+    "semantic",
   );
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [loading, setLoading] = useState(false);
@@ -121,7 +122,13 @@ export function PdfToWordTool() {
     setProgress({ current: 0, total: previews.length });
     try {
       if (mode === "semantic") {
-        const docx = await convertPdfToEditableDocx(file, fileName);
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const docx = semanticConversionAvailable
+          ? await convertPdfToEditableDocx(file, fileName)
+          : await pdfTextPagesToDocxBlob(bytes, {
+              title: fileName,
+              onProgress: (current, total) => setProgress({ current, total }),
+            });
         downloadBlob(`${outputStem(fileName)}.docx`, docx);
         setProgress({ current: 1, total: 1 });
         return;
@@ -151,7 +158,7 @@ export function PdfToWordTool() {
       downloadBlob(`${outputStem(fileName)}.docx`, docx);
     } catch (conversionError) {
       if (mode === "semantic" && conversionError instanceof Error) {
-        setError(`${t("pdfToWordSemanticExportFailed")} ${conversionError.message}`);
+        setError(`${t("pdfToWordEditableExportFailed")} ${conversionError.message}`);
       } else {
         setError(t("pdfToWordExportFailed"));
       }
@@ -255,41 +262,35 @@ export function PdfToWordTool() {
             </Button>
           }
         >
-          {semanticConversionAvailable ? (
-            <>
-              <ToolNotice variant={mode === "semantic" ? "success" : "warning"}>
-                <p>
-                  {mode === "semantic"
-                    ? t("pdfToWordSemanticNotice")
-                    : t("pdfToWordFidelityNotice")}
-                </p>
-                <p className="mt-2">
-                  {mode === "semantic"
-                    ? t("pdfToWordChemistryNotice")
-                    : t("pdfToWordEditabilityNotice")}
-                </p>
-              </ToolNotice>
-              <label className={`${toolStyles.label} mt-4 block max-w-sm`}>
-                {t("pdfToWordMode")}
-                <select
-                  className={toolStyles.select}
-                  value={mode}
-                  onChange={(event) =>
-                    setMode(event.target.value as PdfToWordMode)
-                  }
-                >
-                  <option value="semantic">{t("pdfToWordSemanticMode")}</option>
-                  <option value="visual">{t("pdfToWordVisualMode")}</option>
-                </select>
-              </label>
-            </>
-          ) : (
-            <ToolNotice variant="warning">
-              <p>{t("pdfToWordServiceUnavailable")}</p>
-              <p className="mt-2">{t("pdfToWordFidelityNotice")}</p>
-              <p className="mt-2">{t("pdfToWordEditabilityNotice")}</p>
-            </ToolNotice>
-          )}
+          <ToolNotice variant={mode === "semantic" ? "success" : "warning"}>
+            <p>
+              {mode === "semantic"
+                ? semanticConversionAvailable
+                  ? t("pdfToWordSemanticNotice")
+                  : t("pdfToWordBrowserEditableNotice")
+                : t("pdfToWordFidelityNotice")}
+            </p>
+            <p className="mt-2">
+              {mode === "semantic"
+                ? semanticConversionAvailable
+                  ? t("pdfToWordChemistryNotice")
+                  : t("pdfToWordEditableLimitNotice")
+                : t("pdfToWordEditabilityNotice")}
+            </p>
+          </ToolNotice>
+          <label className={`${toolStyles.label} mt-4 block max-w-sm`}>
+            {t("pdfToWordMode")}
+            <select
+              className={toolStyles.select}
+              value={mode}
+              onChange={(event) =>
+                setMode(event.target.value as PdfToWordMode)
+              }
+            >
+              <option value="semantic">{t("pdfToWordSemanticMode")}</option>
+              <option value="visual">{t("pdfToWordVisualMode")}</option>
+            </select>
+          </label>
           {mode === "visual" && (
             <div className={`${toolStyles.inlineFields} mt-4`}>
               <label className={toolStyles.label}>
@@ -329,7 +330,9 @@ export function PdfToWordTool() {
           )}
           <p className="mt-3 text-xs text-muted-foreground">
             {mode === "semantic"
-              ? t("pdfToWordSemanticHint")
+              ? semanticConversionAvailable
+                ? t("pdfToWordSemanticHint")
+                : t("pdfToWordBrowserEditableHint")
               : t("pdfToWordHint")}
           </p>
         </ToolPanel>

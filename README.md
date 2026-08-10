@@ -127,9 +127,10 @@ PDF → Pix2Text → Markdown/LaTeX → Pandoc → DOCX/OMML
 
 Pipeline không dùng Mathpix, API trả phí hay secret bên thứ ba. Chạy service bằng
 Docker trong [services/pdf-to-word](services/pdf-to-word), sau đó đặt
-`VITE_PDF_TO_WORD_URL=http://localhost:8080/v1/pdf-to-word` khi chạy/build frontend.
-Nếu endpoint chưa được cấu hình, tool vẫn có đường xuất ảnh cục bộ để giữ nguyên
-hiển thị PDF.
+`VITE_PDF_TO_WORD_URL=http://localhost:8080/v1/pdf-to-word` khi chạy/build frontend
+để nhận dạng scan và công thức bằng Pix2Text. Nếu endpoint chưa được cấu hình,
+tool vẫn tạo DOCX editable client-side từ text layer của PDF; chế độ ảnh là lựa
+chọn riêng để giữ nguyên hiển thị.
 
 ## Deploy Cloudflare Pages
 
