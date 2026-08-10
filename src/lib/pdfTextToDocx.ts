@@ -17,10 +17,14 @@ interface PdfTextLine {
   minX: number;
 }
 
-interface PdfEmbeddedImage {
+interface PdfImageData {
   bytes: Uint8Array;
   width: number;
   height: number;
+}
+
+interface PdfEmbeddedImage extends PdfImageData {
+  y: number;
 }
 
 export interface PdfTextToDocxOptions {
@@ -125,13 +129,6 @@ function pageSizeInTwips(points: number): number {
   return Math.max(1, Math.round(points * DOCX_TWIPS_PER_POINT));
 }
 
-function lineIndentInTwips(minX: number): number {
-  return Math.max(
-    0,
-    Math.round(minX * DOCX_TWIPS_PER_POINT) - DOCX_MARGIN_TWIPS,
-  );
-}
-
 function dataUrlToBytes(dataUrl: string): Uint8Array {
   const [, encoded] = dataUrl.split(",", 2);
   if (!encoded) throw new Error("Extracted PDF image is empty");
@@ -196,7 +193,7 @@ function imagePixelsToRgba(
   return null;
 }
 
-function imageObjectToPng(image: unknown): PdfEmbeddedImage | null {
+function imageObjectToPng(image: unknown): PdfImageData | null {
   if (!image || typeof image !== "object") return null;
   const candidate = image as {
     bitmap?: CanvasImageSource & { close?: () => void };
@@ -254,6 +251,30 @@ function resolvePageObject(
   });
 }
 
+type PdfMatrix = [number, number, number, number, number, number];
+
+const IDENTITY_MATRIX: PdfMatrix = [1, 0, 0, 1, 0, 0];
+
+function multiplyMatrices(left: PdfMatrix, right: PdfMatrix): PdfMatrix {
+  return [
+    left[0] * right[0] + left[2] * right[1],
+    left[1] * right[0] + left[3] * right[1],
+    left[0] * right[2] + left[2] * right[3],
+    left[1] * right[2] + left[3] * right[3],
+    left[0] * right[4] + left[2] * right[5] + left[4],
+    left[1] * right[4] + left[3] * right[5] + left[5],
+  ];
+}
+
+function imageTopFromMatrix(matrix: PdfMatrix): number {
+  return Math.max(
+    matrix[5],
+    matrix[1] + matrix[5],
+    matrix[3] + matrix[5],
+    matrix[1] + matrix[3] + matrix[5],
+  );
+}
+
 async function extractPageImages(
   page: unknown,
   pdfjs: typeof import("pdfjs-dist"),
@@ -291,8 +312,13 @@ async function extractPageImages(
     viewport: extractionViewport,
   }).promise;
   const operatorList = await pdfPage.getOperatorList();
-  const imageNames: string[] = [];
-  const inlineImages: unknown[] = [];
+  const imageReferences: Array<{
+    name?: string;
+    image?: unknown;
+    y: number;
+  }> = [];
+  const matrixStack: PdfMatrix[] = [];
+  let matrix: PdfMatrix = [...IDENTITY_MATRIX];
   const imageOperations = new Set([
     pdfjs.OPS.paintImageXObject,
     pdfjs.OPS.paintImageXObjectRepeat,
@@ -301,27 +327,73 @@ async function extractPageImages(
   for (let index = 0; index < operatorList.fnArray.length; index += 1) {
     const operation = operatorList.fnArray[index];
     const args = operatorList.argsArray[index] || [];
-    if (operation === pdfjs.OPS.paintInlineImageXObject) {
-      inlineImages.push(args[0]);
+    if (operation === pdfjs.OPS.save) {
+      matrixStack.push([...matrix]);
+    } else if (operation === pdfjs.OPS.restore) {
+      matrix = matrixStack.pop() || [...IDENTITY_MATRIX];
+    } else if (operation === pdfjs.OPS.transform) {
+      matrix = multiplyMatrices(matrix, args as PdfMatrix);
+    } else if (operation === pdfjs.OPS.paintInlineImageXObject) {
+      imageReferences.push({ image: args[0], y: imageTopFromMatrix(matrix) });
+    } else if (operation === pdfjs.OPS.paintInlineImageXObjectGroup) {
+      const image = args[0];
+      const positions = Array.isArray(args[1]) ? args[1] : [];
+      for (const position of positions) {
+        if (!position || typeof position !== "object") continue;
+        const transform = (position as { transform?: PdfMatrix }).transform;
+        imageReferences.push({
+          image,
+          y: transform
+            ? imageTopFromMatrix(multiplyMatrices(matrix, transform))
+            : imageTopFromMatrix(matrix),
+        });
+      }
     } else if (imageOperations.has(operation) && typeof args[0] === "string") {
-      imageNames.push(args[0]);
+      if (operation === pdfjs.OPS.paintImageXObjectRepeat) {
+        const scaleX = Number(args[1]) || 1;
+        const scaleY = Number(args[2]) || 1;
+        const positions = Array.isArray(args[3]) ? args[3] : [];
+        for (let position = 0; position < positions.length; position += 2) {
+          const imageMatrix: PdfMatrix = [
+            scaleX,
+            0,
+            0,
+            scaleY,
+            Number(positions[position]) || 0,
+            Number(positions[position + 1]) || 0,
+          ];
+          imageReferences.push({
+            name: args[0],
+            y: imageTopFromMatrix(multiplyMatrices(matrix, imageMatrix)),
+          });
+        }
+      } else {
+        imageReferences.push({
+          name: args[0],
+          y: imageTopFromMatrix(matrix),
+        });
+      }
     }
   }
 
-  const imageObjects = [
-    ...inlineImages,
-    ...(await Promise.all(
-      imageNames.map((name) =>
-        resolvePageObject(
-          name.startsWith("g_") ? pdfPage.commonObjs : pdfPage.objs,
-          name,
-        ),
-      ),
-    )),
-  ];
-  return imageObjects
-    .map(imageObjectToPng)
-    .filter((image): image is PdfEmbeddedImage => image !== null);
+  const images = await Promise.all(
+    imageReferences.map(async (reference) => {
+      const imageObject = reference.image ||
+        (reference.name
+          ? await resolvePageObject(
+              reference.name.startsWith("g_")
+                ? pdfPage.commonObjs
+                : pdfPage.objs,
+              reference.name,
+            )
+          : null);
+      const image = imageObjectToPng(imageObject);
+      return image ? { ...image, y: reference.y } : null;
+    }),
+  );
+  return images.filter(
+    (image): image is PdfEmbeddedImage => image !== null,
+  );
 }
 
 function imageSizeInPixels(
@@ -366,44 +438,46 @@ export async function pdfTextPagesToDocxBlob(
         isTextItem(item),
       ) as PdfTextItem[];
       const lines = groupTextItems(items);
-      const textChildren = lines
-        .map((line) => {
-          const runs = lineRuns(line, api);
-          if (!runs.length) return null;
-          return new api.Paragraph({
-            indent: { left: lineIndentInTwips(line.minX) },
-            spacing: { before: 0, after: 0 },
-            children: runs,
-          });
-        })
-        .filter(
-          (paragraph): paragraph is InstanceType<typeof api.Paragraph> =>
-            paragraph !== null,
-        );
-      const children = [...textChildren];
       const embeddedImages = await extractPageImages(page, pdfjs);
-      for (const [imageIndex, image] of embeddedImages.entries()) {
-        const size = imageSizeInPixels(image, viewport.width);
-        children.push(
-          new api.Paragraph({
-            alignment: api.AlignmentType.CENTER,
-            spacing: { before: 120, after: 120 },
-            children: [
-              new api.ImageRun({
-                type: "png",
-                data: image.bytes,
-                transformation: size,
-                altText: {
-                  name: `PDF page ${pageNumber} image ${imageIndex + 1}`,
-                  description: `Extracted image ${imageIndex + 1} from PDF page ${pageNumber}`,
-                },
-              }),
-            ],
-          }),
-        );
-      }
+      const blocks: Array<
+        | { kind: "text"; y: number; line: PdfTextLine }
+        | { kind: "image"; y: number; image: PdfEmbeddedImage }
+      > = [
+        ...lines.map((line) => ({ kind: "text" as const, y: line.y, line })),
+        ...embeddedImages.map((image) => ({
+          kind: "image" as const,
+          y: image.y,
+          image,
+        })),
+      ].sort((left, right) => right.y - left.y);
+      const children = blocks.map((block) => {
+        if (block.kind === "text") {
+          return new api.Paragraph({
+            spacing: { before: 0, after: 60 },
+            children: lineRuns(block.line, api),
+          });
+        }
 
-      if (textChildren.length) pagesWithText += 1;
+        const imageIndex = embeddedImages.indexOf(block.image) + 1;
+        const size = imageSizeInPixels(block.image, viewport.width);
+        return new api.Paragraph({
+          alignment: api.AlignmentType.CENTER,
+          spacing: { before: 120, after: 120 },
+          children: [
+            new api.ImageRun({
+              type: "png",
+              data: block.image.bytes,
+              transformation: size,
+              altText: {
+                name: `PDF page ${pageNumber} image ${imageIndex}`,
+                description: `Extracted image ${imageIndex} from PDF page ${pageNumber}`,
+              },
+            }),
+          ],
+        });
+      });
+
+      if (lines.length) pagesWithText += 1;
       sections.push({
         properties: {
           page: {
