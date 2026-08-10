@@ -38,6 +38,7 @@ const IMAGE_ACCEPT = [
 
 type ImageFormat = "png" | "jpeg";
 type PdfImagePageSize = "a4" | "letter" | "image";
+type PdfImageOrientation = "portrait" | "landscape";
 type PdfImageMargin = "none" | "small" | "standard";
 
 interface ImageEntry {
@@ -518,6 +519,7 @@ function ImageListItem({
 
 function pdfPageDimensions(
   pageSize: PdfImagePageSize,
+  orientation: PdfImageOrientation,
   imageWidth: number,
   imageHeight: number,
 ): { width: number; height: number } {
@@ -528,13 +530,13 @@ function pdfPageDimensions(
     const scale = Math.min(1, 1440 / Math.max(rawWidth, rawHeight));
     return { width: rawWidth * scale, height: rawHeight * scale };
   }
-  const portrait =
+  const page =
     pageSize === "a4"
       ? { width: 595.28, height: 841.89 }
       : { width: 612, height: 792 };
-  return imageWidth > imageHeight
-    ? { width: portrait.height, height: portrait.width }
-    : portrait;
+  return orientation === "landscape"
+    ? { width: page.height, height: page.width }
+    : page;
 }
 
 function marginPoints(margin: PdfImageMargin): number {
@@ -545,6 +547,8 @@ export function ImagesToPdfTool() {
   const { language, t } = useI18n();
   const [items, setItems] = useState<ImageEntry[]>([]);
   const [pageSize, setPageSize] = useState<PdfImagePageSize>("a4");
+  const [orientation, setOrientation] =
+    useState<PdfImageOrientation>("portrait");
   const [margin, setMargin] = useState<PdfImageMargin>("small");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -605,6 +609,7 @@ export function ImagesToPdfTool() {
             : await pdf.embedPng(raster.bytes);
         const pageDimensions = pdfPageDimensions(
           pageSize,
+          orientation,
           raster.width,
           raster.height,
         );
@@ -681,7 +686,7 @@ export function ImagesToPdfTool() {
         <ToolPanel
           title="PDF output"
           description={
-            "Choose a page size and margin. Images are scaled proportionally and never stretched."
+            "Choose a page size, orientation and margin. Images are scaled proportionally and never stretched."
           }
           actions={
             <Button onClick={() => void createPdf()} busy={busy}>
@@ -700,12 +705,32 @@ export function ImagesToPdfTool() {
                 }
               >
                 <option value="a4">
-                  {literal("A4 · auto orientation", language)}
+                  A4
                 </option>
                 <option value="letter">
-                  {literal("Letter · auto orientation", language)}
+                  Letter
                 </option>
                 <option value="image">{t("fitImagePage")}</option>
+              </select>
+            </label>
+            <label className={toolStyles.label}>
+              {t("orientation")}
+              <select
+                className={toolStyles.select}
+                value={orientation}
+                disabled={pageSize === "image"}
+                onChange={(event) =>
+                  setOrientation(
+                    event.target.value as PdfImageOrientation,
+                  )
+                }
+              >
+                <option value="portrait">
+                  {literal("Portrait", language)}
+                </option>
+                <option value="landscape">
+                  {literal("Landscape", language)}
+                </option>
               </select>
             </label>
             <label className={toolStyles.label}>

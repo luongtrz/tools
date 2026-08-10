@@ -636,12 +636,10 @@ const literalTranslations: Record<string, LiteralTranslation> = {
     en: "Each image becomes one PDF page. Add multiple files, then arrange them before exporting.",
   },
   "PDF output": { vi: "Đầu ra PDF", en: "PDF output" },
-  "Choose a page size and margin. Images are scaled proportionally and never stretched.": {
-    vi: "Chọn khổ giấy và lề. Ảnh được giữ đúng tỷ lệ, không bị kéo giãn.",
-    en: "Choose a page size and margin. Images are scaled proportionally and never stretched.",
+  "Choose a page size, orientation and margin. Images are scaled proportionally and never stretched.": {
+    vi: "Chọn khổ giấy, chiều giấy và lề. Ảnh được giữ đúng tỷ lệ, không bị kéo giãn.",
+    en: "Choose a page size, orientation and margin. Images are scaled proportionally and never stretched.",
   },
-  "A4 · auto orientation": { vi: "A4 · tự xoay chiều", en: "A4 · auto orientation" },
-  "Letter · auto orientation": { vi: "Letter · tự xoay chiều", en: "Letter · auto orientation" },
   "Validate JSON": { vi: "Xác thực JSON", en: "Validate JSON" },
   "Paste JSON and run it locally in your browser.": { vi: "Dán JSON và chạy ngay trong trình duyệt của bạn.", en: "Paste JSON and run it locally in your browser." },
   "Format JSON": { vi: "Định dạng JSON", en: "Format JSON" },
