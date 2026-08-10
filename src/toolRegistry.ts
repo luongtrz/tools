@@ -69,7 +69,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
   {
     slug: "pdf-to-word",
     title: "PDF → Word",
-    description: "Tạo DOCX giữ nguyên hiển thị của từng trang PDF.",
+    description: "Chuyển PDF thành DOCX có chữ và công thức chỉnh sửa được bằng công cụ local.",
     category: "Document",
   },
   {

@@ -19,8 +19,15 @@ import {
   type PdfPagePreview,
 } from "@/lib/pdfRender";
 import { pdfPagesToDocxBlob } from "@/lib/pdfToDocx";
+import {
+  convertPdfToEditableDocx,
+  hasSemanticPdfToWordEndpoint,
+} from "@/lib/pdfToWordService";
 
 type PdfDocxImageFormat = "png" | "jpeg";
+type PdfToWordMode = "semantic" | "visual";
+
+const semanticConversionAvailable = hasSemanticPdfToWordEndpoint();
 
 function outputStem(fileName: string): string {
   return (
@@ -68,6 +75,9 @@ export function PdfToWordTool() {
   const [previews, setPreviews] = useState<PdfPagePreview[]>([]);
   const [format, setFormat] = useState<PdfDocxImageFormat>("png");
   const [scale, setScale] = useState("2");
+  const [mode, setMode] = useState<PdfToWordMode>(
+    semanticConversionAvailable ? "semantic" : "visual",
+  );
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -110,6 +120,13 @@ export function PdfToWordTool() {
     setError("");
     setProgress({ current: 0, total: previews.length });
     try {
+      if (mode === "semantic") {
+        const docx = await convertPdfToEditableDocx(file, fileName);
+        downloadBlob(`${outputStem(fileName)}.docx`, docx);
+        setProgress({ current: 1, total: 1 });
+        return;
+      }
+
       const rendered = await renderPdfPages(
         new Uint8Array(await file.arrayBuffer()),
         {
@@ -132,8 +149,12 @@ export function PdfToWordTool() {
         title: fileName,
       });
       downloadBlob(`${outputStem(fileName)}.docx`, docx);
-    } catch {
-      setError(t("pdfToWordExportFailed"));
+    } catch (conversionError) {
+      if (mode === "semantic" && conversionError instanceof Error) {
+        setError(`${t("pdfToWordSemanticExportFailed")} ${conversionError.message}`);
+      } else {
+        setError(t("pdfToWordExportFailed"));
+      }
     } finally {
       setBusy(false);
     }
@@ -151,8 +172,8 @@ export function PdfToWordTool() {
   return (
     <ToolPage slug="pdf-to-word">
       <ToolPanel
-        title="Choose a PDF"
-        description="Render PDF pages into a visual Word document."
+        title={t("pdfToWordChoosePdf")}
+        description={t("pdfToWordToolDescription")}
         actions={<OutputActions onReset={reset} onClear={reset} />}
       >
         <FileDropZone
@@ -212,57 +233,104 @@ export function PdfToWordTool() {
 
       {file && (
         <ToolPanel
-          title="Word output"
-          description="Choose render quality. Each PDF page stays as one image."
+          title={t("pdfToWordWordOutput")}
+          description={
+            mode === "semantic"
+              ? t("pdfToWordSemanticDescription")
+              : t("pdfToWordVisualDescription")
+          }
           actions={
             <Button
               onClick={() => void exportDocx()}
               busy={busy}
               disabled={loading || !previews.length}
             >
-              {busy ? t("creatingDocx") : t("pdfToWordDownload")}
+              {busy
+                ? mode === "semantic"
+                  ? t("creatingEditableDocx")
+                  : t("creatingDocx")
+                : mode === "semantic"
+                  ? t("pdfToWordEditableDownload")
+                  : t("pdfToWordDownload")}
             </Button>
           }
         >
-          <ToolNotice variant="warning">
-            <p>{t("pdfToWordFidelityNotice")}</p>
-            <p className="mt-2">{t("pdfToWordEditabilityNotice")}</p>
-          </ToolNotice>
-          <div className={`${toolStyles.inlineFields} mt-4`}>
-            <label className={toolStyles.label}>
-              {t("pdfToWordFormat")}
-              <select
-                className={toolStyles.select}
-                value={format}
-                onChange={(event) =>
-                  setFormat(event.target.value as PdfDocxImageFormat)
-                }
-              >
-                <option value="png">{t("pdfToWordPng")}</option>
-                <option value="jpeg">{t("pdfToWordJpeg")}</option>
-              </select>
-            </label>
-            <label className={toolStyles.label}>
-              {t("pdfToWordResolution")}
-              <select
-                className={toolStyles.select}
-                value={scale}
-                onChange={(event) => setScale(event.target.value)}
-              >
-                <option value="1">100% · 72 DPI</option>
-                <option value="1.5">150% · 108 DPI</option>
-                <option value="2">200% · 144 DPI</option>
-                <option value="3">300% · 216 DPI</option>
-              </select>
-            </label>
-          </div>
+          {semanticConversionAvailable ? (
+            <>
+              <ToolNotice variant={mode === "semantic" ? "success" : "warning"}>
+                <p>
+                  {mode === "semantic"
+                    ? t("pdfToWordSemanticNotice")
+                    : t("pdfToWordFidelityNotice")}
+                </p>
+                <p className="mt-2">
+                  {mode === "semantic"
+                    ? t("pdfToWordChemistryNotice")
+                    : t("pdfToWordEditabilityNotice")}
+                </p>
+              </ToolNotice>
+              <label className={`${toolStyles.label} mt-4 block max-w-sm`}>
+                {t("pdfToWordMode")}
+                <select
+                  className={toolStyles.select}
+                  value={mode}
+                  onChange={(event) =>
+                    setMode(event.target.value as PdfToWordMode)
+                  }
+                >
+                  <option value="semantic">{t("pdfToWordSemanticMode")}</option>
+                  <option value="visual">{t("pdfToWordVisualMode")}</option>
+                </select>
+              </label>
+            </>
+          ) : (
+            <ToolNotice variant="warning">
+              <p>{t("pdfToWordServiceUnavailable")}</p>
+              <p className="mt-2">{t("pdfToWordFidelityNotice")}</p>
+              <p className="mt-2">{t("pdfToWordEditabilityNotice")}</p>
+            </ToolNotice>
+          )}
+          {mode === "visual" && (
+            <div className={`${toolStyles.inlineFields} mt-4`}>
+              <label className={toolStyles.label}>
+                {t("pdfToWordFormat")}
+                <select
+                  className={toolStyles.select}
+                  value={format}
+                  onChange={(event) =>
+                    setFormat(event.target.value as PdfDocxImageFormat)
+                  }
+                >
+                  <option value="png">{t("pdfToWordPng")}</option>
+                  <option value="jpeg">{t("pdfToWordJpeg")}</option>
+                </select>
+              </label>
+              <label className={toolStyles.label}>
+                {t("pdfToWordResolution")}
+                <select
+                  className={toolStyles.select}
+                  value={scale}
+                  onChange={(event) => setScale(event.target.value)}
+                >
+                  <option value="1">100% · 72 DPI</option>
+                  <option value="1.5">150% · 108 DPI</option>
+                  <option value="2">200% · 144 DPI</option>
+                  <option value="3">300% · 216 DPI</option>
+                </select>
+              </label>
+            </div>
+          )}
           {busy && (
             <p className="mt-3 text-xs text-muted-foreground" role="status">
-              {t("renderingPdfToWord", progress)}
+              {mode === "semantic"
+                ? t("creatingEditableDocx")
+                : t("renderingPdfToWord", progress)}
             </p>
           )}
           <p className="mt-3 text-xs text-muted-foreground">
-            {t("pdfToWordHint")}
+            {mode === "semantic"
+              ? t("pdfToWordSemanticHint")
+              : t("pdfToWordHint")}
           </p>
         </ToolPanel>
       )}

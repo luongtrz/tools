@@ -134,7 +134,8 @@ const messages = {
     dropPdfToImage: "Thả PDF vào đây hoặc bấm để chọn",
     dropPdfToImageDescription: "Mỗi trang sẽ được render thành một ảnh riêng ngay trong trình duyệt.",
     dropPdfToWord: "Thả PDF vào đây hoặc bấm để chọn",
-    dropPdfToWordDescription: "Mỗi trang thành ảnh trong DOCX để giữ font và công thức.",
+    dropPdfToWordDescription:
+      "Chữ và công thức được nhận dạng bằng service local; có fallback ảnh để giữ hiển thị.",
     selectImagePages: "Chọn trang cần xuất ảnh",
     selectedImagesCount: "Đã chọn {selected}/{total} trang",
     imageFormat: "Định dạng ảnh",
@@ -173,13 +174,36 @@ const messages = {
     pdfLoadFailed: "Không thể đọc file PDF này.",
     pdfToWordPreview: "Xem trước các trang",
     pdfToWordPreviewCount: "Đang hiển thị {visible}/{total} trang",
+    pdfToWordChoosePdf: "Chọn PDF",
+    pdfToWordToolDescription:
+      "Chuyển chữ và công thức PDF bằng service local, có fallback giữ nguyên hiển thị.",
+    pdfToWordWordOutput: "Đầu ra Word",
+    pdfToWordSemanticDescription:
+      "Nhận dạng chữ và công thức thành DOCX có thể chỉnh sửa.",
+    pdfToWordVisualDescription:
+      "Chọn chất lượng render; mỗi trang PDF vẫn là một ảnh.",
     pdfToWordFormat: "Định dạng ảnh trong DOCX",
     pdfToWordPng: "PNG · giữ nét tối đa",
     pdfToWordJpeg: "JPG · file nhẹ hơn",
     pdfToWordResolution: "Độ phân giải render",
+    pdfToWordMode: "Cách chuyển đổi",
+    pdfToWordSemanticMode: "Chữ + công thức chỉnh sửa được",
+    pdfToWordVisualMode: "Giữ nguyên hiển thị dạng ảnh",
     pdfToWordDownload: "Tải DOCX",
+    pdfToWordEditableDownload: "Tải DOCX chỉnh sửa được",
     creatingDocx: "Đang tạo DOCX…",
+    creatingEditableDocx: "Đang nhận dạng và tạo DOCX…",
     renderingPdfToWord: "Đang render PDF: {current}/{total} trang…",
+    pdfToWordSemanticNotice:
+      "Đang dùng Pix2Text local + Pandoc để đưa chữ và công thức LaTeX vào DOCX/OMML.",
+    pdfToWordChemistryNotice:
+      "Công thức hóa học và hình vẽ không có biểu diễn văn bản an toàn sẽ được giữ dưới dạng ảnh.",
+    pdfToWordSemanticHint:
+      "Lần chạy đầu có thể lâu vì service phải tải model miễn phí; file không rời khỏi service bạn tự host.",
+    pdfToWordSemanticExportFailed:
+      "Không thể tạo DOCX semantic từ service local. Hãy kiểm tra service hoặc chọn giữ nguyên hiển thị.",
+    pdfToWordServiceUnavailable:
+      "Chưa cấu hình service Pix2Text + Pandoc. Đang dùng đường xuất ảnh cục bộ làm fallback.",
     pdfToWordFidelityNotice: "Mỗi trang PDF là ảnh để tránh thay font và phá công thức.",
     pdfToWordEditabilityNotice: "Ảnh giữ đúng hiển thị; không thể sửa chữ hay công thức trong Word.",
     pdfToWordHint: "PNG hợp với chữ nhỏ và công thức; DPI cao hơn tạo file DOCX lớn hơn.",
@@ -370,7 +394,8 @@ const messages = {
     dropPdfToImage: "Drop a PDF here or click to choose",
     dropPdfToImageDescription: "Each page is rendered as a separate image directly in your browser.",
     dropPdfToWord: "Drop a PDF here or click to choose",
-    dropPdfToWordDescription: "Each PDF page becomes one DOCX image to preserve fonts and formulas.",
+    dropPdfToWordDescription:
+      "Text and formulas use the local service; a visual fallback preserves page appearance.",
     selectImagePages: "Choose pages to export as images",
     selectedImagesCount: "{selected}/{total} pages selected",
     imageFormat: "Image format",
@@ -409,13 +434,36 @@ const messages = {
     pdfLoadFailed: "This PDF file could not be read.",
     pdfToWordPreview: "Page preview",
     pdfToWordPreviewCount: "Showing {visible}/{total} pages",
+    pdfToWordChoosePdf: "Choose a PDF",
+    pdfToWordToolDescription:
+      "Convert PDF text and formulas with a local service, with a visual fallback.",
+    pdfToWordWordOutput: "Word output",
+    pdfToWordSemanticDescription:
+      "Recognize text and formulas into an editable DOCX.",
+    pdfToWordVisualDescription:
+      "Choose render quality; each PDF page remains one image.",
     pdfToWordFormat: "DOCX image format",
     pdfToWordPng: "PNG · maximum sharpness",
     pdfToWordJpeg: "JPG · smaller file",
     pdfToWordResolution: "Render resolution",
+    pdfToWordMode: "Conversion mode",
+    pdfToWordSemanticMode: "Editable text + formulas",
+    pdfToWordVisualMode: "Preserve page appearance as images",
     pdfToWordDownload: "Download DOCX",
+    pdfToWordEditableDownload: "Download editable DOCX",
     creatingDocx: "Creating DOCX…",
+    creatingEditableDocx: "Recognizing and creating DOCX…",
     renderingPdfToWord: "Rendering PDF: {current}/{total} pages…",
+    pdfToWordSemanticNotice:
+      "Using local Pix2Text + Pandoc to place text and LaTeX formulas into DOCX/OMML.",
+    pdfToWordChemistryNotice:
+      "Chemical formulas and diagrams without a safe text representation remain as images.",
+    pdfToWordSemanticHint:
+      "The first run may take longer while the service downloads free models; files stay inside your self-hosted service.",
+    pdfToWordSemanticExportFailed:
+      "The local service could not create the semantic DOCX. Check the service or choose visual export.",
+    pdfToWordServiceUnavailable:
+      "The Pix2Text + Pandoc service is not configured. The local visual-image export is available as a fallback.",
     pdfToWordFidelityNotice: "Each page is an image to avoid font substitution and broken formulas.",
     pdfToWordEditabilityNotice: "Appearance is preserved; image text and formulas are not editable.",
     pdfToWordHint: "PNG suits small text and formulas; higher DPI creates a larger DOCX.",
