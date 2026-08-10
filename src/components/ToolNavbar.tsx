@@ -132,6 +132,17 @@ export default function ToolNavbar({ activeSlug, rightSlot }: ToolNavbarProps) {
         />
 
         <div className="ml-auto flex items-center gap-2">
+          <a
+            href="https://github.com/luongtrz/tools"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-accent-foreground sm:px-3"
+            aria-label={t("viewSourceCode")}
+            title={t("viewSourceCode")}
+          >
+            <Icon name="github" className="size-4" />
+            <span className="hidden lg:inline">GitHub</span>
+          </a>
           <ToolSearch />
           {rightSlot || <SettingsMenu />}
         </div>

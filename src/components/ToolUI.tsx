@@ -35,7 +35,17 @@ export function ToolShell({ activeSlug, children }: ToolShellProps) {
         <span>
           toolmd <span className="mx-2 text-border">/</span> {t("footerDescription")}
         </span>
-        <span>{t("footerBuilt")}</span>
+        <span className="flex items-center gap-3">
+          <a
+            href="https://github.com/luongtrz/tools"
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            {t("viewSourceCode")}
+          </a>
+          <span>{t("footerBuilt")}</span>
+        </span>
       </footer>
     </div>
   );
