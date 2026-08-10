@@ -94,6 +94,14 @@ function normalizeText(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function lineText(line: PdfTextLine): string {
+  return normalizeText(line.items.map((item) => item.str).join(" "));
+}
+
+function pointsToTwips(points: number): number {
+  return Math.max(0, Math.round(points * DOCX_TWIPS_PER_POINT));
+}
+
 function lineRuns(line: PdfTextLine, api: typeof import("docx")) {
   const runs: InstanceType<typeof api.TextRun>[] = [];
   let previousRight: number | null = null;
@@ -267,12 +275,13 @@ function multiplyMatrices(left: PdfMatrix, right: PdfMatrix): PdfMatrix {
 }
 
 function imageTopFromMatrix(matrix: PdfMatrix): number {
-  return Math.max(
+  const yCoordinates = [
     matrix[5],
     matrix[1] + matrix[5],
     matrix[3] + matrix[5],
     matrix[1] + matrix[3] + matrix[5],
-  );
+  ];
+  return Math.max(...yCoordinates);
 }
 
 async function extractPageImages(
@@ -334,18 +343,23 @@ async function extractPageImages(
     } else if (operation === pdfjs.OPS.transform) {
       matrix = multiplyMatrices(matrix, args as PdfMatrix);
     } else if (operation === pdfjs.OPS.paintInlineImageXObject) {
-      imageReferences.push({ image: args[0], y: imageTopFromMatrix(matrix) });
+      const y = imageTopFromMatrix(matrix);
+      imageReferences.push({
+        image: args[0],
+        y,
+      });
     } else if (operation === pdfjs.OPS.paintInlineImageXObjectGroup) {
       const image = args[0];
       const positions = Array.isArray(args[1]) ? args[1] : [];
       for (const position of positions) {
         if (!position || typeof position !== "object") continue;
         const transform = (position as { transform?: PdfMatrix }).transform;
+        const y = imageTopFromMatrix(
+          transform ? multiplyMatrices(matrix, transform) : matrix,
+        );
         imageReferences.push({
           image,
-          y: transform
-            ? imageTopFromMatrix(multiplyMatrices(matrix, transform))
-            : imageTopFromMatrix(matrix),
+          y,
         });
       }
     } else if (imageOperations.has(operation) && typeof args[0] === "string") {
@@ -362,9 +376,12 @@ async function extractPageImages(
             Number(positions[position]) || 0,
             Number(positions[position + 1]) || 0,
           ];
+          const y = imageTopFromMatrix(
+            multiplyMatrices(matrix, imageMatrix),
+          );
           imageReferences.push({
             name: args[0],
-            y: imageTopFromMatrix(multiplyMatrices(matrix, imageMatrix)),
+            y,
           });
         }
       } else {
@@ -388,7 +405,12 @@ async function extractPageImages(
             )
           : null);
       const image = imageObjectToPng(imageObject);
-      return image ? { ...image, y: reference.y } : null;
+      return image
+        ? {
+            ...image,
+            y: reference.y,
+          }
+        : null;
     }),
   );
   return images.filter(
@@ -413,6 +435,94 @@ function imageSizeInPixels(
   };
 }
 
+type PdfPageBlock =
+  | { kind: "text"; y: number; line: PdfTextLine }
+  | { kind: "image"; y: number; image: PdfEmbeddedImage };
+
+interface PdfPageData {
+  viewport: { width: number; height: number };
+  lines: PdfTextLine[];
+  images: PdfEmbeddedImage[];
+}
+
+function blockTop(block: PdfPageBlock): number {
+  return block.kind === "image"
+    ? block.y
+    : block.y + block.line.fontSize * 0.8;
+}
+
+function blockBottom(
+  block: PdfPageBlock,
+  pageWidthPoints: number,
+): number {
+  if (block.kind === "text") return block.y - block.line.fontSize * 0.2;
+  const size = imageSizeInPixels(block.image, pageWidthPoints);
+  const displayHeightPoints = (size.height * 72) / 96;
+  return block.y - displayHeightPoints;
+}
+
+function spacingBeforePoints(
+  block: PdfPageBlock,
+  previousBlock: PdfPageBlock | undefined,
+  pageWidthPoints: number,
+  pageHeightPoints: number,
+): number {
+  if (!previousBlock) {
+    return Math.max(
+      0,
+      pageHeightPoints -
+        DOCX_MARGIN_TWIPS / DOCX_TWIPS_PER_POINT -
+        blockTop(block),
+    );
+  }
+
+  return Math.max(
+    0,
+    blockBottom(previousBlock, pageWidthPoints) - blockTop(block),
+  );
+}
+
+function repeatedHeaderText(pages: PdfPageData[]): string | null {
+  const counts = new Map<string, number>();
+  for (const page of pages) {
+    const topLines = page.lines.filter(
+      (line) =>
+        line.y >=
+        page.viewport.height - Math.max(48, page.viewport.height * 0.08),
+    );
+    const pageTexts = new Set(
+      topLines.map(lineText).filter((text) => text.length > 0),
+    );
+    for (const text of pageTexts) counts.set(text, (counts.get(text) || 0) + 1);
+  }
+
+  const minimumCount = Math.max(2, Math.ceil(pages.length * 0.6));
+  const candidate = [...counts.entries()]
+    .filter(([, count]) => count >= minimumCount)
+    .sort((left, right) => right[1] - left[1])[0];
+  return candidate?.[0] || null;
+}
+
+function pageFooterText(
+  lines: PdfTextLine[],
+  pageNumber: number,
+  totalPages: number,
+  pageHeightPoints: number,
+): string | null {
+  const expected = new RegExp(
+    `^(?:Trang|Page)\\s+${pageNumber}\\s*/\\s*${totalPages}$`,
+    "iu",
+  );
+  const candidate = lines
+    .filter(
+      (line) =>
+        line.y <= Math.max(48, pageHeightPoints * 0.08) &&
+        expected.test(lineText(line)),
+    )
+    .map(lineText)[0];
+  return candidate || null;
+}
+
 export async function pdfTextPagesToDocxBlob(
   bytes: Uint8Array,
   options: PdfTextToDocxOptions,
@@ -426,8 +536,10 @@ export async function pdfTextPagesToDocxBlob(
   const sections: Array<{
     properties: Record<string, unknown>;
     children: InstanceType<typeof api.Paragraph>[];
+    headers?: { default: InstanceType<typeof api.Header> };
+    footers?: { default: InstanceType<typeof api.Footer> };
   }> = [];
-  let pagesWithText = 0;
+  const pages: PdfPageData[] = [];
 
   try {
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
@@ -439,70 +551,137 @@ export async function pdfTextPagesToDocxBlob(
       ) as PdfTextItem[];
       const lines = groupTextItems(items);
       const embeddedImages = await extractPageImages(page, pdfjs);
-      const blocks: Array<
-        | { kind: "text"; y: number; line: PdfTextLine }
-        | { kind: "image"; y: number; image: PdfEmbeddedImage }
-      > = [
-        ...lines.map((line) => ({ kind: "text" as const, y: line.y, line })),
-        ...embeddedImages.map((image) => ({
-          kind: "image" as const,
-          y: image.y,
-          image,
-        })),
-      ].sort((left, right) => right.y - left.y);
-      const children = blocks.map((block) => {
-        if (block.kind === "text") {
-          return new api.Paragraph({
-            spacing: { before: 0, after: 60 },
-            children: lineRuns(block.line, api),
-          });
-        }
-
-        const imageIndex = embeddedImages.indexOf(block.image) + 1;
-        const size = imageSizeInPixels(block.image, viewport.width);
-        return new api.Paragraph({
-          alignment: api.AlignmentType.CENTER,
-          spacing: { before: 120, after: 120 },
-          children: [
-            new api.ImageRun({
-              type: "png",
-              data: block.image.bytes,
-              transformation: size,
-              altText: {
-                name: `PDF page ${pageNumber} image ${imageIndex}`,
-                description: `Extracted image ${imageIndex} from PDF page ${pageNumber}`,
-              },
-            }),
-          ],
-        });
-      });
-
-      if (lines.length) pagesWithText += 1;
-      sections.push({
-        properties: {
-          page: {
-            size: {
-              width: pageSizeInTwips(viewport.width),
-              height: pageSizeInTwips(viewport.height),
-            },
-            margin: {
-              top: DOCX_MARGIN_TWIPS,
-              right: DOCX_MARGIN_TWIPS,
-              bottom: DOCX_MARGIN_TWIPS,
-              left: DOCX_MARGIN_TWIPS,
-              header: 0,
-              footer: 0,
-            },
-          },
-          type: api.SectionType.NEXT_PAGE,
-        },
-        children,
-      });
-      options.onProgress?.(pageNumber, pdf.numPages);
+      pages.push({ viewport, lines, images: embeddedImages });
     }
   } finally {
     await pdf.cleanup();
   }
+
+  const headerText = repeatedHeaderText(pages);
+  let pagesWithText = 0;
+
+  pages.forEach((page, pageIndex) => {
+    const pageNumber = pageIndex + 1;
+    const footerText = pageFooterText(
+      page.lines,
+      pageNumber,
+      pages.length,
+      page.viewport.height,
+    );
+    const bodyLines = page.lines.filter((line) => {
+      const text = lineText(line);
+      const isHeader =
+        Boolean(headerText) &&
+        text === headerText &&
+        line.y >=
+          page.viewport.height - Math.max(48, page.viewport.height * 0.08);
+      const isFooter = text === footerText;
+      return !isHeader && !isFooter;
+    });
+    if (bodyLines.length) pagesWithText += 1;
+
+    const blocks: PdfPageBlock[] = [
+      ...bodyLines.map((line) => ({
+        kind: "text" as const,
+        y: line.y,
+        line,
+      })),
+      ...page.images.map((image) => ({
+        kind: "image" as const,
+        y: image.y,
+        image,
+      })),
+    ].sort((left, right) => right.y - left.y);
+    const children = blocks.map((block, blockIndex) => {
+      const before = pointsToTwips(
+        spacingBeforePoints(
+          block,
+          blocks[blockIndex - 1],
+          page.viewport.width,
+          page.viewport.height,
+        ),
+      );
+      if (block.kind === "text") {
+        return new api.Paragraph({
+          spacing: { before, after: 60 },
+          children: lineRuns(block.line, api),
+        });
+      }
+
+      const imageIndex = page.images.indexOf(block.image) + 1;
+      const size = imageSizeInPixels(block.image, page.viewport.width);
+      return new api.Paragraph({
+        alignment: api.AlignmentType.CENTER,
+        spacing: { before: Math.max(120, before), after: 120 },
+        children: [
+          new api.ImageRun({
+            type: "png",
+            data: block.image.bytes,
+            transformation: size,
+            altText: {
+              name: `PDF page ${pageNumber} image ${imageIndex}`,
+              description: `Extracted image ${imageIndex} from PDF page ${pageNumber}`,
+            },
+          }),
+        ],
+      });
+    });
+
+    const section: {
+      properties: Record<string, unknown>;
+      children: InstanceType<typeof api.Paragraph>[];
+      headers?: { default: InstanceType<typeof api.Header> };
+      footers?: { default: InstanceType<typeof api.Footer> };
+    } = {
+      properties: {
+        page: {
+          size: {
+            width: pageSizeInTwips(page.viewport.width),
+            height: pageSizeInTwips(page.viewport.height),
+          },
+          margin: {
+            top: DOCX_MARGIN_TWIPS,
+            right: DOCX_MARGIN_TWIPS,
+            bottom: DOCX_MARGIN_TWIPS,
+            left: DOCX_MARGIN_TWIPS,
+            header: 240,
+            footer: 240,
+          },
+        },
+        type: api.SectionType.NEXT_PAGE,
+      },
+      children,
+    };
+
+    if (headerText) {
+      section.headers = {
+        default: new api.Header({
+          children: [
+            new api.Paragraph({
+              alignment: api.AlignmentType.CENTER,
+              spacing: { before: 0, after: 0 },
+              children: [new api.TextRun({ text: headerText, size: 16 })],
+            }),
+          ],
+        }),
+      };
+    }
+    if (footerText) {
+      section.footers = {
+        default: new api.Footer({
+          children: [
+            new api.Paragraph({
+              alignment: api.AlignmentType.RIGHT,
+              spacing: { before: 0, after: 0 },
+              children: [new api.TextRun({ text: footerText, size: 16 })],
+            }),
+          ],
+        }),
+      };
+    }
+    sections.push(section);
+    options.onProgress?.(pageNumber, pages.length);
+  });
 
   if (!pagesWithText) {
     throw new Error(
