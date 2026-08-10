@@ -198,7 +198,7 @@ const messages = {
     pdfToWordSemanticNotice:
       "Đang dùng Pix2Text local + Pandoc để đưa chữ và công thức LaTeX vào DOCX/OMML.",
     pdfToWordBrowserEditableNotice:
-      "Đang trích xuất text layer ngay trong trình duyệt và tạo paragraph/chữ thật để bạn chỉnh sửa trong Word.",
+      "Đang trích xuất text layer thành chữ chỉnh sửa được và nhúng từng ảnh/QR riêng vào DOCX.",
     pdfToWordEditableLimitNotice:
       "PDF scan, chữ nằm trong ảnh và công thức dạng đồ họa cần Pix2Text service; bố cục bảng/phức tạp có thể cần chỉnh lại.",
     pdfToWordBrowserEditableHint:
@@ -471,7 +471,7 @@ const messages = {
     pdfToWordSemanticHint:
       "The first run may take longer while the service downloads free models; files stay inside your self-hosted service.",
     pdfToWordBrowserEditableNotice:
-      "The browser extracts the PDF text layer and creates real editable Word paragraphs instead of turning every page into an image.",
+      "The browser extracts editable text and embeds each PDF image/QR separately instead of turning every page into one image.",
     pdfToWordEditableLimitNotice:
       "Scanned PDFs, text inside images, and graphic formulas require the Pix2Text service; complex tables may need cleanup.",
     pdfToWordBrowserEditableHint:

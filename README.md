@@ -129,8 +129,8 @@ Pipeline không dùng Mathpix, API trả phí hay secret bên thứ ba. Chạy s
 Docker trong [services/pdf-to-word](services/pdf-to-word), sau đó đặt
 `VITE_PDF_TO_WORD_URL=http://localhost:8080/v1/pdf-to-word` khi chạy/build frontend
 để nhận dạng scan và công thức bằng Pix2Text. Nếu endpoint chưa được cấu hình,
-tool vẫn tạo DOCX editable client-side từ text layer của PDF; chế độ ảnh là lựa
-chọn riêng để giữ nguyên hiển thị.
+tool vẫn tạo DOCX editable client-side từ text layer và nhúng các image object của
+PDF; chế độ ảnh là lựa chọn riêng để giữ nguyên vị trí hiển thị tuyệt đối.
 
 ## Deploy Cloudflare Pages
 
