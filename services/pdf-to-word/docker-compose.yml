@@ -1,0 +1,19 @@
+services:
+  pdf-to-word:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      CORS_ORIGINS: http://localhost:5173,https://toolmd.pages.dev
+      MAX_FILE_BYTES: 26214400
+      MAX_PAGES: 100
+      P2T_DEVICE: cpu
+    volumes:
+      - pix2text-cache:/root/.cache
+      - pix2text-models:/root/.pix2text
+      - cnstd-models:/root/.cnstd
+
+volumes:
+  pix2text-cache:
+  pix2text-models:
+  cnstd-models:

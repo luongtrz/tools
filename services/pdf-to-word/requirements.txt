@@ -1,0 +1,4 @@
+fastapi>=0.115,<1
+pix2text[multilingual]==1.1.4
+python-multipart>=0.0.20,<1
+uvicorn[standard]>=0.34,<1

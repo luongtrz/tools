@@ -116,6 +116,21 @@ Cloudflare Pages chỉ phục vụ static files, vì vậy cả UI và MCP đề
 
 Giới hạn input Markdown thực tế của tool PDF là 45 MB; phần HTML sau render được giữ dưới 49 MB để nằm trong trần request 50 MB của Browser Run. Response text chỉ chứa metadata; dữ liệu Base64 chỉ nằm trong `structuredContent` để tránh nhân đôi kích thước response. `wkhtmltopdf` không nằm trong backend Cloudflare vì Worker không chạy native binary.
 
+## PDF → Word semantic local
+
+`/pdf-to-word/` có thêm pipeline self-host tùy chọn để tạo DOCX có chữ và công thức
+chỉnh sửa được:
+
+```text
+PDF → Pix2Text → Markdown/LaTeX → Pandoc → DOCX/OMML
+```
+
+Pipeline không dùng Mathpix, API trả phí hay secret bên thứ ba. Chạy service bằng
+Docker trong [services/pdf-to-word](services/pdf-to-word), sau đó đặt
+`VITE_PDF_TO_WORD_URL=http://localhost:8080/v1/pdf-to-word` khi chạy/build frontend.
+Nếu endpoint chưa được cấu hình, tool vẫn có đường xuất ảnh cục bộ để giữ nguyên
+hiển thị PDF.
+
 ## Deploy Cloudflare Pages
 
 Build tạo một bundle route-based; asset dùng path root và Cloudflare `_redirects` đưa mọi tool route về React shell:
