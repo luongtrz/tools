@@ -3,6 +3,7 @@ import type { PdfPagePreview } from "@/lib/pdfRender";
 const PDF_POINTS_PER_INCH = 72;
 const DOCX_IMAGE_PIXELS_PER_INCH = 96;
 const DOCX_TWIPS_PER_POINT = 20;
+const DOCX_SAFE_MARGIN_TWIPS = 36;
 
 export interface PdfToDocxOptions {
   renderScale: number;
@@ -35,12 +36,15 @@ function pageSizeInTwips(
 function imageSizeInPixels(
   pixels: number,
   renderScale: number,
+  marginTwips: number,
 ): number {
-  const points = pixels / renderScale;
+  const pagePoints = pixels / renderScale;
+  const marginPoints = marginTwips / DOCX_TWIPS_PER_POINT;
+  const contentPoints = Math.max(1, pagePoints - marginPoints * 2);
   return Math.max(
     1,
     Math.round(
-      (points / PDF_POINTS_PER_INCH) * DOCX_IMAGE_PIXELS_PER_INCH,
+      (contentPoints / PDF_POINTS_PER_INCH) * DOCX_IMAGE_PIXELS_PER_INCH,
     ),
   );
 }
@@ -81,7 +85,14 @@ export async function pdfPagesToDocxBlob(
       properties: {
         page: {
           size: { width: pageWidth, height: pageHeight },
-          margin: { top: 0, right: 0, bottom: 0, left: 0 },
+          margin: {
+            top: DOCX_SAFE_MARGIN_TWIPS,
+            right: DOCX_SAFE_MARGIN_TWIPS,
+            bottom: DOCX_SAFE_MARGIN_TWIPS,
+            left: DOCX_SAFE_MARGIN_TWIPS,
+            header: 0,
+            footer: 0,
+          },
         },
         type: api.SectionType.NEXT_PAGE,
       },
@@ -89,19 +100,22 @@ export async function pdfPagesToDocxBlob(
         new api.Paragraph({
           alignment: api.AlignmentType.CENTER,
           indent: { left: 0, right: 0, firstLine: 0 },
-          spacing: {
-            before: 0,
-            after: 0,
-            line: 1,
-            lineRule: api.LineRuleType.EXACT,
-          },
+          spacing: { before: 0, after: 0 },
           children: [
             new api.ImageRun({
               type: image.type,
               data: image.bytes,
               transformation: {
-                width: imageSizeInPixels(page.width, options.renderScale),
-                height: imageSizeInPixels(page.height, options.renderScale),
+                width: imageSizeInPixels(
+                  page.width,
+                  options.renderScale,
+                  DOCX_SAFE_MARGIN_TWIPS,
+                ),
+                height: imageSizeInPixels(
+                  page.height,
+                  options.renderScale,
+                  DOCX_SAFE_MARGIN_TWIPS,
+                ),
               },
               altText: {
                 name: `PDF page ${page.pageNumber}`,
